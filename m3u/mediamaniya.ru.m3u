@@ -1,0 +1,61 @@
+#EXTM3U
+#EXTINF:-1 tvg-name="Nba Tv" group-title="OnlineTV",Nba Tv
+http://127.0.0.1:5000/stream/nba-tv-mediamaniya
+
+#EXTINF:-1 tvg-name="Setanta Sports 1" group-title="OnlineTV",Setanta Sports 1
+http://127.0.0.1:5000/stream/setanta-sports-1-mediamaniya
+
+#EXTINF:-1 tvg-name="Setanta Sports 2" group-title="OnlineTV",Setanta Sports 2
+http://127.0.0.1:5000/stream/setanta-sports-2-mediamaniya
+
+#EXTINF:-1 tvg-name="Беларусь 5" group-title="OnlineTV",Беларусь 5
+http://127.0.0.1:5000/stream/belarus-5-mediamaniya
+
+#EXTINF:-1 tvg-name="Беларусь 5 Интернет" group-title="OnlineTV",Беларусь 5 Интернет
+http://127.0.0.1:5000/stream/belarus-5-internet-mediamaniya
+
+#EXTINF:-1 tvg-name="Волейбол HD" group-title="OnlineTV",Волейбол HD
+http://127.0.0.1:5000/stream/voleibol-mediamaniya
+
+#EXTINF:-1 tvg-name="Eurosport 1" group-title="OnlineTV",Eurosport 1
+http://127.0.0.1:5000/stream/evrosport-1-mediamaniya
+
+#EXTINF:-1 tvg-name="Конный Мир" group-title="OnlineTV",Конный Мир
+http://127.0.0.1:5000/stream/konnyi-mir-mediamaniya
+
+#EXTINF:-1 tvg-name="Матч! Тв" group-title="OnlineTV",Матч! Тв
+http://127.0.0.1:5000/stream/match-tv-mediamaniya
+
+#EXTINF:-1 tvg-name="Nba Tv" group-title="OnlineTV",Nba Tv
+http://127.0.0.1:5000/stream/nba-tv-mediamaniya
+
+#EXTINF:-1 tvg-name="Setanta Sports 1" group-title="OnlineTV",Setanta Sports 1
+http://127.0.0.1:5000/stream/setanta-sports-1-mediamaniya
+
+#EXTINF:-1 tvg-name="Setanta Sports 2" group-title="OnlineTV",Setanta Sports 2
+http://127.0.0.1:5000/stream/setanta-sports-2-mediamaniya
+
+#EXTINF:-1 tvg-name="Беларусь 5" group-title="OnlineTV",Беларусь 5
+http://127.0.0.1:5000/stream/belarus-5-mediamaniya
+
+#EXTINF:-1 tvg-name="Беларусь 5 Интернет" group-title="OnlineTV",Беларусь 5 Интернет
+http://127.0.0.1:5000/stream/belarus-5-internet-mediamaniya
+
+#EXTINF:-1 tvg-name="Волейбол HD" group-title="OnlineTV",Волейбол HD
+http://127.0.0.1:5000/stream/voleibol-mediamaniya
+
+#EXTINF:-1 tvg-name="Eurosport 1" group-title="OnlineTV",Eurosport 1
+http://127.0.0.1:5000/stream/evrosport-1-mediamaniya
+
+#EXTINF:-1 tvg-name="Конный Мир" group-title="OnlineTV",Конный Мир
+http://127.0.0.1:5000/stream/konnyi-mir-mediamaniya
+
+#EXTINF:-1 tvg-name="Матч! Тв" group-title="OnlineTV",Матч! Тв
+http://127.0.0.1:5000/stream/match-tv-mediamaniya
+
+#EXTINF:-1 tvg-name="Viju Tv1000 Action" group-title="OnlineTV",Viju Tv1000 Action
+http://127.0.0.1:5000/stream/viju-tv1000-action-mediamaniya
+
+#EXTINF:-1 tvg-name="Дом Кино" group-title="OnlineTV",Дом Кино
+http://127.0.0.1:5000/stream/dom-kino-mediamaniya
+
