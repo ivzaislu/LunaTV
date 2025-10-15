@@ -45,6 +45,9 @@ ORPHAN_CHROME_MAX_AGE_SEC = 180
 CLEAN_TMP_AFTER_JS = True
 TMP_PATTERNS = ("/tmp/puppeteer_*", "/tmp/.org.chromium.*", "/dev/shm/.org.chromium.*")
 
+# TTL кэша (в секундах) — чтобы избегать навечно застрявших ссылок.
+CACHE_TTL_SEC = int(os.environ.get("CACHE_TTL_SEC", "900"))  # 15 минут по умолчанию
+
 # ------------------ УТИЛИТЫ ЧИСТКИ ------------------
 
 def cleanup_tmp():
@@ -135,7 +138,9 @@ def kill_orphan_chrome(max_age_sec: int = ORPHAN_CHROME_MAX_AGE_SEC) -> int:
                 continue
             if not any(m in cmd for m in puppet_mark):
                 continue
-            if _proc_age_sec(pid) > max_age_sec:
+            # Убиваем только процессы, "зависшие" дольше порога.
+            # Ранее логика была инвертирована и пропускала старые chrome.
+            if _proc_age_sec(pid) < max_age_sec:
                 continue
             try:
                 os.kill(pid, signal.SIGKILL)
@@ -358,7 +363,8 @@ def load_cache():
         try:
             with open(CACHE_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
-        except Exception:
+        except Exception as e:
+            print(f"[cache] не удалось прочитать {CACHE_FILE}: {e}")
             return {}
     return {}
 
@@ -370,18 +376,42 @@ def save_cache(cache):
     except Exception as e:
         print(f"[!] Не удалось сохранить кэш: {e}")
 
+
+def _cache_entry_is_fresh(entry: dict) -> bool:
+    """Проверяет, не протухла ли запись кэша по таймстемпу."""
+    if CACHE_TTL_SEC <= 0:
+        return True
+    if not isinstance(entry, dict):
+        return False
+    ts = entry.get("timestamp")
+    if not ts:
+        return False
+    try:
+        when = datetime.fromisoformat(ts)
+    except Exception:
+        return False
+    age = (datetime.utcnow() - when).total_seconds()
+    return age <= CACHE_TTL_SEC
+
 def is_m3u8_alive(url, referer=None):
     try:
         headers = {"User-Agent": USER_AGENT}
         if referer:
             headers["Referer"] = referer
         r = requests.head(url, timeout=5, allow_redirects=True, headers=headers)
-        # HEAD не всегда даёт content-type для HLS; подстрахуемся GET'ом маленького чанка
-        if r.status_code == 200 and "mpegurl" in r.headers.get("Content-Type", "").lower():
-            return True
+        try:
+            # HEAD не всегда даёт content-type для HLS; подстрахуемся GET'ом маленького чанка
+            if r.status_code == 200 and "mpegurl" in r.headers.get("Content-Type", "").lower():
+                return True
+        finally:
+            r.close()
+
         # fallback: небольшой GET и проверка сигнатуры
         r2 = requests.get(url, timeout=7, headers=headers, stream=True, allow_redirects=True)
-        chunk = next(r2.iter_content(chunk_size=2048), b"")
+        try:
+            chunk = next(r2.iter_content(chunk_size=2048), b"")
+        finally:
+            r2.close()
         txt = ""
         try:
             txt = chunk.decode("utf-8", errors="ignore")
@@ -444,13 +474,16 @@ def proxy(channel_slug):
     # Проверка кэша
     cached = cache.get(channel_slug)
     if cached:
-        stream_url = cached.get("url")
-        print(f"📁 Проверка кэшированной ссылки: {stream_url}")
-        if stream_url and is_m3u8_alive(stream_url, referer=referer_url):
-            print("✅ Используется кэш.")
-            return redirect(stream_url, code=302)
+        if not _cache_entry_is_fresh(cached):
+            print("🗑️ Кэш просрочен, нужен новый поток.")
         else:
-            print("❌ Кэш устарел, пробуем заново.")
+            stream_url = cached.get("url")
+            print(f"📁 Проверка кэшированной ссылки: {stream_url}")
+            if stream_url and is_m3u8_alive(stream_url, referer=referer_url):
+                print("✅ Используется кэш.")
+                return redirect(stream_url, code=302)
+            else:
+                print("❌ Кэш устарел, пробуем заново.")
 
     # Получение новой ссылки через JS-экстрактор(ы)
     print(f"🔵 Запрос к каналу: {channel_slug}")
