@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, redirect, abort, send_file
+from flask import (
+    Flask,
+    abort,
+    jsonify,
+    redirect,
+    render_template_string,
+    send_file,
+)
 from urllib.parse import urlparse
 from datetime import datetime
 import re
@@ -12,6 +19,7 @@ import subprocess
 import signal
 import requests
 import fnmatch  # ⬅️ для сопоставления масок хостов (*.example.com)
+import sys
 
 app = Flask(__name__)
 
@@ -45,6 +53,48 @@ ORPHAN_CHROME_MAX_AGE_SEC = 180
 CLEAN_TMP_AFTER_JS = True
 TMP_PATTERNS = ("/tmp/puppeteer_*", "/tmp/.org.chromium.*", "/dev/shm/.org.chromium.*")
 
+# TTL кэша (в секундах) — чтобы избегать навечно застрявших ссылок.
+CACHE_TTL_SEC = int(os.environ.get("CACHE_TTL_SEC", "900"))  # 15 минут по умолчанию
+
+# Настройки HTTP-сервера Flask
+PROXY_HOST = os.environ.get("PROXY_HOST", "0.0.0.0")
+PROXY_PORT = int(os.environ.get("PROXY_PORT", "6060"))
+
+# Команды, доступные из веб-интерфейса
+PYTHON_BIN = os.environ.get("PYTHON_BIN", sys.executable or "python")
+
+
+def _script_path(name: str) -> str:
+    return os.path.join(BASE_DIR, name)
+
+
+ACTION_CATALOG: dict[str, dict] = {
+    "update-playlists": {
+        "label": "Обновить плейлисты",
+        "description": "Запускает update_playlist.py, пересобирая M3U-файлы из channels.json",
+        "command": [PYTHON_BIN, _script_path("update_playlist.py")],
+        "timeout": int(os.environ.get("ACTION_TIMEOUT_UPDATE", "300")),
+    },
+    "validate-playlists": {
+        "label": "Проверить плейлисты",
+        "description": "Выполняет тест m3u потоков (test_m3u_playlists.py)",
+        "command": [PYTHON_BIN, _script_path("test_m3u_playlists.py")],
+        "timeout": int(os.environ.get("ACTION_TIMEOUT_VALIDATE", "420")),
+    },
+    "python-tests": {
+        "label": "Python unit-тесты",
+        "description": "Запускает python -m unittest discover",
+        "command": [PYTHON_BIN, "-m", "unittest", "discover"],
+        "timeout": int(os.environ.get("ACTION_TIMEOUT_PYTEST", "420")),
+    },
+    "extractor-tests": {
+        "label": "JS тесты экстракторов",
+        "description": "Выполняет npm test",
+        "command": ["npm", "test"],
+        "timeout": int(os.environ.get("ACTION_TIMEOUT_JS", "420")),
+    },
+}
+
 # ------------------ УТИЛИТЫ ЧИСТКИ ------------------
 
 def cleanup_tmp():
@@ -74,6 +124,200 @@ def _list_pids():
                 yield int(name)
     except Exception:
         return
+
+
+def _list_playlists() -> list[str]:
+    """Возвращает список файлов плейлистов (без путей)."""
+    if not os.path.isdir(M3U_DIR):
+        return []
+    items = []
+    for entry in os.listdir(M3U_DIR):
+        if entry.lower().endswith(".m3u"):
+            items.append(entry)
+    return sorted(items)
+
+
+def _load_channels_safe() -> dict:
+    """Загружает channels.json, не выбрасывая исключения."""
+    if not os.path.exists(CHANNELS_FILE):
+        return {}
+    try:
+        with open(CHANNELS_FILE, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+            return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+DASHBOARD_TEMPLATE = """<!doctype html>
+<html lang=\"ru\">
+  <head>
+    <meta charset=\"utf-8\">
+    <title>LunaTV · Панель управления</title>
+    <style>
+      :root { color-scheme: dark light; }
+      body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; background: #0f172a; color: #e2e8f0; }
+      header { padding: 24px; background: linear-gradient(135deg, #1e293b, #0f172a); box-shadow: 0 4px 18px rgba(15,23,42,0.4); }
+      h1 { margin: 0 0 8px 0; font-size: 2.1rem; }
+      main { padding: 24px; display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+      section { background: rgba(15,23,42,0.85); border-radius: 18px; padding: 20px; box-shadow: 0 8px 24px rgba(15,23,42,0.55); border: 1px solid rgba(148, 163, 184, 0.12); backdrop-filter: blur(6px); }
+      section h2 { margin-top: 0; font-size: 1.3rem; }
+      ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+      li { padding: 12px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.14); background: rgba(30,41,59,0.65); display: flex; flex-direction: column; gap: 8px; }
+      button { align-self: flex-start; padding: 8px 16px; border-radius: 999px; border: none; background: #38bdf8; color: #0f172a; font-weight: 600; cursor: pointer; box-shadow: 0 6px 18px rgba(56,189,248,0.4); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+      button:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(56,189,248,0.55); }
+      button[disabled] { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+      .badge { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(148, 163, 184, 0.7); }
+      .output { white-space: pre-wrap; font-family: 'Fira Code', 'SFMono-Regular', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; background: rgba(15,23,42,0.85); padding: 16px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.12); max-height: 320px; overflow: auto; }
+      .status-ok { color: #34d399; }
+      .status-fail { color: #f87171; }
+      .status-running { color: #fbbf24; }
+      a { color: #38bdf8; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>📺 LunaTV</h1>
+      <div class=\"badge\">Панель управления · http://{{ host }}:{{ port }}</div>
+    </header>
+    <main>
+      <section>
+        <h2>Быстрые действия</h2>
+        <ul id=\"actions\"></ul>
+      </section>
+      <section>
+        <h2>Плейлисты</h2>
+        <ul id=\"playlists\"><li>Загрузка…</li></ul>
+      </section>
+      <section>
+        <h2>Каналы</h2>
+        <ul id=\"channels\"><li>Загрузка…</li></ul>
+      </section>
+      <section style=\"grid-column: 1 / -1;\">
+        <h2>Вывод последней команды</h2>
+        <div id=\"statusLine\" class=\"badge\">Нет запущенных задач</div>
+        <pre id=\"commandOutput\" class=\"output\">—</pre>
+      </section>
+    </main>
+
+    <script>
+      const actionListEl = document.getElementById('actions');
+      const playlistEl = document.getElementById('playlists');
+      const channelEl = document.getElementById('channels');
+      const statusEl = document.getElementById('statusLine');
+      const outputEl = document.getElementById('commandOutput');
+
+      async function loadMeta() {
+        const [actionsResp, playlistsResp, channelsResp] = await Promise.all([
+          fetch('/api/actions'),
+          fetch('/api/playlists'),
+          fetch('/api/channels'),
+        ]);
+        const actions = await actionsResp.json();
+        const playlists = await playlistsResp.json();
+        const channels = await channelsResp.json();
+
+        renderActions(actions.items || []);
+        renderPlaylists(playlists.items || []);
+        renderChannels(channels.items || []);
+      }
+
+      function renderActions(items) {
+        if (!items.length) {
+          actionListEl.innerHTML = '<li>Действия не настроены</li>';
+          return;
+        }
+        actionListEl.innerHTML = '';
+        for (const item of items) {
+          const li = document.createElement('li');
+          const title = document.createElement('div');
+          title.innerHTML = `<strong>${item.label}</strong>`;
+          const desc = document.createElement('div');
+          desc.textContent = item.description;
+          const btn = document.createElement('button');
+          btn.textContent = 'Запустить';
+          btn.disabled = !item.available;
+          btn.addEventListener('click', () => runAction(item.id, btn));
+          if (!item.available) {
+            const hint = document.createElement('div');
+            hint.className = 'badge status-fail';
+            hint.textContent = 'Недоступно на текущей конфигурации';
+            li.appendChild(hint);
+          }
+          li.appendChild(title);
+          li.appendChild(desc);
+          li.appendChild(btn);
+          actionListEl.appendChild(li);
+        }
+      }
+
+      function renderPlaylists(items) {
+        if (!items.length) {
+          playlistEl.innerHTML = '<li>Пока нет файлов .m3u</li>';
+          return;
+        }
+        playlistEl.innerHTML = '';
+        for (const name of items) {
+          const li = document.createElement('li');
+          const link = document.createElement('a');
+          link.href = `/playlist/${encodeURIComponent(name)}`;
+          link.textContent = name;
+          li.appendChild(link);
+          playlistEl.appendChild(li);
+        }
+      }
+
+      function renderChannels(items) {
+        if (!items.length) {
+          channelEl.innerHTML = '<li>channels.json не найден или пуст</li>';
+          return;
+        }
+        channelEl.innerHTML = '';
+        for (const channel of items) {
+          const li = document.createElement('li');
+          li.innerHTML = `<strong>${channel.slug}</strong>${channel.name ? ' — ' + channel.name : ''}`;
+          channelEl.appendChild(li);
+        }
+      }
+
+      async function runAction(id, btn) {
+        btn.disabled = true;
+        statusEl.textContent = 'Выполняется…';
+        statusEl.className = 'badge status-running';
+        outputEl.textContent = '';
+        try {
+          const resp = await fetch(`/api/actions/${encodeURIComponent(id)}`, { method: 'POST' });
+          const data = await resp.json();
+          if (data.output) {
+            outputEl.textContent = data.output;
+          } else if (data.error) {
+            outputEl.textContent = data.error;
+          } else {
+            outputEl.textContent = JSON.stringify(data, null, 2);
+          }
+          if (data.ok) {
+            statusEl.textContent = `Успешно · ${(data.duration || 0).toFixed(1)}s`;
+            statusEl.className = 'badge status-ok';
+          } else {
+            const reason = data.error || `Код ${data.returncode}`;
+            statusEl.textContent = `Ошибка · ${reason}`;
+            statusEl.className = 'badge status-fail';
+          }
+        } catch (err) {
+          statusEl.textContent = `Ошибка запроса: ${err}`;
+          statusEl.className = 'badge status-fail';
+          outputEl.textContent = '';
+        } finally {
+          btn.disabled = false;
+          loadMeta();
+        }
+      }
+
+      loadMeta();
+    </script>
+  </body>
+</html>"""
 
 def _proc_comm(pid: int) -> str:
     return _read_file(f"/proc/{pid}/comm").strip()
@@ -135,7 +379,9 @@ def kill_orphan_chrome(max_age_sec: int = ORPHAN_CHROME_MAX_AGE_SEC) -> int:
                 continue
             if not any(m in cmd for m in puppet_mark):
                 continue
-            if _proc_age_sec(pid) > max_age_sec:
+            # Убиваем только процессы, "зависшие" дольше порога.
+            # Ранее логика была инвертирована и пропускала старые chrome.
+            if _proc_age_sec(pid) < max_age_sec:
                 continue
             try:
                 os.kill(pid, signal.SIGKILL)
@@ -147,6 +393,86 @@ def kill_orphan_chrome(max_age_sec: int = ORPHAN_CHROME_MAX_AGE_SEC) -> int:
         except Exception:
             continue
     return victims
+
+
+def _summarize_action(action_id: str, meta: dict) -> dict:
+    """Готовит JSON-описание команды для фронтенда."""
+    command = meta.get("command", [])
+    available = True
+    if command:
+        bin_name = command[0]
+        if os.path.isabs(bin_name):
+            available = os.path.exists(bin_name)
+        elif bin_name.endswith(".py"):
+            available = os.path.exists(bin_name)
+        # если команда обращается к скрипту, проверим второй элемент
+        if available and len(command) >= 2 and command[0] in {PYTHON_BIN, "python", "python3"}:
+            script_path = command[1]
+            if script_path != "-m" and script_path.endswith(".py"):
+                available = os.path.exists(script_path)
+    return {
+        "id": action_id,
+        "label": meta.get("label", action_id),
+        "description": meta.get("description", ""),
+        "available": bool(available),
+    }
+
+
+def _run_action(meta: dict) -> dict:
+    """Запускает команду и возвращает результат для JSON."""
+    command = meta.get("command")
+    timeout = int(meta.get("timeout", 300))
+    started = time.time()
+    if not command:
+        return {
+            "ok": False,
+            "error": "Команда не задана",
+        }
+    try:
+        proc = subprocess.Popen(
+            command,
+            cwd=BASE_DIR,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+    except FileNotFoundError as exc:
+        return {
+            "ok": False,
+            "error": f"Не найдена команда: {exc}",
+        }
+    except Exception as exc:
+        return {
+            "ok": False,
+            "error": f"Не удалось запустить процесс: {exc}",
+        }
+
+    timed_out = False
+    output = ""
+    try:
+        output, _ = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        timed_out = True
+        try:
+            proc.kill()
+        except Exception:
+            pass
+        try:
+            output, _ = proc.communicate(timeout=5)
+        except Exception:
+            output = output or ""
+    except Exception as exc:
+        output = f"Ошибка исполнения: {exc}"
+
+    duration = time.time() - started
+    rc = proc.poll()
+    return {
+        "ok": (rc == 0) and not timed_out,
+        "returncode": rc,
+        "timedOut": timed_out,
+        "duration": duration,
+        "output": output,
+    }
 
 # ------------------ SITE CONTROLLER ------------------
 
@@ -358,7 +684,8 @@ def load_cache():
         try:
             with open(CACHE_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
-        except Exception:
+        except Exception as e:
+            print(f"[cache] не удалось прочитать {CACHE_FILE}: {e}")
             return {}
     return {}
 
@@ -370,18 +697,42 @@ def save_cache(cache):
     except Exception as e:
         print(f"[!] Не удалось сохранить кэш: {e}")
 
+
+def _cache_entry_is_fresh(entry: dict) -> bool:
+    """Проверяет, не протухла ли запись кэша по таймстемпу."""
+    if CACHE_TTL_SEC <= 0:
+        return True
+    if not isinstance(entry, dict):
+        return False
+    ts = entry.get("timestamp")
+    if not ts:
+        return False
+    try:
+        when = datetime.fromisoformat(ts)
+    except Exception:
+        return False
+    age = (datetime.utcnow() - when).total_seconds()
+    return age <= CACHE_TTL_SEC
+
 def is_m3u8_alive(url, referer=None):
     try:
         headers = {"User-Agent": USER_AGENT}
         if referer:
             headers["Referer"] = referer
         r = requests.head(url, timeout=5, allow_redirects=True, headers=headers)
-        # HEAD не всегда даёт content-type для HLS; подстрахуемся GET'ом маленького чанка
-        if r.status_code == 200 and "mpegurl" in r.headers.get("Content-Type", "").lower():
-            return True
+        try:
+            # HEAD не всегда даёт content-type для HLS; подстрахуемся GET'ом маленького чанка
+            if r.status_code == 200 and "mpegurl" in r.headers.get("Content-Type", "").lower():
+                return True
+        finally:
+            r.close()
+
         # fallback: небольшой GET и проверка сигнатуры
         r2 = requests.get(url, timeout=7, headers=headers, stream=True, allow_redirects=True)
-        chunk = next(r2.iter_content(chunk_size=2048), b"")
+        try:
+            chunk = next(r2.iter_content(chunk_size=2048), b"")
+        finally:
+            r2.close()
         txt = ""
         try:
             txt = chunk.decode("utf-8", errors="ignore")
@@ -394,15 +745,56 @@ def is_m3u8_alive(url, referer=None):
 # ------------------ HTTP-РОУТЫ ------------------
 
 @app.route("/")
-def index():
-    try:
-        files = []
-        if os.path.isdir(M3U_DIR):
-            files = sorted([f for f in os.listdir(M3U_DIR) if f.endswith(".m3u")])
-        links = "\n".join([f"<li><a href='/playlist/{f}'>{f}</a></li>" for f in files]) or "<li>(пусто)</li>"
-        return f"<h2>📺 Доступные плейлисты (из каталога m3u):</h2><ul>{links}</ul>"
-    except Exception as e:
-        return f"<h2>Ошибка чтения каталога плейлистов:</h2><pre>{e}</pre>"
+def dashboard():
+    """Главная страница с панелью управления."""
+    return render_template_string(
+        DASHBOARD_TEMPLATE,
+        host=PROXY_HOST,
+        port=PROXY_PORT,
+    )
+
+
+@app.route("/playlists")
+def list_playlists_page():
+    files = _list_playlists()
+    if not files:
+        return "<h2>Плейлисты</h2><p>Каталог пуст.</p>"
+    items = "".join(
+        f"<li><a href='/playlist/{f}'>{f}</a></li>" for f in files
+    )
+    return f"<h2>Плейлисты</h2><ul>{items}</ul>"
+
+
+@app.route("/api/actions", methods=["GET"])
+def api_list_actions():
+    payload = [_summarize_action(k, v) for k, v in ACTION_CATALOG.items()]
+    return jsonify({"items": payload})
+
+
+@app.route("/api/actions/<action_id>", methods=["POST"])
+def api_run_action(action_id):
+    meta = ACTION_CATALOG.get(action_id)
+    if not meta:
+        return jsonify({"ok": False, "error": f"Неизвестное действие: {action_id}"}), 404
+    result = _run_action(meta)
+    return jsonify(result)
+
+
+@app.route("/api/playlists", methods=["GET"])
+def api_playlists():
+    return jsonify({"items": _list_playlists()})
+
+
+@app.route("/api/channels", methods=["GET"])
+def api_channels():
+    items = []
+    for slug, meta in _load_channels_safe().items():
+        name = ""
+        if isinstance(meta, dict):
+            name = meta.get("title") or meta.get("name") or ""
+        items.append({"slug": slug, "name": name})
+    items.sort(key=lambda x: x["slug"])
+    return jsonify({"items": items})
 
 @app.route("/playlist/<filename>")
 def serve_playlist(filename):
@@ -444,13 +836,16 @@ def proxy(channel_slug):
     # Проверка кэша
     cached = cache.get(channel_slug)
     if cached:
-        stream_url = cached.get("url")
-        print(f"📁 Проверка кэшированной ссылки: {stream_url}")
-        if stream_url and is_m3u8_alive(stream_url, referer=referer_url):
-            print("✅ Используется кэш.")
-            return redirect(stream_url, code=302)
+        if not _cache_entry_is_fresh(cached):
+            print("🗑️ Кэш просрочен, нужен новый поток.")
         else:
-            print("❌ Кэш устарел, пробуем заново.")
+            stream_url = cached.get("url")
+            print(f"📁 Проверка кэшированной ссылки: {stream_url}")
+            if stream_url and is_m3u8_alive(stream_url, referer=referer_url):
+                print("✅ Используется кэш.")
+                return redirect(stream_url, code=302)
+            else:
+                print("❌ Кэш устарел, пробуем заново.")
 
     # Получение новой ссылки через JS-экстрактор(ы)
     print(f"🔵 Запрос к каналу: {channel_slug}")
@@ -471,5 +866,5 @@ def proxy(channel_slug):
 # ------------------ MAIN ------------------
 
 if __name__ == "__main__":
-    print("\n🚀 Прокси запущен: http://127.0.0.1:6060")
-    app.run(host="127.0.0.1", port=6060)
+    print(f"\n🚀 Прокси запущен: http://{PROXY_HOST}:{PROXY_PORT}")
+    app.run(host=PROXY_HOST, port=PROXY_PORT)
