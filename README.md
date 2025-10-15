@@ -21,13 +21,23 @@ m3u/         # результирующие .m3u плейлисты
    npm install
    pip install -r requirements.txt  # при наличии файла требований
    ```
-2. Запустите самотест экстрактора:
+2. Запустите самотесты экстракторов:
    ```bash
    npm test
    ```
-3. Проверьте синтаксис Python-скриптов:
+3. Прогоните модульные тесты Python-утилит:
+   ```bash
+   python -m unittest discover
+   ```
+
+4. Проверьте синтаксис Python-скриптов:
    ```bash
    python -m compileall update_playlist.py scaner.py
+   ```
+
+5. Протестируйте готовые `.m3u` плейлисты (каталог `m3u/`):
+   ```bash
+   python test_m3u_playlists.py
    ```
 
 Дополнительные идеи развития и улучшений описаны в [`IMPROVEMENTS.md`](IMPROVEMENTS.md).
