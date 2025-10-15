@@ -143,7 +143,8 @@ def kill_orphan_chrome(max_age_sec: int = ORPHAN_CHROME_MAX_AGE_SEC) -> int:
                 continue
             if not any(m in cmd for m in puppet_mark):
                 continue
-            if _proc_age_sec(pid) > max_age_sec:
+            age = _proc_age_sec(pid)
+            if max_age_sec > 0 and age < max_age_sec:
                 continue
             try:
                 os.kill(pid, signal.SIGKILL)
