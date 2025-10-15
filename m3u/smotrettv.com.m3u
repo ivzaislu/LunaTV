@@ -1,0 +1,52 @@
+#EXTM3U
+#EXTINF:-1 tvg-name="KHL" group-title="OnlineTV",KHL
+http://127.0.0.1:6060/stream/khl-smotrettv
+
+#EXTINF:-1 tvg-name="KHL Prime" group-title="OnlineTV",KHL Prime
+http://127.0.0.1:6060/stream/khl-prime-smotrettv
+
+#EXTINF:-1 tvg-name="Матч! Футбол 2" group-title="OnlineTV",Матч! Футбол 2
+http://127.0.0.1:6060/stream/match-futbol-2-smotrettv
+
+#EXTINF:-1 tvg-name="Матч! Игра" group-title="OnlineTV",Матч! Игра
+http://127.0.0.1:6060/stream/match-igra-smotrettv
+
+#EXTINF:-1 tvg-name="Матч! Планета" group-title="OnlineTV",Матч! Планета
+http://127.0.0.1:6060/stream/match-planeta-smotrettv
+
+#EXTINF:-1 tvg-name="Матч! Арена" group-title="OnlineTV",Матч! Арена
+http://127.0.0.1:6060/stream/match-arena-smotrettv
+
+#EXTINF:-1 tvg-name="Футбол" group-title="OnlineTV",Футбол
+http://127.0.0.1:6060/stream/futbol-smotrettv
+
+#EXTINF:-1 tvg-name="Матч! Премьер" group-title="OnlineTV",Матч! Премьер
+http://127.0.0.1:6060/stream/match-premer-smotrettv
+
+#EXTINF:-1 tvg-name="Setanta Sports 1" group-title="OnlineTV",Setanta Sports 1
+http://127.0.0.1:6060/stream/setanta-sports-1-smotrettv
+
+#EXTINF:-1 tvg-name="Paramount Comedy" group-title="OnlineTV",Paramount Comedy
+http://127.0.0.1:6060/stream/comedy-central-smotrettv
+
+#EXTINF:-1 tvg-name="Amedia Premium HD" group-title="OnlineTV",Amedia Premium HD
+http://127.0.0.1:6060/stream/amedia-premium-smotrettv
+
+#EXTINF:-1 tvg-name="Классика Кино" group-title="OnlineTV",Классика Кино
+http://127.0.0.1:6060/stream/klassika-kino-smotrettv
+
+#EXTINF:-1 tvg-name="Ретро" group-title="OnlineTV",Ретро
+http://127.0.0.1:6060/stream/retro-tv-smotrettv
+
+#EXTINF:-1 tvg-name="Сапфир" group-title="OnlineTV",Сапфир
+http://127.0.0.1:6060/stream/sapfir-smotrettv
+
+#EXTINF:-1 tvg-name="viju+ Sport" group-title="OnlineTV",viju+ Sport
+http://127.0.0.1:6060/stream/viju-sport-smotrettv
+
+#EXTINF:-1 tvg-name="Setanta Sports 2" group-title="OnlineTV",Setanta Sports 2
+http://127.0.0.1:6060/stream/setanta-sports-2-smotrettv
+
+#EXTINF:-1 tvg-name="Setanta Казахстан" group-title="OnlineTV",Setanta Казахстан
+http://127.0.0.1:6060/stream/setanta-qazaqstan-smotrettv
+
