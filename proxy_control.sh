@@ -1,0 +1,237 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
+# =======================
+#  Глобальные настройки
+# =======================
+PUPPETEER_VER="${PUPPETEER_VER:-23.11.1}"
+PUPP_EXTRA_VER="${PUPP_EXTRA_VER:-3.3.6}"
+STEALTH_VER="${STEALTH_VER:-2.11.2}"
+
+# Proxy (systemd)
+SERVICE_NAME="${SERVICE_NAME:-proxy_server}"
+SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
+SCRIPT_PATH="${SCRIPT_PATH:-/root/Luna-tv_0.1.3ver/proxy_server.py}"
+WORK_DIR="${WORK_DIR:-/root/Luna-tv_0.1.3ver/}"
+SERVICE_USER="${SERVICE_USER:-root}"
+
+# One-shot скрипты
+PLAYLIST_SCRIPT_PATH="${PLAYLIST_SCRIPT_PATH:-/root/Luna-tv_0.1.3ver/update_playlist.py}"
+PLAYLIST_WORK_DIR="${PLAYLIST_WORK_DIR:-/root/Luna-tv_0.1.3ver/}"
+SCANNER_SCRIPT_PATH="${SCANNER_SCRIPT_PATH:-/root/Luna-tv_0.1.3ver/scaner.py}"
+SCANNER_WORK_DIR="${SCANNER_WORK_DIR:-/root/Luna-tv_0.1.3ver/}"
+
+# =======================
+#  Утилиты
+# =======================
+have_cmd(){ command -v "$1" >/dev/null 2>&1; }
+need_root(){
+  if [[ $EUID -ne 0 ]]; then
+    echo "❌ Нужны права root. Запусти: sudo $0 $*" >&2; exit 1
+  fi
+}
+require_python(){
+  have_cmd python3 || { echo "❌ python3 не найден."; exit 1; }
+}
+
+# =======================
+#  deps
+# =======================
+deps_install(){
+  local TARGET_DIR="${1:-.}"; shift || true
+  local -a EXTRAS=()
+  if [[ ${1:-} == "--extras" ]]; then shift; EXTRAS=("$@"); fi
+
+  have_cmd node || { echo "❌ Нужен Node.js 18+."; exit 1; }
+  have_cmd npm  || { echo "❌ npm не найден."; exit 1; }
+
+  echo "Node: $(node -v)"
+  mkdir -p "$TARGET_DIR"; cd "$TARGET_DIR"
+  [[ -f package.json ]] && cp -f package.json "package.json.bak.$(date +%s)"
+  rm -rf node_modules package-lock.json
+
+  local NAME; NAME="$(basename "$TARGET_DIR" | tr -cd '[:alnum:]._-' || echo app)"
+  cat > package.json <<JSON
+{
+  "name": "${NAME}",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "puppeteer": "${PUPPETEER_VER}",
+    "puppeteer-extra": "${PUPP_EXTRA_VER}",
+    "puppeteer-extra-plugin-stealth": "${STEALTH_VER}"
+  }
+}
+JSON
+  echo "📦 Устанавливаю зависимости..."
+  npm i --no-audit --no-fund >/dev/null
+  [[ ${#EXTRAS[@]} -gt 0 ]] && npm i --no-audit --no-fund "${EXTRAS[@]}" >/dev/null
+  echo "🔎 Проверяю импорты..."
+  node --input-type=module -e "import('puppeteer-extra').then(()=>console.log('  puppeteer-extra OK')).catch(e=>{console.error(e);process.exit(1)})"
+  node --input-type=module -e "import('puppeteer-extra-plugin-stealth').then(()=>console.log('  stealth OK')).catch(e=>{console.error(e);process.exit(1)})"
+  echo "✅ Готово."; npm ls puppeteer puppeteer-core puppeteer-extra puppeteer-extra-plugin-stealth || true
+}
+
+# =======================
+#  proxy (systemd)
+# =======================
+svc_file(){ echo "/etc/systemd/system/${1}.service"; }
+
+proxy_install(){
+  need_root proxy install
+  have_cmd systemctl || { echo "❌ systemctl не найден."; exit 1; }
+  cat > "$(svc_file "$SERVICE_NAME")" <<EOF
+[Unit]
+Description=${SERVICE_NAME}
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 ${SCRIPT_PATH}
+WorkingDirectory=${WORK_DIR}
+Restart=always
+User=${SERVICE_USER}
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  systemctl daemon-reload
+  systemctl enable "$SERVICE_NAME"
+  systemctl start "$SERVICE_NAME"
+  echo "✅ Служба установлена и запущена."
+}
+proxy_remove(){
+  need_root proxy remove
+  have_cmd systemctl || { echo "❌ systemctl не найден."; exit 1; }
+  systemctl stop "$SERVICE_NAME" || true
+  systemctl disable "$SERVICE_NAME" || true
+  rm -f "$(svc_file "$SERVICE_NAME")"
+  systemctl daemon-reload
+  echo "✅ Служба удалена."
+}
+proxy_logs(){ have_cmd journalctl || { echo "❌ journalctl не найден."; exit 1; }; journalctl -u "$SERVICE_NAME" -n 50 --no-pager || true; }
+proxy_status(){ have_cmd systemctl || { echo "❌ systemctl не найден."; exit 1; }; systemctl status "$SERVICE_NAME" || true; }
+proxy_restart(){ need_root proxy restart; have_cmd systemctl || { echo "❌ systemctl не найден."; exit 1; }; systemctl restart "$SERVICE_NAME"; echo "✅ Перезапущено."; }
+
+proxy_menu(){
+  echo "Что вы хотите сделать?"
+  select choice in \
+    "Установить proxy_server.py как службу" \
+    "Удалить службу proxy_server.py" \
+    "Посмотреть логи" \
+    "Статус службы" \
+    "Рестарт службы" \
+    "Назад"; do
+    case $REPLY in
+      1) proxy_install; break ;;
+      2) proxy_remove; break ;;
+      3) proxy_logs; break ;;
+      4) proxy_status; break ;;
+      5) proxy_restart; break ;;
+      6) break ;;
+      *) echo "Неверный выбор. Повторите." ;;
+    esac
+  done
+}
+
+# =======================
+#  one-shot: playlist / scanner
+# =======================
+playlist_run(){ require_python; ( cd "$PLAYLIST_WORK_DIR" && python3 "$PLAYLIST_SCRIPT_PATH" ); }
+scanner_run(){  require_python; ( cd "$SCANNER_WORK_DIR"  && python3 "$SCANNER_SCRIPT_PATH"  ); }
+
+playlist_menu(){
+  echo "Обновление плейлиста (one-shot)"
+  select choice in "Запуск один раз" "Назад"; do
+    case $REPLY in
+      1) playlist_run; break ;;
+      2) break ;;
+      *) echo "Неверный выбор. Повторите." ;;
+    esac
+  done
+}
+scanner_menu(){
+  echo "Сканер (one-shot)"
+  select choice in "Запуск один раз" "Назад"; do
+    case $REPLY in
+      1) scanner_run; break ;;
+      2) break ;;
+      *) echo "Неверный выбор. Повторите." ;;
+    esac
+  done
+}
+
+deps_menu(){
+  echo "Установка JS-зависимостей"
+  read -r -p "Каталог (по умолчанию .): " d; d="${d:-.}"
+  echo "Доп.пакеты (через пробел, можно пусто):"
+  read -r extras || true
+  if [[ -n "${extras:-}" ]]; then
+    deps_install "$d" --extras ${extras}
+  else
+    deps_install "$d"
+  fi
+}
+
+# =======================
+#  Главный МЕНЮ-режим
+# =======================
+main_menu(){
+  while true; do
+    echo "Выберите действие:"
+    select main_choice in \
+      "Управление Proxy (systemd)" \
+      "Обновить плейлист (one-shot)" \
+      "Запустить сканер (one-shot)" \
+      "Установить JS-зависимости (puppeteer)" \
+      "Выход"; do
+      case $REPLY in
+        1) proxy_menu; break ;;
+        2) playlist_menu; break ;;
+        3) scanner_menu; break ;;
+        4) deps_menu; break ;;
+        5) echo "Выход..."; return 0 ;;
+        *) echo "Неверный выбор. Повторите."; ;;
+      esac
+    done
+  done
+}
+
+# =======================
+#  CLI режим (по желанию)
+# =======================
+usage(){
+  cat <<EOF
+Объединённый инструмент: меню по умолчанию.
+CLI (необязательно):
+  $(basename "$0") deps [TARGET_DIR=.] [--extras pkg1 pkg2 ...]
+  $(basename "$0") proxy   [install|remove|logs|status|restart]
+  $(basename "$0") playlist run
+  $(basename "$0") scanner  run
+EOF
+}
+
+main(){
+  case "${1:-}" in
+    "") main_menu ;;
+    deps) shift || true; deps_install "$@" ;;
+    proxy)
+      shift || true
+      case "${1:-}" in
+        install) proxy_install ;;
+        remove)  proxy_remove ;;
+        logs)    proxy_logs ;;
+        status)  proxy_status ;;
+        restart) proxy_restart ;;
+        *) proxy_menu ;;
+      esac
+      ;;
+    playlist) playlist_run ;;
+    scanner)  scanner_run ;;
+    -h|--help) usage ;;
+    *) echo "Неизвестная команда"; usage; exit 1 ;;
+  esac
+}
+main "$@"
