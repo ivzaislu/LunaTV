@@ -18,6 +18,7 @@ import glob
 import shutil
 import subprocess
 import signal
+import tempfile
 import requests
 import fnmatch  # ⬅️ для сопоставления масок хостов (*.example.com)
 import sys
@@ -643,6 +644,217 @@ def _load_channels_safe() -> dict:
         return {}
 
 
+def _ensure_config_dir() -> None:
+    """Гарантирует наличие каталога config."""
+    os.makedirs(CONFIG_DIR, exist_ok=True)
+
+
+def _sorted_dict(data: dict) -> dict:
+    """Возвращает новый dict с отсортированными ключами."""
+    return {key: data[key] for key in sorted(data)}
+
+
+def _save_channels_map(channels: dict) -> None:
+    """Сохраняет карту каналов атомарно."""
+    _ensure_config_dir()
+    ordered = _sorted_dict(channels)
+    fd, tmp_path = tempfile.mkstemp(prefix="channels_", suffix=".json", dir=CONFIG_DIR)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(ordered, fh, ensure_ascii=False, indent=2)
+            fh.write("\n")
+        os.replace(tmp_path, CHANNELS_FILE)
+    except Exception:
+        # если replace не удался, файл нужно удалить
+        try:
+            os.unlink(tmp_path)
+        except Exception:
+            pass
+        raise
+
+
+def _strip(value: Any) -> str:
+    if isinstance(value, str):
+        return value.strip()
+    return ""
+
+
+def _coerce_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "y", "on", "да"}
+    return False
+
+
+def _normalize_channel_payload(payload: dict) -> dict:
+    if not isinstance(payload, dict):
+        raise ValueError("Передайте объект с полями канала.")
+
+    slug = _strip(payload.get("slug")) or _strip(payload.get("id"))
+    if not slug:
+        raise ValueError("Укажите slug канала (латиница, без пробелов).")
+
+    name = _strip(payload.get("name") or payload.get("title"))
+    if not name:
+        raise ValueError("Укажите отображаемое название канала.")
+
+    url = _strip(payload.get("url") or payload.get("source") or payload.get("page"))
+    if not url:
+        raise ValueError("Укажите исходную страницу или поток (поле URL).")
+
+    group = _strip(payload.get("group") or payload.get("category"))
+    description = _strip(payload.get("description") or payload.get("summary"))
+    logo = _strip(payload.get("logo") or payload.get("icon"))
+    epg_id = _strip(
+        payload.get("epgId")
+        or payload.get("epg_id")
+        or payload.get("tvg_id")
+        or payload.get("tvgId")
+    )
+    favorite = _coerce_bool(payload.get("favorite") or payload.get("is_favorite"))
+
+    return {
+        "slug": slug,
+        "name": name,
+        "url": url,
+        "group": group,
+        "description": description,
+        "logo": logo,
+        "epg_id": epg_id,
+        "favorite": favorite,
+    }
+
+
+def _build_channel_record(existing: Any, fields: dict) -> dict:
+    """Собирает словарь канала, комбинируя старые и новые данные."""
+    record = {}
+    if isinstance(existing, dict):
+        record.update(existing)
+    elif isinstance(existing, str):
+        record["url"] = existing
+
+    # убираем поля, которые мы будем перезаписывать, чтобы не накапливать устаревшие ключи
+    for key in (
+        "name",
+        "title",
+        "url",
+        "group",
+        "category",
+        "description",
+        "summary",
+        "logo",
+        "icon",
+        "favorite",
+        "is_favorite",
+        "epg_id",
+        "epgId",
+        "tvg_id",
+        "tvgId",
+    ):
+        record.pop(key, None)
+
+    record["name"] = fields["name"]
+    record["title"] = fields["name"]
+    record["url"] = fields["url"]
+
+    if fields["group"]:
+        record["group"] = fields["group"]
+        record["category"] = fields["group"]
+    else:
+        record.pop("group", None)
+        record.pop("category", None)
+
+    if fields["description"]:
+        record["description"] = fields["description"]
+    else:
+        record.pop("description", None)
+
+    if fields["logo"]:
+        record["logo"] = fields["logo"]
+    else:
+        record.pop("logo", None)
+
+    if fields["favorite"]:
+        record["favorite"] = True
+        record["is_favorite"] = True
+    else:
+        record.pop("favorite", None)
+        record.pop("is_favorite", None)
+
+    if fields["epg_id"]:
+        record["epg_id"] = fields["epg_id"]
+        record["epgId"] = fields["epg_id"]
+    else:
+        record.pop("epg_id", None)
+        record.pop("epgId", None)
+
+    return record
+
+
+def _serialize_channel(slug: str, meta: Any, include_source: bool = False) -> dict:
+    name = ""
+    url = ""
+    group = ""
+    description = ""
+    favorite = False
+    logo = ""
+    epg_id = ""
+    schedule = []
+
+    if isinstance(meta, dict):
+        name = meta.get("title") or meta.get("name") or ""
+        url = meta.get("url") or meta.get("page") or meta.get("source") or ""
+        group = meta.get("group") or meta.get("category") or ""
+        description = meta.get("description") or meta.get("summary") or ""
+        logo = meta.get("logo") or meta.get("icon") or ""
+        favorite = _coerce_bool(meta.get("favorite") or meta.get("is_favorite"))
+        epg_id = (
+            _strip(meta.get("epg_id"))
+            or _strip(meta.get("epgId"))
+            or _strip(meta.get("tvg_id"))
+            or _strip(meta.get("tvgId"))
+        )
+        raw_schedule = meta.get("epg") or meta.get("schedule")
+        if isinstance(raw_schedule, list):
+            for entry in raw_schedule:
+                if isinstance(entry, dict):
+                    schedule.append(
+                        {
+                            "time": entry.get("time") or entry.get("start") or "",
+                            "title": entry.get("title") or entry.get("name") or "",
+                            "description": entry.get("description") or entry.get("desc") or "",
+                            "startIso": entry.get("startIso")
+                            or entry.get("start_iso")
+                            or entry.get("startAt"),
+                            "endIso": entry.get("endIso")
+                            or entry.get("end_iso")
+                            or entry.get("endAt"),
+                        }
+                    )
+                elif isinstance(entry, str):
+                    schedule.append({"time": entry, "title": entry})
+    elif isinstance(meta, str):
+        url = meta
+
+    entry = {
+        "slug": slug,
+        "name": name,
+        "group": group,
+        "description": description,
+        "logo": logo,
+        "favorite": bool(favorite),
+        "epgId": epg_id,
+    }
+    if schedule:
+        entry["epg"] = schedule
+    if include_source:
+        entry["url"] = url
+    return entry
+
+
 def _render(page: str, **ctx):
     """Рисует HTML-страницу панели с общим контекстом."""
     payload = {
@@ -1148,64 +1360,71 @@ def api_playlists():
     return jsonify({"items": _list_playlists()})
 
 
-@app.route("/api/channels", methods=["GET"])
+@app.route("/api/channels", methods=["GET", "POST"])
 def api_channels():
-    include_source = request.args.get("withSource")
-    items = []
-    for slug, meta in _load_channels_safe().items():
-        name = ""
-        url = ""
-        group = ""
-        description = ""
-        favorite = False
-        logo = ""
-        schedule = []
+    if request.method == "GET":
+        include_source = bool(request.args.get("withSource"))
+        items = [
+            _serialize_channel(slug, meta, include_source=include_source)
+            for slug, meta in _load_channels_safe().items()
+        ]
+        items.sort(key=lambda x: x["slug"])
+        return jsonify({"items": items})
 
-        if isinstance(meta, dict):
-            name = meta.get("title") or meta.get("name") or ""
-            url = meta.get("url") or meta.get("page") or meta.get("source") or ""
-            group = meta.get("group") or meta.get("category") or ""
-            description = meta.get("description") or meta.get("summary") or ""
-            logo = meta.get("logo") or meta.get("icon") or ""
-            favorite = bool(meta.get("favorite") or meta.get("is_favorite"))
-            raw_schedule = meta.get("epg") or meta.get("schedule")
-            if isinstance(raw_schedule, list):
-                for entry in raw_schedule:
-                    if isinstance(entry, dict):
-                        schedule.append(
-                            {
-                                "time": entry.get("time") or entry.get("start") or "",
-                                "title": entry.get("title") or entry.get("name") or "",
-                                "description": entry.get("description") or entry.get("desc") or "",
-                                "startIso": entry.get("startIso")
-                                or entry.get("start_iso")
-                                or entry.get("startAt"),
-                                "endIso": entry.get("endIso")
-                                or entry.get("end_iso")
-                                or entry.get("endAt"),
-                            }
-                        )
-                    elif isinstance(entry, str):
-                        schedule.append({"time": entry, "title": entry})
-        elif isinstance(meta, str):
-            url = meta
+    payload = request.get_json(silent=True) or {}
+    try:
+        fields = _normalize_channel_payload(payload)
+    except ValueError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 400
 
-        entry = {"slug": slug, "name": name}
-        if description:
-            entry["description"] = description
-        if group:
-            entry["group"] = group
-        if logo:
-            entry["logo"] = logo
-        if favorite:
-            entry["favorite"] = True
-        if schedule:
-            entry["epg"] = schedule
-        if include_source:
-            entry["url"] = url
-        items.append(entry)
-    items.sort(key=lambda x: x["slug"])
-    return jsonify({"items": items})
+    channels = _load_channels_safe()
+    slug = fields["slug"]
+    if slug in channels:
+        return (
+            jsonify({"ok": False, "error": f"Канал с slug '{slug}' уже существует."}),
+            409,
+        )
+
+    record = _build_channel_record({}, fields)
+    channels[slug] = record
+    _save_channels_map(channels)
+    return jsonify({"ok": True, "item": _serialize_channel(slug, record, include_source=True)})
+
+
+@app.route("/api/channels/<slug>", methods=["PUT", "DELETE"])
+def api_channel_update(slug):
+    channels = _load_channels_safe()
+
+    if request.method == "DELETE":
+        if slug not in channels:
+            return jsonify({"ok": False, "error": f"Канал '{slug}' не найден."}), 404
+        channels.pop(slug, None)
+        _save_channels_map(channels)
+        return jsonify({"ok": True})
+
+    payload = request.get_json(silent=True) or {}
+    try:
+        fields = _normalize_channel_payload(payload)
+    except ValueError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 400
+
+    if slug not in channels:
+        return jsonify({"ok": False, "error": f"Канал '{slug}' не найден."}), 404
+
+    new_slug = fields["slug"]
+    if new_slug != slug and new_slug in channels:
+        return (
+            jsonify({"ok": False, "error": f"Slug '{new_slug}' уже используется."}),
+            409,
+        )
+
+    existing = channels.get(slug)
+    record = _build_channel_record(existing, fields)
+    if new_slug != slug:
+        channels.pop(slug, None)
+    channels[new_slug] = record
+    _save_channels_map(channels)
+    return jsonify({"ok": True, "item": _serialize_channel(new_slug, record, include_source=True)})
 
 
 def _load_json_safe(path: str):

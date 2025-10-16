@@ -64,7 +64,75 @@ class ProxyDashboardTests(unittest.TestCase):
             json.dump(data, fh)
         resp = self.client.get("/api/channels?withSource=1")
         payload = resp.get_json()
-        self.assertEqual(payload["items"], [{"slug": "music", "name": "Music", "url": "http://example/music"}])
+        self.assertEqual(
+            payload["items"],
+            [
+                {
+                    "slug": "music",
+                    "name": "Music",
+                    "group": "",
+                    "description": "",
+                    "logo": "",
+                    "favorite": False,
+                    "epgId": "",
+                    "url": "http://example/music",
+                }
+            ],
+        )
+
+    def test_channel_editor_crud(self):
+        payload = {
+            "slug": "demo",
+            "name": "Demo TV",
+            "url": "https://example.org/demo",
+            "group": "Общие",
+            "description": "Тестовое описание",
+            "logo": "https://example.org/logo.png",
+            "epgId": "demo.epg",
+            "favorite": True,
+        }
+        resp = self.client.post("/api/channels", json=payload)
+        self.assertEqual(resp.status_code, 200)
+        created = resp.get_json()
+        self.assertTrue(created["ok"])
+        self.assertEqual(created["item"]["slug"], "demo")
+        with open(proxy_server.CHANNELS_FILE, "r", encoding="utf-8") as fh:
+            stored = json.load(fh)
+        self.assertIn("demo", stored)
+        self.assertEqual(stored["demo"]["group"], "Общие")
+        self.assertEqual(stored["demo"]["epg_id"], "demo.epg")
+        self.assertTrue(stored["demo"].get("favorite"))
+
+        update_payload = {
+            "slug": "demo-hd",
+            "name": "Demo TV HD",
+            "url": "https://example.org/demo-hd",
+            "group": "HD",
+            "description": "HD версия",
+            "logo": "",
+            "epgId": "demo.hd",
+            "favorite": False,
+        }
+        resp = self.client.put("/api/channels/demo", json=update_payload)
+        self.assertEqual(resp.status_code, 200)
+        updated = resp.get_json()
+        self.assertTrue(updated["ok"])
+        self.assertEqual(updated["item"]["slug"], "demo-hd")
+        with open(proxy_server.CHANNELS_FILE, "r", encoding="utf-8") as fh:
+            stored = json.load(fh)
+        self.assertNotIn("demo", stored)
+        self.assertIn("demo-hd", stored)
+        self.assertEqual(stored["demo-hd"]["group"], "HD")
+        self.assertEqual(stored["demo-hd"].get("epg_id"), "demo.hd")
+        self.assertNotIn("favorite", stored["demo-hd"])  # false не сохраняется
+
+        resp = self.client.delete("/api/channels/demo-hd")
+        self.assertEqual(resp.status_code, 200)
+        removed = resp.get_json()
+        self.assertTrue(removed["ok"])
+        with open(proxy_server.CHANNELS_FILE, "r", encoding="utf-8") as fh:
+            stored = json.load(fh)
+        self.assertEqual(stored, {})
 
     def test_navigation_pages_render(self):
         for url in ("/", "/playlists", "/channels", "/player", "/scanner", "/settings"):
