@@ -1,0 +1,382 @@
+#EXTM3U
+#EXTINF:-1 tvg-name="Дом Кино" group-title="OnlineTV",Дом Кино
+http://127.0.0.1:6060/stream/dom-kino-smotru
+
+#EXTINF:-1 tvg-name="Русский Иллюзион" group-title="OnlineTV",Русский Иллюзион
+http://127.0.0.1:6060/stream/russkii-illiuzion-smotru
+
+#EXTINF:-1 tvg-name="Нтв Хит" group-title="OnlineTV",Нтв Хит
+http://127.0.0.1:6060/stream/ntv-khit-smotru
+
+#EXTINF:-1 tvg-name="FX" group-title="OnlineTV",FX
+http://127.0.0.1:6060/stream/fox-smotru
+
+#EXTINF:-1 tvg-name="Иллюзион+" group-title="OnlineTV",Иллюзион+
+http://127.0.0.1:6060/stream/illiuzion-plius-smotru
+
+#EXTINF:-1 tvg-name="Еврокино" group-title="OnlineTV",Еврокино
+http://127.0.0.1:6060/stream/evrokino-smotru
+
+#EXTINF:-1 tvg-name="Hollywood HD" group-title="OnlineTV",Hollywood HD
+http://127.0.0.1:6060/stream/hollywood-hd-smotru
+
+#EXTINF:-1 tvg-name="Cinema" group-title="OnlineTV",Cinema
+http://127.0.0.1:6060/stream/cinema-smotru
+
+#EXTINF:-1 tvg-name="VIP Megahit HD" group-title="OnlineTV",VIP Megahit HD
+http://127.0.0.1:6060/stream/1filmax-smotru
+
+#EXTINF:-1 tvg-name="FX Life" group-title="OnlineTV",FX Life
+http://127.0.0.1:6060/stream/fox-life-smotru
+
+#EXTINF:-1 tvg-name="Мир Сериала" group-title="OnlineTV",Мир Сериала
+http://127.0.0.1:6060/stream/mir-seriala-smotru
+
+#EXTINF:-1 tvg-name="Bollywood HD" group-title="OnlineTV",Bollywood HD
+http://127.0.0.1:6060/stream/bollywood-smotru
+
+#EXTINF:-1 tvg-name="Наше крутое HD" group-title="OnlineTV",Наше крутое HD
+http://127.0.0.1:6060/stream/nashe-krutoe-smotru
+
+#EXTINF:-1 tvg-name="Премиальное HD" group-title="OnlineTV",Премиальное HD
+http://127.0.0.1:6060/stream/premial-noe-hd-smotru
+
+#EXTINF:-1 tvg-name="viju TV1000" group-title="OnlineTV",viju TV1000
+http://127.0.0.1:6060/stream/4filmax-smotru
+
+#EXTINF:-1 tvg-name="Нст" group-title="OnlineTV",Нст
+http://127.0.0.1:6060/stream/nst-smotru
+
+#EXTINF:-1 tvg-name="Tv Xxi" group-title="OnlineTV",Tv Xxi
+http://127.0.0.1:6060/stream/tv-21-smotru
+
+#EXTINF:-1 tvg-name="Русская Комедия" group-title="OnlineTV",Русская Комедия
+http://127.0.0.1:6060/stream/russkaia-komediia-smotru
+
+#EXTINF:-1 tvg-name="Душевное" group-title="OnlineTV",Душевное
+http://127.0.0.1:6060/stream/nash-kinoroman-smotru
+
+#EXTINF:-1 tvg-name="Русский Бестселлер" group-title="OnlineTV",Русский Бестселлер
+http://127.0.0.1:6060/stream/russkii-bestseller-smotru
+
+#EXTINF:-1 tvg-name="Русский Роман" group-title="OnlineTV",Русский Роман
+http://127.0.0.1:6060/stream/russkii-roman-smotru
+
+#EXTINF:-1 tvg-name="Русский Детектив" group-title="OnlineTV",Русский Детектив
+http://127.0.0.1:6060/stream/russkii-detektiv-smotru
+
+#EXTINF:-1 tvg-name="Кино Тв" group-title="OnlineTV",Кино Тв
+http://127.0.0.1:6060/stream/kino-tv-smotru
+
+#EXTINF:-1 tvg-name="viju TV1000 Action" group-title="OnlineTV",viju TV1000 Action
+http://127.0.0.1:6060/stream/5filmax-smotru
+
+#EXTINF:-1 tvg-name="Страшное HD" group-title="OnlineTV",Страшное HD
+http://127.0.0.1:6060/stream/strashnoe-hd-smotru
+
+#EXTINF:-1 tvg-name="VIP Comedy HD" group-title="OnlineTV",VIP Comedy HD
+http://127.0.0.1:6060/stream/3filmax-smotru
+
+#EXTINF:-1 tvg-name="Остросюжетное HD" group-title="OnlineTV",Остросюжетное HD
+http://127.0.0.1:6060/stream/ostrosiuzhetnoe-hd-smotru
+
+#EXTINF:-1 tvg-name="Дорама" group-title="OnlineTV",Дорама
+http://127.0.0.1:6060/stream/dorama-smotru
+
+#EXTINF:-1 tvg-name="Кинопоказ HD" group-title="OnlineTV",Кинопоказ HD
+http://127.0.0.1:6060/stream/kinopokaz-smotru
+
+#EXTINF:-1 tvg-name=".black" group-title="OnlineTV",.black
+http://127.0.0.1:6060/stream/black-smotru
+
+#EXTINF:-1 tvg-name=".red" group-title="OnlineTV",.red
+http://127.0.0.1:6060/stream/red-smotru
+
+#EXTINF:-1 tvg-name="VIP Premiere HD" group-title="OnlineTV",VIP Premiere HD
+http://127.0.0.1:6060/stream/2filmax-smotru
+
+#EXTINF:-1 tvg-name="Нтв Сериал" group-title="OnlineTV",Нтв Сериал
+http://127.0.0.1:6060/stream/ntv-serial-smotru
+
+#EXTINF:-1 tvg-name="Шокирующее HD" group-title="OnlineTV",Шокирующее HD
+http://127.0.0.1:6060/stream/shokiruiushchee-hd-smotru
+
+#EXTINF:-1 tvg-name="viju TV1000 romantica" group-title="OnlineTV",viju TV1000 romantica
+http://127.0.0.1:6060/stream/6filmax-smotru
+
+#EXTINF:-1 tvg-name="Комедийное HD" group-title="OnlineTV",Комедийное HD
+http://127.0.0.1:6060/stream/komediinoe-hd-smotru
+
+#EXTINF:-1 tvg-name="Любимое Кино" group-title="OnlineTV",Любимое Кино
+http://127.0.0.1:6060/stream/liubimoe-kino-smotru
+
+#EXTINF:-1 tvg-name="Filmbox" group-title="OnlineTV",Filmbox
+http://127.0.0.1:6060/stream/filmbox-smotru
+
+#EXTINF:-1 tvg-name="Киносат" group-title="OnlineTV",Киносат
+http://127.0.0.1:6060/stream/kinosat-smotru
+
+#EXTINF:-1 tvg-name="Романтичное HD" group-title="OnlineTV",Романтичное HD
+http://127.0.0.1:6060/stream/romantichnoe-hd-smotru
+
+#EXTINF:-1 tvg-name="Fmc Tv" group-title="OnlineTV",Fmc Tv
+http://127.0.0.1:6060/stream/fmc-tv-smotru
+
+#EXTINF:-1 tvg-name="Телекафе" group-title="OnlineTV",Телекафе
+http://127.0.0.1:6060/stream/telekafe-smotru
+
+#EXTINF:-1 tvg-name="Кинеко HD" group-title="OnlineTV",Кинеко HD
+http://127.0.0.1:6060/stream/kineko-smotru
+
+#EXTINF:-1 tvg-name="Filmax Комедия" group-title="OnlineTV",Filmax Комедия
+http://127.0.0.1:6060/stream/filmax-komediia-smotru
+
+#EXTINF:-1 tvg-name="Мосфильм «Золотая Коллекция»" group-title="OnlineTV",Мосфильм «Золотая Коллекция»
+http://127.0.0.1:6060/stream/mosfil-m-zolotaia-kollektsiia-smotru
+
+#EXTINF:-1 tvg-name="Кино 1 International" group-title="OnlineTV",Кино 1 International
+http://127.0.0.1:6060/stream/kino-1-international-smotru
+
+#EXTINF:-1 tvg-name="Filmax Фантастика" group-title="OnlineTV",Filmax Фантастика
+http://127.0.0.1:6060/stream/filmax-fantastika-smotru
+
+#EXTINF:-1 tvg-name="Авто 24" group-title="OnlineTV",Авто 24
+http://127.0.0.1:6060/stream/avto-24-smotru
+
+#EXTINF:-1 tvg-name="Драйв Тв" group-title="OnlineTV",Драйв Тв
+http://127.0.0.1:6060/stream/draiv-tv-smotru
+
+#EXTINF:-1 tvg-name="Real Madrid Tv" group-title="OnlineTV",Real Madrid Tv
+http://127.0.0.1:6060/stream/real-madrid-tv-smotru
+
+#EXTINF:-1 tvg-name="Setanta Sports 1" group-title="OnlineTV",Setanta Sports 1
+http://127.0.0.1:6060/stream/setanta-sports-1-smotru
+
+#EXTINF:-1 tvg-name="Extreme Sports" group-title="OnlineTV",Extreme Sports
+http://127.0.0.1:6060/stream/extreme-sports-smotru
+
+#EXTINF:-1 tvg-name="Точка Отрыва" group-title="OnlineTV",Точка Отрыва
+http://127.0.0.1:6060/stream/tochka-otryva-smotru
+
+#EXTINF:-1 tvg-name="Setanta Sports 2" group-title="OnlineTV",Setanta Sports 2
+http://127.0.0.1:6060/stream/setanta-sports-2-smotru
+
+#EXTINF:-1 tvg-name="Беларусь 5" group-title="OnlineTV",Беларусь 5
+http://127.0.0.1:6060/stream/belarus-5-smotru
+
+#EXTINF:-1 tvg-name="Конный Мир" group-title="OnlineTV",Конный Мир
+http://127.0.0.1:6060/stream/konnyi-mir-smotru
+
+#EXTINF:-1 tvg-name="Sony Sci-Fi" group-title="OnlineTV",Sony Sci-Fi
+http://127.0.0.1:6060/stream/sci-fi-smotru
+
+#EXTINF:-1 tvg-name="Киноэкшен" group-title="OnlineTV",Киноэкшен
+http://127.0.0.1:6060/stream/kinoekshen-smotru
+
+#EXTINF:-1 tvg-name="Кинодетектив" group-title="OnlineTV",Кинодетектив
+http://127.0.0.1:6060/stream/kinodetektiv-smotru
+
+#EXTINF:-1 tvg-name="Кинокомедия" group-title="OnlineTV",Кинокомедия
+http://127.0.0.1:6060/stream/kinokomediia-smotru
+
+#EXTINF:-1 tvg-name="Киномистика" group-title="OnlineTV",Киномистика
+http://127.0.0.1:6060/stream/kinomistika-smotru
+
+#EXTINF:-1 tvg-name="Россия 1" group-title="OnlineTV",Россия 1
+http://127.0.0.1:6060/stream/rossiia-1-smotru
+
+#EXTINF:-1 tvg-name="Нтв" group-title="OnlineTV",Нтв
+http://127.0.0.1:6060/stream/ntv-smotru
+
+#EXTINF:-1 tvg-name="Рен Тв" group-title="OnlineTV",Рен Тв
+http://127.0.0.1:6060/stream/ren-tv-smotru
+
+#EXTINF:-1 tvg-name="Твц" group-title="OnlineTV",Твц
+http://127.0.0.1:6060/stream/tvts-smotru
+
+#EXTINF:-1 tvg-name="Мир" group-title="OnlineTV",Мир
+http://127.0.0.1:6060/stream/mir-smotru
+
+#EXTINF:-1 tvg-name="Звезда" group-title="OnlineTV",Звезда
+http://127.0.0.1:6060/stream/zvezda-smotru
+
+#EXTINF:-1 tvg-name="Красная Линия" group-title="OnlineTV",Красная Линия
+http://127.0.0.1:6060/stream/krasnaia-liniia-smotru
+
+#EXTINF:-1 tvg-name="Пятый Канал" group-title="OnlineTV",Пятый Канал
+http://127.0.0.1:6060/stream/piatyi-kanal-smotru
+
+#EXTINF:-1 tvg-name="Домашний" group-title="OnlineTV",Домашний
+http://127.0.0.1:6060/stream/domashnii-smotru
+
+#EXTINF:-1 tvg-name="Культура" group-title="OnlineTV",Культура
+http://127.0.0.1:6060/stream/rossiia-k-kul-tura-smotru
+
+#EXTINF:-1 tvg-name="НТВ-Мир" group-title="OnlineTV",НТВ-Мир
+http://127.0.0.1:6060/stream/ntv-mir-smotru
+
+#EXTINF:-1 tvg-name="Продвижение" group-title="OnlineTV",Продвижение
+http://127.0.0.1:6060/stream/prodvizhenie-smotru
+
+#EXTINF:-1 tvg-name="Звезда Плюс" group-title="OnlineTV",Звезда Плюс
+http://127.0.0.1:6060/stream/zvezda-plius-smotru
+
+#EXTINF:-1 tvg-name="360 Градусов" group-title="OnlineTV",360 Градусов
+http://127.0.0.1:6060/stream/360-gradusov-smotru
+
+#EXTINF:-1 tvg-name="8 Канал" group-title="OnlineTV",8 Канал
+http://127.0.0.1:6060/stream/8-kanal-smotru
+
+#EXTINF:-1 tvg-name="Стс" group-title="OnlineTV",Стс
+http://127.0.0.1:6060/stream/sts-smotru
+
+#EXTINF:-1 tvg-name="Эхо TV" group-title="OnlineTV",Эхо TV
+http://127.0.0.1:6060/stream/ekho-tv-smotru
+
+#EXTINF:-1 tvg-name="Калейдоскоп ТВ" group-title="OnlineTV",Калейдоскоп ТВ
+http://127.0.0.1:6060/stream/kaleidoskop-tv-smotru
+
+#EXTINF:-1 tvg-name="RTG" group-title="OnlineTV",RTG
+http://127.0.0.1:6060/stream/rtg-smotru
+
+#EXTINF:-1 tvg-name="History2" group-title="OnlineTV",History2
+http://127.0.0.1:6060/stream/history-2-smotru
+
+#EXTINF:-1 tvg-name="Приключения HD" group-title="OnlineTV",Приключения HD
+http://127.0.0.1:6060/stream/prikliucheniia-hd-smotru
+
+#EXTINF:-1 tvg-name="Discovery" group-title="OnlineTV",Discovery
+http://127.0.0.1:6060/stream/diskaveri-smotru
+
+#EXTINF:-1 tvg-name="Galaxy Tv" group-title="OnlineTV",Galaxy Tv
+http://127.0.0.1:6060/stream/tainy-galaktiki-smotru
+
+#EXTINF:-1 tvg-name="Охота И Рыбалка" group-title="OnlineTV",Охота И Рыбалка
+http://127.0.0.1:6060/stream/okhota-i-rybalka-smotru
+
+#EXTINF:-1 tvg-name="Оружие" group-title="OnlineTV",Оружие
+http://127.0.0.1:6060/stream/oruzhie-smotru
+
+#EXTINF:-1 tvg-name="История" group-title="OnlineTV",История
+http://127.0.0.1:6060/stream/istoriia-smotru
+
+#EXTINF:-1 tvg-name="Viasat Explorer" group-title="OnlineTV",Viasat Explorer
+http://127.0.0.1:6060/stream/viasat-explorer-smotru
+
+#EXTINF:-1 tvg-name="National Geographic" group-title="OnlineTV",National Geographic
+http://127.0.0.1:6060/stream/national-geographic-smotru
+
+#EXTINF:-1 tvg-name="Морской" group-title="OnlineTV",Морской
+http://127.0.0.1:6060/stream/morskoi-smotru
+
+#EXTINF:-1 tvg-name="Animal Planet" group-title="OnlineTV",Animal Planet
+http://127.0.0.1:6060/stream/animal-planet-smotru
+
+#EXTINF:-1 tvg-name="Viasat Nature" group-title="OnlineTV",Viasat Nature
+http://127.0.0.1:6060/stream/viasat-nature-smotru
+
+#EXTINF:-1 tvg-name="Бобер" group-title="OnlineTV",Бобер
+http://127.0.0.1:6060/stream/bober-tv-smotru
+
+#EXTINF:-1 tvg-name="Viasat History" group-title="OnlineTV",Viasat History
+http://127.0.0.1:6060/stream/viasat-history-smotru
+
+#EXTINF:-1 tvg-name="Nat Geo Wild" group-title="OnlineTV",Nat Geo Wild
+http://127.0.0.1:6060/stream/nat-geo-wild-smotru
+
+#EXTINF:-1 tvg-name="Travel Channel" group-title="OnlineTV",Travel Channel
+http://127.0.0.1:6060/stream/travel-channel-smotru
+
+#EXTINF:-1 tvg-name="Travel And Adventure" group-title="OnlineTV",Travel And Adventure
+http://127.0.0.1:6060/stream/travel-and-adventure-smotru
+
+#EXTINF:-1 tvg-name="Zooпарк" group-title="OnlineTV",Zooпарк
+http://127.0.0.1:6060/stream/zoopark-smotru
+
+#EXTINF:-1 tvg-name="Мужской" group-title="OnlineTV",Мужской
+http://127.0.0.1:6060/stream/muzhskoi-smotru
+
+#EXTINF:-1 tvg-name="Первый Космический" group-title="OnlineTV",Первый Космический
+http://127.0.0.1:6060/stream/pervyi-kosmicheskii-smotru
+
+#EXTINF:-1 tvg-name="Univer Tv" group-title="OnlineTV",Univer Tv
+http://127.0.0.1:6060/stream/univer-tv-smotru
+
+#EXTINF:-1 tvg-name="Т24" group-title="OnlineTV",Т24
+http://127.0.0.1:6060/stream/24-tekhno-smotru
+
+#EXTINF:-1 tvg-name="History" group-title="OnlineTV",History
+http://127.0.0.1:6060/stream/history-smotru
+
+#EXTINF:-1 tvg-name="Моя Планета" group-title="OnlineTV",Моя Планета
+http://127.0.0.1:6060/stream/moia-planeta-smotru
+
+#EXTINF:-1 tvg-name="Совершенно Секретно" group-title="OnlineTV",Совершенно Секретно
+http://127.0.0.1:6060/stream/sovershenno-sekretno-smotru
+
+#EXTINF:-1 tvg-name="Охотник и рыболов" group-title="OnlineTV",Охотник и рыболов
+http://127.0.0.1:6060/stream/okhotnik-i-rybolov-smotru
+
+#EXTINF:-1 tvg-name="Нано" group-title="OnlineTV",Нано
+http://127.0.0.1:6060/stream/nano-tv-smotru
+
+#EXTINF:-1 tvg-name="Еда" group-title="OnlineTV",Еда
+http://127.0.0.1:6060/stream/eda-tv-smotru
+
+#EXTINF:-1 tvg-name="Карусель" group-title="OnlineTV",Карусель
+http://127.0.0.1:6060/stream/karusel-smotru
+
+#EXTINF:-1 tvg-name="Nickelodeon" group-title="OnlineTV",Nickelodeon
+http://127.0.0.1:6060/stream/nickelodeon-smotru
+
+#EXTINF:-1 tvg-name="Cartoon Network" group-title="OnlineTV",Cartoon Network
+http://127.0.0.1:6060/stream/cartoon-network-smotru
+
+#EXTINF:-1 tvg-name="Мультиландия" group-title="OnlineTV",Мультиландия
+http://127.0.0.1:6060/stream/mul-tilandiia-smotru
+
+#EXTINF:-1 tvg-name="Мульт" group-title="OnlineTV",Мульт
+http://127.0.0.1:6060/stream/mul-t-smotru
+
+#EXTINF:-1 tvg-name="Мультимузыка" group-title="OnlineTV",Мультимузыка
+http://127.0.0.1:6060/stream/mul-timuzyka-smotru
+
+#EXTINF:-1 tvg-name="Уникум" group-title="OnlineTV",Уникум
+http://127.0.0.1:6060/stream/unikum-smotru
+
+#EXTINF:-1 tvg-name="Ani" group-title="OnlineTV",Ani
+http://127.0.0.1:6060/stream/ani-smotru
+
+#EXTINF:-1 tvg-name="Gulli Girl" group-title="OnlineTV",Gulli Girl
+http://127.0.0.1:6060/stream/gulli-girl-smotru
+
+#EXTINF:-1 tvg-name="Канал О!" group-title="OnlineTV",Канал О!
+http://127.0.0.1:6060/stream/kanal-o-smotru
+
+#EXTINF:-1 tvg-name="Радость Моя" group-title="OnlineTV",Радость Моя
+http://127.0.0.1:6060/stream/radost-moia-smotru
+
+#EXTINF:-1 tvg-name="Мама" group-title="OnlineTV",Мама
+http://127.0.0.1:6060/stream/kanal-mama-smotru
+
+#EXTINF:-1 tvg-name="Детский Мир" group-title="OnlineTV",Детский Мир
+http://127.0.0.1:6060/stream/detskii-mir-smotru
+
+#EXTINF:-1 tvg-name="Tiji" group-title="OnlineTV",Tiji
+http://127.0.0.1:6060/stream/tiji-smotru
+
+#EXTINF:-1 tvg-name="Nick Jr" group-title="OnlineTV",Nick Jr
+http://127.0.0.1:6060/stream/nick-jr-smotru
+
+#EXTINF:-1 tvg-name="Капитан Фантастика" group-title="OnlineTV",Капитан Фантастика
+http://127.0.0.1:6060/stream/kapitan-fantastika-smotru
+
+#EXTINF:-1 tvg-name="Детское Кино" group-title="OnlineTV",Детское Кино
+http://127.0.0.1:6060/stream/detskoe-kino-smotru
+
+#EXTINF:-1 tvg-name="Том И Джерри" group-title="OnlineTV",Том И Джерри
+http://127.0.0.1:6060/stream/tom-i-dzherri-smotru
+
+#EXTINF:-1 tvg-name="Da Vinci" group-title="OnlineTV",Da Vinci
+http://127.0.0.1:6060/stream/da-vinci-smotru
+
