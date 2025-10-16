@@ -1,0 +1,109 @@
+#EXTM3U
+#EXTINF:-1 tvg-name="Дом Кино" group-title="OnlineTV",Дом Кино
+http://127.0.0.1:5000/stream/dom-kino-tivix
+
+#EXTINF:-1 tvg-name="Дом Кино Премиум" group-title="OnlineTV",Дом Кино Премиум
+http://127.0.0.1:5000/stream/dom-kino-premium-tivix
+
+#EXTINF:-1 tvg-name="Остросюжетное HD" group-title="OnlineTV",Остросюжетное HD
+http://127.0.0.1:5000/stream/ostrosiuzhetnoe-hd-tivix
+
+#EXTINF:-1 tvg-name="Hollywood" group-title="OnlineTV",Hollywood
+http://127.0.0.1:5000/stream/hollywood-tivix
+
+#EXTINF:-1 tvg-name="Мосфильм «Золотая Коллекция»" group-title="OnlineTV",Мосфильм «Золотая Коллекция»
+http://127.0.0.1:5000/stream/mosfil-m-tivix
+
+#EXTINF:-1 tvg-name="Победа" group-title="OnlineTV",Победа
+http://127.0.0.1:5000/stream/pobeda-tivix
+
+#EXTINF:-1 tvg-name="Vip Megahit" group-title="OnlineTV",Vip Megahit
+http://127.0.0.1:5000/stream/vip-megahit-tivix
+
+#EXTINF:-1 tvg-name="Vip Comedy" group-title="OnlineTV",Vip Comedy
+http://127.0.0.1:5000/stream/vip-comedy-tivix
+
+#EXTINF:-1 tvg-name="Кинохит" group-title="OnlineTV",Кинохит
+http://127.0.0.1:5000/stream/kinokhit-tivix
+
+#EXTINF:-1 tvg-name="Киносемья" group-title="OnlineTV",Киносемья
+http://127.0.0.1:5000/stream/kinosem-ia-tivix
+
+#EXTINF:-1 tvg-name="Мужское Кино" group-title="OnlineTV",Мужское Кино
+http://127.0.0.1:5000/stream/muzhskoe-kino-tivix
+
+#EXTINF:-1 tvg-name="Киномикс" group-title="OnlineTV",Киномикс
+http://127.0.0.1:5000/stream/kinomiks-tivix
+
+#EXTINF:-1 tvg-name="Кинокомедия" group-title="OnlineTV",Кинокомедия
+http://127.0.0.1:5000/stream/kinokomediia-tivix
+
+#EXTINF:-1 tvg-name="Кинопремьера" group-title="OnlineTV",Кинопремьера
+http://127.0.0.1:5000/stream/kinoprem-era-tivix
+
+#EXTINF:-1 tvg-name="Индийское Кино" group-title="OnlineTV",Индийское Кино
+http://127.0.0.1:5000/stream/indiiskoe-kino-tivix
+
+#EXTINF:-1 tvg-name="Киносерия" group-title="OnlineTV",Киносерия
+http://127.0.0.1:5000/stream/kinoseriia-tivix
+
+#EXTINF:-1 tvg-name="Киносвидание" group-title="OnlineTV",Киносвидание
+http://127.0.0.1:5000/stream/kinosvidanie-tivix
+
+#EXTINF:-1 tvg-name="Родное Кино" group-title="OnlineTV",Родное Кино
+http://127.0.0.1:5000/stream/rodnoe-kino-tivix
+
+#EXTINF:-1 tvg-name="Русский Детектив" group-title="OnlineTV",Русский Детектив
+http://127.0.0.1:5000/stream/russkii-detektiv-tivix
+
+#EXTINF:-1 tvg-name="Русский Бестселлер" group-title="OnlineTV",Русский Бестселлер
+http://127.0.0.1:5000/stream/russkii-bestseller-tivix
+
+#EXTINF:-1 tvg-name="Русский Роман" group-title="OnlineTV",Русский Роман
+http://127.0.0.1:5000/stream/russkii-roman-tivix
+
+#EXTINF:-1 tvg-name="Душевное" group-title="OnlineTV",Душевное
+http://127.0.0.1:5000/stream/dushevnoe-tivix
+
+#EXTINF:-1 tvg-name="Иллюзион+" group-title="OnlineTV",Иллюзион+
+http://127.0.0.1:5000/stream/illiuzion-tivix
+
+#EXTINF:-1 tvg-name="Русский Иллюзион" group-title="OnlineTV",Русский Иллюзион
+http://127.0.0.1:5000/stream/russkii-illiuzion-tivix
+
+#EXTINF:-1 tvg-name="Мир Сериала" group-title="OnlineTV",Мир Сериала
+http://127.0.0.1:5000/stream/mir-seriala-tivix
+
+#EXTINF:-1 tvg-name="Еврокино" group-title="OnlineTV",Еврокино
+http://127.0.0.1:5000/stream/evrokino-tivix
+
+#EXTINF:-1 tvg-name="Страшное HD" group-title="OnlineTV",Страшное HD
+http://127.0.0.1:5000/stream/strashnoe-hd-tivix
+
+#EXTINF:-1 tvg-name="Нст" group-title="OnlineTV",Нст
+http://127.0.0.1:5000/stream/nst-tivix
+
+#EXTINF:-1 tvg-name=".black" group-title="OnlineTV",.black
+http://127.0.0.1:5000/stream/black-tivix
+
+#EXTINF:-1 tvg-name=".red" group-title="OnlineTV",.red
+http://127.0.0.1:5000/stream/red-tivix
+
+#EXTINF:-1 tvg-name="Sony Sci-Fi" group-title="OnlineTV",Sony Sci-Fi
+http://127.0.0.1:5000/stream/sony-sci-fi-tivix
+
+#EXTINF:-1 tvg-name="FX" group-title="OnlineTV",FX
+http://127.0.0.1:5000/stream/fox-tivix
+
+#EXTINF:-1 tvg-name="FX Life" group-title="OnlineTV",FX Life
+http://127.0.0.1:5000/stream/fox-live-tivix
+
+#EXTINF:-1 tvg-name="Дорама" group-title="OnlineTV",Дорама
+http://127.0.0.1:5000/stream/dorama-tivix
+
+#EXTINF:-1 tvg-name="Zee Tv" group-title="OnlineTV",Zee Tv
+http://127.0.0.1:5000/stream/zee-tv-tivix
+
+#EXTINF:-1 tvg-name="Bollywood" group-title="OnlineTV",Bollywood
+http://127.0.0.1:5000/stream/bollywood-tivix
+
