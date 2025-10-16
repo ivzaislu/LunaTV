@@ -1,0 +1,391 @@
+#EXTM3U
+#EXTINF:-1 tvg-name="Кино 1 International" group-title="OnlineTV",Кино 1 International
+http://127.0.0.1:6060/stream/kino-1-telik
+
+#EXTINF:-1 tvg-name="Русский Роман" group-title="OnlineTV",Русский Роман
+http://127.0.0.1:6060/stream/russkii-roman-telik
+
+#EXTINF:-1 tvg-name="Наше Крутое HD" group-title="OnlineTV",Наше Крутое HD
+http://127.0.0.1:6060/stream/nashe-krutoe-telik
+
+#EXTINF:-1 tvg-name="Криминальное HD" group-title="OnlineTV",Криминальное HD
+http://127.0.0.1:6060/stream/kriminal-noe-hd-telik
+
+#EXTINF:-1 tvg-name="Комедия" group-title="OnlineTV",Комедия
+http://127.0.0.1:6060/stream/komediya-telik
+
+#EXTINF:-1 tvg-name="Хит HD" group-title="OnlineTV",Хит HD
+http://127.0.0.1:6060/stream/hit-hd-telik
+
+#EXTINF:-1 tvg-name="Bridge Tv" group-title="OnlineTV",Bridge Tv
+http://127.0.0.1:6060/stream/bridge-tv-telik
+
+#EXTINF:-1 tvg-name="1Hd" group-title="OnlineTV",1Hd
+http://127.0.0.1:6060/stream/1hd-telik
+
+#EXTINF:-1 tvg-name="Music Box Russia" group-title="OnlineTV",Music Box Russia
+http://127.0.0.1:6060/stream/music-box-russia-telik
+
+#EXTINF:-1 tvg-name="Музыка Первого" group-title="OnlineTV",Музыка Первого
+http://127.0.0.1:6060/stream/muzyka-pervogo-telik
+
+#EXTINF:-1 tvg-name="Mezzo" group-title="OnlineTV",Mezzo
+http://127.0.0.1:6060/stream/mezzo-telik
+
+#EXTINF:-1 tvg-name="Mezzo Live Hd" group-title="OnlineTV",Mezzo Live Hd
+http://127.0.0.1:6060/stream/mezzo-live-hd-telik
+
+#EXTINF:-1 tvg-name="Шансон-TB" group-title="OnlineTV",Шансон-TB
+http://127.0.0.1:6060/stream/shanson-tv-telik
+
+#EXTINF:-1 tvg-name="MCM Top" group-title="OnlineTV",MCM Top
+http://127.0.0.1:6060/stream/mcm-top-telik
+
+#EXTINF:-1 tvg-name="Карусель" group-title="OnlineTV",Карусель
+http://127.0.0.1:6060/stream/karusel-telik
+
+#EXTINF:-1 tvg-name="Gulli Girl" group-title="OnlineTV",Gulli Girl
+http://127.0.0.1:6060/stream/gulli-girl-telik
+
+#EXTINF:-1 tvg-name="Уникум" group-title="OnlineTV",Уникум
+http://127.0.0.1:6060/stream/unikum-telik
+
+#EXTINF:-1 tvg-name="Nickelodeon" group-title="OnlineTV",Nickelodeon
+http://127.0.0.1:6060/stream/nickelodeon-telik
+
+#EXTINF:-1 tvg-name="Мульт" group-title="OnlineTV",Мульт
+http://127.0.0.1:6060/stream/mul-t-telik
+
+#EXTINF:-1 tvg-name="Cartoon Network" group-title="OnlineTV",Cartoon Network
+http://127.0.0.1:6060/stream/cartoon-network-telik
+
+#EXTINF:-1 tvg-name="Мультиландия" group-title="OnlineTV",Мультиландия
+http://127.0.0.1:6060/stream/mul-tilandiia-telik
+
+#EXTINF:-1 tvg-name="Tiji" group-title="OnlineTV",Tiji
+http://127.0.0.1:6060/stream/tiji-telik
+
+#EXTINF:-1 tvg-name="Том И Джерри" group-title="OnlineTV",Том И Джерри
+http://127.0.0.1:6060/stream/tom-i-dzherri-telik
+
+#EXTINF:-1 tvg-name="Nick Jr" group-title="OnlineTV",Nick Jr
+http://127.0.0.1:6060/stream/nick-jr-telik
+
+#EXTINF:-1 tvg-name="Детский Мир" group-title="OnlineTV",Детский Мир
+http://127.0.0.1:6060/stream/detskii-mir-telik
+
+#EXTINF:-1 tvg-name="Мультимузыка" group-title="OnlineTV",Мультимузыка
+http://127.0.0.1:6060/stream/mul-timuzyka-telik
+
+#EXTINF:-1 tvg-name="Капитан Фантастика" group-title="OnlineTV",Капитан Фантастика
+http://127.0.0.1:6060/stream/kapitan-fantastika-telik
+
+#EXTINF:-1 tvg-name="Ani" group-title="OnlineTV",Ani
+http://127.0.0.1:6060/stream/ani-telik
+
+#EXTINF:-1 tvg-name="Мама" group-title="OnlineTV",Мама
+http://127.0.0.1:6060/stream/mama-telik
+
+#EXTINF:-1 tvg-name="Канал О!" group-title="OnlineTV",Канал О!
+http://127.0.0.1:6060/stream/kanal-o-telik
+
+#EXTINF:-1 tvg-name="Советские Мультфильмы" group-title="OnlineTV",Советские Мультфильмы
+http://127.0.0.1:6060/stream/sovetskie-mul-tfil-my-telik
+
+#EXTINF:-1 tvg-name="Радость Моя" group-title="OnlineTV",Радость Моя
+http://127.0.0.1:6060/stream/radost-moia-telik
+
+#EXTINF:-1 tvg-name="Cartoonito" group-title="OnlineTV",Cartoonito
+http://127.0.0.1:6060/stream/cartoonito-telik
+
+#EXTINF:-1 tvg-name="Nicktoons" group-title="OnlineTV",Nicktoons
+http://127.0.0.1:6060/stream/nicktoons-telik
+
+#EXTINF:-1 tvg-name="В Гостях У Сказки" group-title="OnlineTV",В Гостях У Сказки
+http://127.0.0.1:6060/stream/v-gostiakh-u-skazki-telik
+
+#EXTINF:-1 tvg-name="Союзмультфильм" group-title="OnlineTV",Союзмультфильм
+http://127.0.0.1:6060/stream/soiuzmul-tfil-m-telik
+
+#EXTINF:-1 tvg-name="Da Vinci" group-title="OnlineTV",Da Vinci
+http://127.0.0.1:6060/stream/da-vinci-telik
+
+#EXTINF:-1 tvg-name="Tlc" group-title="OnlineTV",Tlc
+http://127.0.0.1:6060/stream/tlc-priamoi-efir-telik
+
+#EXTINF:-1 tvg-name="Стс Love" group-title="OnlineTV",Стс Love
+http://127.0.0.1:6060/stream/sts-lav-priamoi-efir-telik
+
+#EXTINF:-1 tvg-name="Сарафан" group-title="OnlineTV",Сарафан
+http://127.0.0.1:6060/stream/sarafan-priamoi-efir-telik
+
+#EXTINF:-1 tvg-name="Телекафе" group-title="OnlineTV",Телекафе
+http://127.0.0.1:6060/stream/telekafe-priamoi-efir-telik
+
+#EXTINF:-1 tvg-name="Foodtime" group-title="OnlineTV",Foodtime
+http://127.0.0.1:6060/stream/foodtime-priamoi-efir-telik
+
+#EXTINF:-1 tvg-name="Москва Доверие" group-title="OnlineTV",Москва Доверие
+http://127.0.0.1:6060/stream/moskva-doverie-priamoi-efir-telik
+
+#EXTINF:-1 tvg-name="Нтв Стиль" group-title="OnlineTV",Нтв Стиль
+http://127.0.0.1:6060/stream/ntv-stil-priamoi-efir-telik
+
+#EXTINF:-1 tvg-name="Иллюзион+" group-title="OnlineTV",Иллюзион+
+http://127.0.0.1:6060/stream/illiuzion-telik
+
+#EXTINF:-1 tvg-name="Нст" group-title="OnlineTV",Нст
+http://127.0.0.1:6060/stream/nst-telik
+
+#EXTINF:-1 tvg-name="Мир Сериала" group-title="OnlineTV",Мир Сериала
+http://127.0.0.1:6060/stream/mir-seriala-telik
+
+#EXTINF:-1 tvg-name="Кино Тв" group-title="OnlineTV",Кино Тв
+http://127.0.0.1:6060/stream/kino-tv-telik
+
+#EXTINF:-1 tvg-name="Дом Кино" group-title="OnlineTV",Дом Кино
+http://127.0.0.1:6060/stream/dom-kino-telik
+
+#EXTINF:-1 tvg-name="Cinema" group-title="OnlineTV",Cinema
+http://127.0.0.1:6060/stream/cinema-telik
+
+#EXTINF:-1 tvg-name="Нтв Хит" group-title="OnlineTV",Нтв Хит
+http://127.0.0.1:6060/stream/ntv-khit-telik
+
+#EXTINF:-1 tvg-name="Hollywood" group-title="OnlineTV",Hollywood
+http://127.0.0.1:6060/stream/hollywood-telik
+
+#EXTINF:-1 tvg-name="Timeless Dizi Channel" group-title="OnlineTV",Timeless Dizi Channel
+http://127.0.0.1:6060/stream/turetskie-serialy-telik
+
+#EXTINF:-1 tvg-name="Остросюжетное HD" group-title="OnlineTV",Остросюжетное HD
+http://127.0.0.1:6060/stream/ostrosiuzhetnoe-hd-telik
+
+#EXTINF:-1 tvg-name="Душевное" group-title="OnlineTV",Душевное
+http://127.0.0.1:6060/stream/nash-kinoroman-telik
+
+#EXTINF:-1 tvg-name="Русский Иллюзион" group-title="OnlineTV",Русский Иллюзион
+http://127.0.0.1:6060/stream/russkii-illiuzion-telik
+
+#EXTINF:-1 tvg-name="Русский Бестселлер" group-title="OnlineTV",Русский Бестселлер
+http://127.0.0.1:6060/stream/russkii-bestseller-telik
+
+#EXTINF:-1 tvg-name="Русский Детектив" group-title="OnlineTV",Русский Детектив
+http://127.0.0.1:6060/stream/russkii-detektiv-telik
+
+#EXTINF:-1 tvg-name="FX" group-title="OnlineTV",FX
+http://127.0.0.1:6060/stream/fox-telik
+
+#EXTINF:-1 tvg-name="FX Life" group-title="OnlineTV",FX Life
+http://127.0.0.1:6060/stream/fox-life-telik
+
+#EXTINF:-1 tvg-name="Шокирующее HD" group-title="OnlineTV",Шокирующее HD
+http://127.0.0.1:6060/stream/shokiruiushchee-hd-telik
+
+#EXTINF:-1 tvg-name="Любимое HD" group-title="OnlineTV",Любимое HD
+http://127.0.0.1:6060/stream/liubimoe-hd-telik
+
+#EXTINF:-1 tvg-name="Страшное HD" group-title="OnlineTV",Страшное HD
+http://127.0.0.1:6060/stream/strashnoe-hd-telik
+
+#EXTINF:-1 tvg-name="Премиальное HD" group-title="OnlineTV",Премиальное HD
+http://127.0.0.1:6060/stream/premial-noe-hd-telik
+
+#EXTINF:-1 tvg-name="Filmbox" group-title="OnlineTV",Filmbox
+http://127.0.0.1:6060/stream/filmbox-telik
+
+#EXTINF:-1 tvg-name=".red" group-title="OnlineTV",.red
+http://127.0.0.1:6060/stream/red-telik
+
+#EXTINF:-1 tvg-name="Sony Sci-Fi" group-title="OnlineTV",Sony Sci-Fi
+http://127.0.0.1:6060/stream/sci-fi-telik
+
+#EXTINF:-1 tvg-name=".black" group-title="OnlineTV",.black
+http://127.0.0.1:6060/stream/black-telik
+
+#EXTINF:-1 tvg-name="Bollywood HD" group-title="OnlineTV",Bollywood HD
+http://127.0.0.1:6060/stream/bollywood-hd-telik
+
+#EXTINF:-1 tvg-name="Романтичное HD" group-title="OnlineTV",Романтичное HD
+http://127.0.0.1:6060/stream/romantichnoe-hd-telik
+
+#EXTINF:-1 tvg-name="Дорама" group-title="OnlineTV",Дорама
+http://127.0.0.1:6060/stream/dorama-telik
+
+#EXTINF:-1 tvg-name="Scream" group-title="OnlineTV",Scream
+http://127.0.0.1:6060/stream/scream-telik
+
+#EXTINF:-1 tvg-name="Еврокино" group-title="OnlineTV",Еврокино
+http://127.0.0.1:6060/stream/evrokino-telik
+
+#EXTINF:-1 tvg-name="Кинопоказ" group-title="OnlineTV",Кинопоказ
+http://127.0.0.1:6060/stream/kinopokaz-telik
+
+#EXTINF:-1 tvg-name="Киносат" group-title="OnlineTV",Киносат
+http://127.0.0.1:6060/stream/kinosat-telik
+
+#EXTINF:-1 tvg-name="Комедийное" group-title="OnlineTV",Комедийное
+http://127.0.0.1:6060/stream/komediinoe-telik
+
+#EXTINF:-1 tvg-name="Fresh Fantastic" group-title="OnlineTV",Fresh Fantastic
+http://127.0.0.1:6060/stream/fantastika-hd-telik
+
+#EXTINF:-1 tvg-name="Нтв Сериал" group-title="OnlineTV",Нтв Сериал
+http://127.0.0.1:6060/stream/ntv-serial-telik
+
+#EXTINF:-1 tvg-name="Любимое Кино" group-title="OnlineTV",Любимое Кино
+http://127.0.0.1:6060/stream/liubimoe-kino-telik
+
+#EXTINF:-1 tvg-name="Tv Xxi" group-title="OnlineTV",Tv Xxi
+http://127.0.0.1:6060/stream/tv-21-telik
+
+#EXTINF:-1 tvg-name="Блокбастер HD" group-title="OnlineTV",Блокбастер HD
+http://127.0.0.1:6060/stream/blokbaster-hd-telik
+
+#EXTINF:-1 tvg-name="Amedia Hit" group-title="OnlineTV",Amedia Hit
+http://127.0.0.1:6060/stream/epic-drama-telik
+
+#EXTINF:-1 tvg-name="VIP Megahit HD" group-title="OnlineTV",VIP Megahit HD
+http://127.0.0.1:6060/stream/kinozal-1-telik
+
+#EXTINF:-1 tvg-name="VIP Comedy HD" group-title="OnlineTV",VIP Comedy HD
+http://127.0.0.1:6060/stream/kinozal-2-telik
+
+#EXTINF:-1 tvg-name="VIP Premiere HD" group-title="OnlineTV",VIP Premiere HD
+http://127.0.0.1:6060/stream/kinozal-3-telik
+
+#EXTINF:-1 tvg-name="viju TV1000 Action" group-title="OnlineTV",viju TV1000 Action
+http://127.0.0.1:6060/stream/kinozal-4-telik
+
+#EXTINF:-1 tvg-name="viju TV1000" group-title="OnlineTV",viju TV1000
+http://127.0.0.1:6060/stream/kinozal-5-telik
+
+#EXTINF:-1 tvg-name="viju+ Serial" group-title="OnlineTV",viju+ Serial
+http://127.0.0.1:6060/stream/kinozal-6-telik
+
+#EXTINF:-1 tvg-name="viju TV1000 Русское кино" group-title="OnlineTV",viju TV1000 Русское кино
+http://127.0.0.1:6060/stream/kinozal-7-telik
+
+#EXTINF:-1 tvg-name="Советское Кино" group-title="OnlineTV",Советское Кино
+http://127.0.0.1:6060/stream/sovetskoe-kino-telik
+
+#EXTINF:-1 tvg-name="Мосфильм «Золотая Коллекция»" group-title="OnlineTV",Мосфильм «Золотая Коллекция»
+http://127.0.0.1:6060/stream/mosfil-m-zolotaia-kollektsiia-telik
+
+#EXTINF:-1 tvg-name="Кинеко" group-title="OnlineTV",Кинеко
+http://127.0.0.1:6060/stream/kineko-telik
+
+#EXTINF:-1 tvg-name="Феникс Плюс Кино" group-title="OnlineTV",Феникс Плюс Кино
+http://127.0.0.1:6060/stream/feniks-plius-kino-telik
+
+#EXTINF:-1 tvg-name="Kinojam 1" group-title="OnlineTV",Kinojam 1
+http://127.0.0.1:6060/stream/kinojam-1-telik
+
+#EXTINF:-1 tvg-name="Kinojam 2" group-title="OnlineTV",Kinojam 2
+http://127.0.0.1:6060/stream/kinojam-2-telik
+
+#EXTINF:-1 tvg-name="Familyjam" group-title="OnlineTV",Familyjam
+http://127.0.0.1:6060/stream/familyjam-telik
+
+#EXTINF:-1 tvg-name="Detectivejam" group-title="OnlineTV",Detectivejam
+http://127.0.0.1:6060/stream/detectivejam-telik
+
+#EXTINF:-1 tvg-name="CineMan Marvel" group-title="OnlineTV",CineMan Marvel
+http://127.0.0.1:6060/stream/marvel-tv-telik
+
+#EXTINF:-1 tvg-name="Plan B" group-title="OnlineTV",Plan B
+http://127.0.0.1:6060/stream/plan-b-telik
+
+#EXTINF:-1 tvg-name="Боевики HD" group-title="OnlineTV",Боевики HD
+http://127.0.0.1:6060/stream/boeviki-hd-telik
+
+#EXTINF:-1 tvg-name="Ужасы HD" group-title="OnlineTV",Ужасы HD
+http://127.0.0.1:6060/stream/uzhasy-hd-telik
+
+#EXTINF:-1 tvg-name="Исторический HD" group-title="OnlineTV",Исторический HD
+http://127.0.0.1:6060/stream/istoricheskii-hd-telik
+
+#EXTINF:-1 tvg-name="Ретро" group-title="OnlineTV",Ретро
+http://127.0.0.1:6060/stream/retro-tv-telik
+
+#EXTINF:-1 tvg-name="Про Любовь" group-title="OnlineTV",Про Любовь
+http://127.0.0.1:6060/stream/pro-liubov-telik
+
+#EXTINF:-1 tvg-name="Лавстори HD" group-title="OnlineTV",Лавстори HD
+http://127.0.0.1:6060/stream/lavstori-telik
+
+#EXTINF:-1 tvg-name="Romance" group-title="OnlineTV",Romance
+http://127.0.0.1:6060/stream/romance-telik
+
+#EXTINF:-1 tvg-name="CineMan" group-title="OnlineTV",CineMan
+http://127.0.0.1:6060/stream/cineman-telik
+
+#EXTINF:-1 tvg-name="CineMan Action" group-title="OnlineTV",CineMan Action
+http://127.0.0.1:6060/stream/cineman-action-telik
+
+#EXTINF:-1 tvg-name="CineMan Катастрофы" group-title="OnlineTV",CineMan Катастрофы
+http://127.0.0.1:6060/stream/cineman-katastrofy-telik
+
+#EXTINF:-1 tvg-name="Cineman Комедия" group-title="OnlineTV",Cineman Комедия
+http://127.0.0.1:6060/stream/cineman-komediia-telik
+
+#EXTINF:-1 tvg-name="CineMan Marvel" group-title="OnlineTV",CineMan Marvel
+http://127.0.0.1:6060/stream/cineman-marvel-telik
+
+#EXTINF:-1 tvg-name="Cineman Мелодрама" group-title="OnlineTV",Cineman Мелодрама
+http://127.0.0.1:6060/stream/cineman-melodrama-telik
+
+#EXTINF:-1 tvg-name="Cineman Триллер" group-title="OnlineTV",Cineman Триллер
+http://127.0.0.1:6060/stream/cineman-triller-telik
+
+#EXTINF:-1 tvg-name="Cineman Топ" group-title="OnlineTV",Cineman Топ
+http://127.0.0.1:6060/stream/cineman-top-telik
+
+#EXTINF:-1 tvg-name="CineMan Ужасы" group-title="OnlineTV",CineMan Ужасы
+http://127.0.0.1:6060/stream/cineman-uzhasy-telik
+
+#EXTINF:-1 tvg-name="CineMan VHS" group-title="OnlineTV",CineMan VHS
+http://127.0.0.1:6060/stream/cineman-vhs-telik
+
+#EXTINF:-1 tvg-name="Fresh Adventure" group-title="OnlineTV",Fresh Adventure
+http://127.0.0.1:6060/stream/fresh-adventure-telik
+
+#EXTINF:-1 tvg-name="Fresh Cinema" group-title="OnlineTV",Fresh Cinema
+http://127.0.0.1:6060/stream/fresh-cinema-telik
+
+#EXTINF:-1 tvg-name="Fresh Comedy" group-title="OnlineTV",Fresh Comedy
+http://127.0.0.1:6060/stream/fresh-comedy-telik
+
+#EXTINF:-1 tvg-name="Fresh Family" group-title="OnlineTV",Fresh Family
+http://127.0.0.1:6060/stream/fresh-family-telik
+
+#EXTINF:-1 tvg-name="Fresh Fantastic" group-title="OnlineTV",Fresh Fantastic
+http://127.0.0.1:6060/stream/fresh-fantastic-telik
+
+#EXTINF:-1 tvg-name="Fresh Horror" group-title="OnlineTV",Fresh Horror
+http://127.0.0.1:6060/stream/fresh-horror-telik
+
+#EXTINF:-1 tvg-name="Fresh Premiere" group-title="OnlineTV",Fresh Premiere
+http://127.0.0.1:6060/stream/fresh-premiere-telik
+
+#EXTINF:-1 tvg-name="Fresh Rating" group-title="OnlineTV",Fresh Rating
+http://127.0.0.1:6060/stream/fresh-rating-telik
+
+#EXTINF:-1 tvg-name="Fresh Romantic" group-title="OnlineTV",Fresh Romantic
+http://127.0.0.1:6060/stream/fresh-romantic-telik
+
+#EXTINF:-1 tvg-name="Fresh Soviet" group-title="OnlineTV",Fresh Soviet
+http://127.0.0.1:6060/stream/fresh-soviet-telik
+
+#EXTINF:-1 tvg-name="Fresh Thriller" group-title="OnlineTV",Fresh Thriller
+http://127.0.0.1:6060/stream/fresh-thriller-telik
+
+#EXTINF:-1 tvg-name="Fresh Vhs" group-title="OnlineTV",Fresh Vhs
+http://127.0.0.1:6060/stream/fresh-vhs-telik
+
+#EXTINF:-1 tvg-name="CineMan Комедия" group-title="OnlineTV",CineMan Комедия
+http://127.0.0.1:6060/stream/cineman-komediya-telik
+
+#EXTINF:-1 tvg-name="Trash TV" group-title="OnlineTV",Trash TV
+http://127.0.0.1:6060/stream/trash-tv-telik
+
