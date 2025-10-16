@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Настройки · LunaTV{% endblock %}
+{% block content %}
+  <div class="card" style="margin-bottom: 24px;">
+    <h2>Глобальные параметры</h2>
+    <dl class="key-values" id="settingsPaths">
+      <dt>Пути</dt>
+      <dd class="muted">Загрузка…</dd>
+    </dl>
+  </div>
+  <div class="card" style="margin-bottom: 24px;">
+    <h2>Site controller</h2>
+    <div id="settingsController" class="muted">Загрузка…</div>
+  </div>
+  <div class="card">
+    <h2>Search JSON</h2>
+    <div id="settingsSearch" class="muted">Загрузка…</div>
+  </div>
+{% endblock %}
+{% block scripts %}
+  <script>
+    const pathsBox = document.getElementById('settingsPaths');
+    const controllerBox = document.getElementById('settingsController');
+    const searchBox = document.getElementById('settingsSearch');
+
+    function renderPaths(data) {
+      const { paths = {}, proxy = {}, cache = {}, scanner = {}, actions = {} } = data || {};
+      const rows = [];
+      rows.push('<dt>BASE_DIR</dt><dd><code>' + (paths.baseDir || '—') + '</code></dd>');
+      rows.push('<dt>EXTRACTOR_DIR</dt><dd><code>' + (paths.extractorDir || '—') + '</code></dd>');
+      rows.push('<dt>M3U_DIR</dt><dd><code>' + (paths.m3uDir || '—') + '</code></dd>');
+      rows.push('<dt>CONFIG_DIR</dt><dd><code>' + (paths.configDir || '—') + '</code></dd>');
+      const proxyHost = (proxy && typeof proxy.host !== 'undefined') ? proxy.host : '—';
+      const proxyPort = (proxy && typeof proxy.port !== 'undefined') ? proxy.port : '—';
+      rows.push('<dt>Proxy</dt><dd>' + proxyHost + ':' + proxyPort + '</dd>');
+      rows.push('<dt>Кэш</dt><dd>TTL ' + (cache.ttlSeconds || 0) + ' секунд</dd>');
+      rows.push('<dt>Экстрактор по умолчанию</dt><dd><code>' + (scanner.defaultExtractor || '—') + '</code></dd>');
+      rows.push('<dt>Node binary</dt><dd><code>' + (scanner.nodeBin || 'node') + '</code></dd>');
+      pathsBox.innerHTML = rows.join('');
+
+      if (Object.keys(actions).length) {
+        const actionRows = Object.entries(actions).map(([key, meta]) => {
+          return `<dt>Action: ${key}</dt><dd>таймаут ${meta.timeout || 0}s</dd>`;
+        }).join('');
+        pathsBox.insertAdjacentHTML('beforeend', actionRows);
+      }
+    }
+
+    function renderController(items) {
+      if (!items || !items.length) {
+        controllerBox.textContent = 'Не найден файл site_controller.json или он пуст.';
+        return;
+      }
+      const list = ['<ul class="clean">'];
+      for (const item of items) {
+        list.push(`<li><code>${item.host}</code> → ${item.script || '—'}, таймаут ${item.timeout}s</li>`);
+      }
+      list.push('</ul>');
+      controllerBox.innerHTML = list.join('');
+    }
+
+    function renderSearch(items) {
+      if (!items || !items.length) {
+        searchBox.textContent = 'search.json отсутствует или не содержит записей.';
+        return;
+      }
+      const list = ['<ul class="clean">'];
+      for (const item of items) {
+        list.push(`<li><code>${item.host}</code> → ${item.parser}, таймаут ${item.timeout}s</li>`);
+      }
+      list.push('</ul>');
+      searchBox.innerHTML = list.join('');
+    }
+
+    async function loadSettings() {
+      try {
+        const resp = await fetch('/api/settings');
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+        const payload = await resp.json();
+        renderPaths(payload);
+        renderController(payload.siteController);
+        renderSearch(payload.search);
+      } catch (err) {
+        const msg = `Не удалось загрузить настройки: ${err}`;
+        pathsBox.innerHTML = `<dt>Ошибка</dt><dd>${msg}</dd>`;
+        controllerBox.textContent = msg;
+        searchBox.textContent = msg;
+      }
+    }
+
+    loadSettings();
+  </script>
+{% endblock %}

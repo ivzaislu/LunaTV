@@ -5,9 +5,7 @@ IFS=$'\n\t'
 # =======================
 #  Глобальные настройки
 # =======================
-PUPPETEER_VER="${PUPPETEER_VER:-23.11.1}"
-PUPP_EXTRA_VER="${PUPP_EXTRA_VER:-3.3.6}"
-STEALTH_VER="${STEALTH_VER:-2.11.2}"
+PLAYWRIGHT_VER="${PLAYWRIGHT_VER:-1.55.0}"
 
 # Proxy (systemd)
 SERVICE_NAME="${SERVICE_NAME:-proxy_server}"
@@ -59,19 +57,18 @@ deps_install(){
   "private": true,
   "type": "module",
   "dependencies": {
-    "puppeteer": "${PUPPETEER_VER}",
-    "puppeteer-extra": "${PUPP_EXTRA_VER}",
-    "puppeteer-extra-plugin-stealth": "${STEALTH_VER}"
+    "playwright-core": "${PLAYWRIGHT_VER}"
   }
 }
 JSON
   echo "📦 Устанавливаю зависимости..."
   npm i --no-audit --no-fund >/dev/null
   [[ ${#EXTRAS[@]} -gt 0 ]] && npm i --no-audit --no-fund "${EXTRAS[@]}" >/dev/null
-  echo "🔎 Проверяю импорты..."
-  node --input-type=module -e "import('puppeteer-extra').then(()=>console.log('  puppeteer-extra OK')).catch(e=>{console.error(e);process.exit(1)})"
-  node --input-type=module -e "import('puppeteer-extra-plugin-stealth').then(()=>console.log('  stealth OK')).catch(e=>{console.error(e);process.exit(1)})"
-  echo "✅ Готово."; npm ls puppeteer puppeteer-core puppeteer-extra puppeteer-extra-plugin-stealth || true
+  echo "🌐 Загружаю браузер Chromium через Playwright..."
+  npx playwright@"${PLAYWRIGHT_VER}" install chromium >/dev/null
+  echo "🔎 Проверяю импорт..."
+  node --input-type=module -e "import('playwright-core').then(()=>console.log('  playwright-core OK')).catch(e=>{console.error(e);process.exit(1)})"
+  echo "✅ Готово."; npm ls playwright-core || true
 }
 
 # =======================
@@ -185,7 +182,7 @@ main_menu(){
       "Управление Proxy (systemd)" \
       "Обновить плейлист (one-shot)" \
       "Запустить сканер (one-shot)" \
-      "Установить JS-зависимости (puppeteer)" \
+      "Установить JS-зависимости (Playwright)" \
       "Выход"; do
       case $REPLY in
         1) proxy_menu; break ;;

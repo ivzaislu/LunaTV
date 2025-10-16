@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Плеер · LunaTV{% endblock %}
+{% block head %}
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.6/dist/hls.min.js" defer></script>
+{% endblock %}
+{% block content %}
+  <div class="card" style="margin-bottom: 24px;">
+    <h2>Просмотр каналов</h2>
+    <p class="muted">Выберите канал из списка — поток откроется во встроенном плеере. Для HLS используется <code>Hls.js</code>, при необходимости клиент автоматически перейдёт на родной плеер браузера.</p>
+    <div class="player-shell">
+      <video id="streamPlayer" controls playsinline></video>
+    </div>
+    <form class="stacked" id="playerForm">
+      <label>
+        Канал
+        <select id="channelSelect" required></select>
+      </label>
+      <div class="muted" id="playerStatus">Загрузите список каналов, чтобы начать воспроизведение.</div>
+    </form>
+  </div>
+  <div class="card">
+    <h2>Список каналов</h2>
+    <ul class="clean" id="channelList">
+      <li class="muted">Загрузка…</li>
+    </ul>
+  </div>
+{% endblock %}
+{% block scripts %}
+  <script>
+    const selectEl = document.getElementById('channelSelect');
+    const listEl = document.getElementById('channelList');
+    const statusEl = document.getElementById('playerStatus');
+    const videoEl = document.getElementById('streamPlayer');
+    let hlsInstance = null;
+
+    function teardownPlayer() {
+      if (hlsInstance) {
+        hlsInstance.destroy();
+        hlsInstance = null;
+      }
+      videoEl.removeAttribute('src');
+      videoEl.load();
+    }
+
+    function playChannel(slug) {
+      if (!slug) {
+        teardownPlayer();
+        statusEl.textContent = 'Выберите канал из списка.';
+        return;
+      }
+      const streamUrl = `/stream/${encodeURIComponent(slug)}`;
+      teardownPlayer();
+      statusEl.textContent = 'Подключаемся…';
+      if (window.Hls && window.Hls.isSupported()) {
+        hlsInstance = new window.Hls({ lowLatencyMode: true, enableWorker: true });
+        hlsInstance.loadSource(streamUrl);
+        hlsInstance.attachMedia(videoEl);
+        hlsInstance.on(window.Hls.Events.MANIFEST_PARSED, () => {
+          statusEl.textContent = 'Идёт воспроизведение.';
+          videoEl.play().catch(() => {});
+        });
+        hlsInstance.on(window.Hls.Events.ERROR, (evt, data) => {
+          const detail = data && data.details ? data.details : 'неизвестно';
+          statusEl.textContent = `Ошибка плеера: ${detail}`;
+        });
+      } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
+        videoEl.src = streamUrl;
+        videoEl.addEventListener('loadedmetadata', () => {
+          statusEl.textContent = 'Идёт воспроизведение.';
+          videoEl.play().catch(() => {});
+        }, { once: true });
+      } else {
+        statusEl.innerHTML = `Браузер не поддерживает HLS. Откройте поток напрямую: <a href="${streamUrl}" target="_blank" rel="noopener">${streamUrl}</a>`;
+      }
+    }
+
+    function renderChannels(items) {
+      selectEl.innerHTML = '';
+      listEl.innerHTML = '';
+      if (!items.length) {
+        selectEl.innerHTML = '<option value="">Нет каналов</option>';
+        listEl.innerHTML = '<li class="muted">Файл channels.json не найден или пуст.</li>';
+        statusEl.textContent = 'Добавьте каналы через сканер или вручную.';
+        return;
+      }
+      const fragment = document.createDocumentFragment();
+      for (const item of items) {
+        const option = document.createElement('option');
+        option.value = item.slug;
+        option.textContent = item.name || item.slug;
+        fragment.appendChild(option);
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${item.name || item.slug}</strong><br><span class="muted">${item.slug}</span>`;
+        li.addEventListener('click', () => {
+          selectEl.value = item.slug;
+          playChannel(item.slug);
+        });
+        listEl.appendChild(li);
+      }
+      selectEl.appendChild(fragment);
+      statusEl.textContent = 'Выберите канал для просмотра.';
+    }
+
+    async function loadChannels() {
+      try {
+        const resp = await fetch('/api/channels?withSource=1');
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+        const data = await resp.json();
+        renderChannels(data.items || []);
+      } catch (err) {
+        listEl.innerHTML = `<li class="muted">Не удалось загрузить каналы: ${err}</li>`;
+        statusEl.textContent = 'Ошибка загрузки списка каналов.';
+      }
+    }
+
+    selectEl.addEventListener('change', () => {
+      playChannel(selectEl.value);
+    });
+
+    loadChannels();
+  </script>
+{% endblock %}
