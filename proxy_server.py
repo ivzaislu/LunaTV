@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, redirect, abort, send_file
+from flask import (
+    Flask,
+    abort,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    send_file,
+)
 from urllib.parse import urlparse
 from datetime import datetime
 import re
@@ -12,6 +20,8 @@ import subprocess
 import signal
 import requests
 import fnmatch  # ⬅️ для сопоставления масок хостов (*.example.com)
+import sys
+from typing import Any
 
 app = Flask(__name__)
 
@@ -40,10 +50,544 @@ JS_EXTRACTOR_NAME = os.environ.get("JS_EXTRACTOR", "smotru-m3u-one-stealth.js")
 JS_EXTRACTOR_PATH = os.path.join(EXTRACTOR_DIR, JS_EXTRACTOR_NAME)
 JS_TIMEOUT_SEC = int(os.environ.get("JS_TIMEOUT_SEC", "10"))
 
-# Очистка мусора Puppeteer/Chromium
+# Очистка мусора Playwright/Chromium
 ORPHAN_CHROME_MAX_AGE_SEC = 180
 CLEAN_TMP_AFTER_JS = True
-TMP_PATTERNS = ("/tmp/puppeteer_*", "/tmp/.org.chromium.*", "/dev/shm/.org.chromium.*")
+TMP_PATTERNS = (
+    "/tmp/playwright*",
+    "/tmp/.org.chromium.*",
+    "/dev/shm/.org.chromium.*",
+    "/tmp/ms-playwright*",
+)
+
+# TTL кэша (в секундах) — чтобы избегать навечно застрявших ссылок.
+CACHE_TTL_SEC = int(os.environ.get("CACHE_TTL_SEC", "900"))  # 15 минут по умолчанию
+
+# Настройки HTTP-сервера Flask
+PROXY_HOST = os.environ.get("PROXY_HOST", "0.0.0.0")
+PROXY_PORT = int(os.environ.get("PROXY_PORT", "6060"))
+
+# Команды, доступные из веб-интерфейса
+PYTHON_BIN = os.environ.get("PYTHON_BIN", sys.executable or "python")
+
+
+def _script_path(name: str) -> str:
+    return os.path.join(BASE_DIR, name)
+
+
+ACTION_CATALOG: dict[str, dict] = {
+    "run-scanner": {
+        "label": "Полный скан каналов",
+        "description": "Запускает scaner.py с контроллером сайтов",
+        "command": [PYTHON_BIN, _script_path("scaner.py")],
+        "timeout": int(os.environ.get("ACTION_TIMEOUT_SCANNER", "900")),
+    },
+    "update-playlists": {
+        "label": "Обновить плейлисты",
+        "description": "Запускает update_playlist.py, пересобирая M3U-файлы из channels.json",
+        "command": [PYTHON_BIN, _script_path("update_playlist.py")],
+        "timeout": int(os.environ.get("ACTION_TIMEOUT_UPDATE", "300")),
+    },
+    "validate-playlists": {
+        "label": "Проверить плейлисты",
+        "description": "Выполняет тест m3u потоков (test_m3u_playlists.py)",
+        "command": [PYTHON_BIN, _script_path("test_m3u_playlists.py")],
+        "timeout": int(os.environ.get("ACTION_TIMEOUT_VALIDATE", "420")),
+    },
+    "python-tests": {
+        "label": "Python unit-тесты",
+        "description": "Запускает python -m unittest discover",
+        "command": [PYTHON_BIN, "-m", "unittest", "discover"],
+        "timeout": int(os.environ.get("ACTION_TIMEOUT_PYTEST", "420")),
+    },
+    "extractor-tests": {
+        "label": "JS тесты экстракторов",
+        "description": "Выполняет npm test",
+        "command": ["npm", "test"],
+        "timeout": int(os.environ.get("ACTION_TIMEOUT_JS", "420")),
+    },
+}
+
+
+def _rebuild_action_commands() -> None:
+    ACTION_CATALOG["run-scanner"]["command"] = [PYTHON_BIN, _script_path("scaner.py")]
+    ACTION_CATALOG["update-playlists"]["command"] = [
+        PYTHON_BIN,
+        _script_path("update_playlist.py"),
+    ]
+    ACTION_CATALOG["validate-playlists"]["command"] = [
+        PYTHON_BIN,
+        _script_path("test_m3u_playlists.py"),
+    ]
+    ACTION_CATALOG["python-tests"]["command"] = [
+        PYTHON_BIN,
+        "-m",
+        "unittest",
+        "discover",
+    ]
+    ACTION_CATALOG["extractor-tests"]["command"] = ["npm", "test"]
+
+
+_rebuild_action_commands()
+
+
+def _refresh_js_extractor_path() -> None:
+    global JS_EXTRACTOR_PATH
+    JS_EXTRACTOR_PATH = os.path.join(EXTRACTOR_DIR, JS_EXTRACTOR_NAME)
+
+
+_refresh_js_extractor_path()
+
+
+SETTINGS_LAYOUT: list[dict[str, Any]] = [
+    {
+        "id": "paths",
+        "title": "Каталоги и файлы",
+        "description": "Указывают расположение конфигурации, экстракторов и готовых плейлистов.",
+        "fields": [
+            {
+                "key": "BASE_DIR",
+                "label": "BASE_DIR",
+                "type": "text",
+                "description": "Корневой каталог проекта. Меняйте только если сервис развёрнут в другом месте (требуется перезапуск).",
+                "normalize": "path",
+            },
+            {
+                "key": "EXTRACTOR_DIR",
+                "label": "EXTRACTOR_DIR",
+                "type": "text",
+                "description": "Папка с JS-экстракторами Playwright.",
+                "normalize": "path",
+            },
+            {
+                "key": "M3U_DIR",
+                "label": "M3U_DIR",
+                "type": "text",
+                "description": "Каталог, куда сохраняются сгенерированные M3U-плейлисты.",
+                "normalize": "path",
+            },
+            {
+                "key": "CONFIG_DIR",
+                "label": "CONFIG_DIR",
+                "type": "text",
+                "description": "Каталог конфигурации (channels.json, site_controller.json, settings.json).",
+                "normalize": "path",
+            },
+        ],
+    },
+    {
+        "id": "proxy",
+        "title": "Веб-панель",
+        "description": "Параметры сервера управления LunaTV.",
+        "fields": [
+            {
+                "key": "PROXY_HOST",
+                "label": "PROXY_HOST",
+                "type": "text",
+                "description": "IP-адрес или hostname, на котором слушает Flask (по умолчанию 0.0.0.0).",
+            },
+            {
+                "key": "PROXY_PORT",
+                "label": "PROXY_PORT",
+                "type": "number",
+                "description": "Порт веб-панели. При изменении требуется перезапуск службы.",
+                "attrs": {"min": 1, "max": 65535, "step": 1},
+            },
+        ],
+    },
+    {
+        "id": "cache",
+        "title": "Кэш потоков",
+        "description": "Управляет временем жизни найденных ссылок, чтобы избежать устаревших потоков.",
+        "fields": [
+            {
+                "key": "CACHE_TTL_SEC",
+                "label": "CACHE_TTL_SEC",
+                "type": "number",
+                "description": "Время (в секундах), в течение которого результаты проверки потоков считаются свежими.",
+                "attrs": {"min": 0, "step": 30},
+                "unit": "сек.",
+            },
+        ],
+    },
+    {
+        "id": "extractor",
+        "title": "JS-экстрактор",
+        "description": "Настройки запуска Playwright и скриптов извлечения ссылок.",
+        "fields": [
+            {
+                "key": "NODE_BIN",
+                "label": "NODE_BIN",
+                "type": "text",
+                "description": "Исполняемый файл Node.js, который будет запускать экстракторы.",
+            },
+            {
+                "key": "JS_EXTRACTOR_NAME",
+                "label": "JS_EXTRACTOR",
+                "type": "text",
+                "description": "Файл JS-экстрактора по умолчанию (относительно папки extractor/).",
+            },
+            {
+                "key": "JS_TIMEOUT_SEC",
+                "label": "JS_TIMEOUT_SEC",
+                "type": "number",
+                "description": "Предельное время ожидания Playwright перед прерыванием работы экстрактора.",
+                "attrs": {"min": 1, "step": 1},
+                "unit": "сек.",
+            },
+        ],
+    },
+    {
+        "id": "runtime",
+        "title": "Очистка и автоматизация",
+        "description": "Параметры уборки временных файлов и завершения зависших процессов Chromium.",
+        "fields": [
+            {
+                "key": "CLEAN_TMP_AFTER_JS",
+                "label": "CLEAN_TMP_AFTER_JS",
+                "type": "boolean",
+                "description": "Удалять временные каталоги Playwright после завершения скриптов.",
+            },
+            {
+                "key": "ORPHAN_CHROME_MAX_AGE_SEC",
+                "label": "ORPHAN_CHROME_MAX_AGE_SEC",
+                "type": "number",
+                "description": "Минимальный возраст (в секундах) зависших процессов Chromium, после которого они будут убиты.",
+                "attrs": {"min": 0, "step": 30},
+                "unit": "сек.",
+            },
+            {
+                "key": "USER_AGENT",
+                "label": "USER_AGENT",
+                "type": "text",
+                "description": "HTTP User-Agent, который используется при обращении к сайтам и потокам.",
+            },
+        ],
+    },
+    {
+        "id": "actions",
+        "title": "Задачи панели",
+        "description": "Настройка тайм-аутов доступных действий на панели управления.",
+        "fields": [
+            {
+                "key": "ACTION_TIMEOUT_SCANNER",
+                "label": "ACTION_TIMEOUT_SCANNER",
+                "type": "number",
+                "description": "Тайм-аут запуска полной проверки каналов (run-scanner).",
+                "attrs": {"min": 60, "step": 30},
+                "unit": "сек.",
+            },
+            {
+                "key": "ACTION_TIMEOUT_UPDATE",
+                "label": "ACTION_TIMEOUT_UPDATE",
+                "type": "number",
+                "description": "Тайм-аут пересборки плейлистов (update_playlist.py).",
+                "attrs": {"min": 60, "step": 30},
+                "unit": "сек.",
+            },
+            {
+                "key": "ACTION_TIMEOUT_VALIDATE",
+                "label": "ACTION_TIMEOUT_VALIDATE",
+                "type": "number",
+                "description": "Ожидание проверки потоков (test_m3u_playlists.py).",
+                "attrs": {"min": 60, "step": 30},
+                "unit": "сек.",
+            },
+            {
+                "key": "ACTION_TIMEOUT_PYTEST",
+                "label": "ACTION_TIMEOUT_PYTEST",
+                "type": "number",
+                "description": "Тайм-аут python -m unittest discover.",
+                "attrs": {"min": 60, "step": 30},
+                "unit": "сек.",
+            },
+            {
+                "key": "ACTION_TIMEOUT_JS",
+                "label": "ACTION_TIMEOUT_JS",
+                "type": "number",
+                "description": "Тайм-аут npm test для экстракторов.",
+                "attrs": {"min": 60, "step": 30},
+                "unit": "сек.",
+            },
+        ],
+    },
+    {
+        "id": "system",
+        "title": "Системные команды",
+        "description": "Используются при запуске фоновых скриптов из панели.",
+        "fields": [
+            {
+                "key": "PYTHON_BIN",
+                "label": "PYTHON_BIN",
+                "type": "text",
+                "description": "Интерпретатор Python, которым запускаются служебные команды.",
+            },
+        ],
+    },
+]
+
+
+FIELD_MAP = {field["key"]: field for group in SETTINGS_LAYOUT for field in group["fields"]}
+
+
+CURRENT_SETTINGS: dict[str, Any] = {}
+
+
+def _settings_file_path() -> str:
+    return os.path.join(CONFIG_DIR, "settings.json")
+
+
+def _get_setting_value(key: str) -> Any:
+    if key == "BASE_DIR":
+        return BASE_DIR
+    if key == "EXTRACTOR_DIR":
+        return EXTRACTOR_DIR
+    if key == "M3U_DIR":
+        return M3U_DIR
+    if key == "CONFIG_DIR":
+        return CONFIG_DIR
+    if key == "PROXY_HOST":
+        return PROXY_HOST
+    if key == "PROXY_PORT":
+        return PROXY_PORT
+    if key == "CACHE_TTL_SEC":
+        return CACHE_TTL_SEC
+    if key == "NODE_BIN":
+        return NODE_BIN
+    if key == "JS_EXTRACTOR_NAME":
+        return JS_EXTRACTOR_NAME
+    if key == "JS_TIMEOUT_SEC":
+        return JS_TIMEOUT_SEC
+    if key == "CLEAN_TMP_AFTER_JS":
+        return CLEAN_TMP_AFTER_JS
+    if key == "ORPHAN_CHROME_MAX_AGE_SEC":
+        return ORPHAN_CHROME_MAX_AGE_SEC
+    if key == "USER_AGENT":
+        return USER_AGENT
+    if key == "PYTHON_BIN":
+        return PYTHON_BIN
+    if key == "ACTION_TIMEOUT_SCANNER":
+        return int(ACTION_CATALOG["run-scanner"].get("timeout", 0))
+    if key == "ACTION_TIMEOUT_UPDATE":
+        return int(ACTION_CATALOG["update-playlists"].get("timeout", 0))
+    if key == "ACTION_TIMEOUT_VALIDATE":
+        return int(ACTION_CATALOG["validate-playlists"].get("timeout", 0))
+    if key == "ACTION_TIMEOUT_PYTEST":
+        return int(ACTION_CATALOG["python-tests"].get("timeout", 0))
+    if key == "ACTION_TIMEOUT_JS":
+        return int(ACTION_CATALOG["extractor-tests"].get("timeout", 0))
+    raise KeyError(key)
+
+
+def _coerce_value(field: dict[str, Any], raw: Any) -> Any:
+    ftype = field.get("type", "text")
+    if ftype == "number":
+        if raw is None or (isinstance(raw, str) and not raw.strip()):
+            raise ValueError(f"Параметр {field['label']} не может быть пустым")
+        try:
+            value = int(raw)
+        except Exception as exc:  # noqa: BLE001
+            raise ValueError(f"Ожидается число для {field['label']}") from exc
+    elif ftype == "boolean":
+        if isinstance(raw, bool):
+            value = raw
+        elif isinstance(raw, (int, float)):
+            value = bool(raw)
+        elif isinstance(raw, str):
+            lowered = raw.strip().lower()
+            if lowered in {"1", "true", "да", "on", "yes"}:
+                value = True
+            elif lowered in {"0", "false", "нет", "off", "no"}:
+                value = False
+            else:
+                raise ValueError(f"Ожидается булево значение для {field['label']}")
+        else:
+            raise ValueError(f"Ожидается булево значение для {field['label']}")
+    else:
+        value = str(raw or "").strip()
+    if field.get("normalize") == "path":
+        value = os.path.abspath(value) if value else value
+    return value
+
+
+def _sync_current_settings() -> None:
+    for key in FIELD_MAP:
+        try:
+            CURRENT_SETTINGS[key] = _get_setting_value(key)
+        except KeyError:
+            continue
+
+
+def _persist_settings() -> None:
+    path = _settings_file_path()
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(CURRENT_SETTINGS, fh, ensure_ascii=False, indent=2, sort_keys=True)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[settings] не удалось сохранить {path}: {exc}")
+
+
+def _set_setting_value(key: str, value: Any) -> None:
+    global BASE_DIR, EXTRACTOR_DIR, M3U_DIR, CONFIG_DIR, CHANNELS_FILE, CACHE_FILE, SITE_CONTROLLER_FILE
+    global NODE_BIN, JS_EXTRACTOR_NAME, JS_TIMEOUT_SEC, CLEAN_TMP_AFTER_JS, ORPHAN_CHROME_MAX_AGE_SEC
+    global USER_AGENT, PROXY_HOST, PROXY_PORT, CACHE_TTL_SEC, PYTHON_BIN
+
+    if key == "BASE_DIR":
+        BASE_DIR = os.path.abspath(str(value))
+        os.environ["BASE_DIR"] = BASE_DIR
+        _rebuild_action_commands()
+        return
+    if key == "EXTRACTOR_DIR":
+        EXTRACTOR_DIR = os.path.abspath(str(value))
+        os.environ["EXTRACTOR_DIR"] = EXTRACTOR_DIR
+        _refresh_js_extractor_path()
+        return
+    if key == "M3U_DIR":
+        M3U_DIR = os.path.abspath(str(value))
+        os.environ["M3U_DIR"] = M3U_DIR
+        return
+    if key == "CONFIG_DIR":
+        CONFIG_DIR = os.path.abspath(str(value))
+        os.environ["CONFIG_DIR"] = CONFIG_DIR
+        CHANNELS_FILE = os.path.join(CONFIG_DIR, "channels.json")
+        CACHE_FILE = os.path.join(CONFIG_DIR, "m3u8_cache.json")
+        SITE_CONTROLLER_FILE = os.path.join(CONFIG_DIR, "site_controller.json")
+        return
+    if key == "PROXY_HOST":
+        PROXY_HOST = str(value or "")
+        os.environ["PROXY_HOST"] = PROXY_HOST
+        return
+    if key == "PROXY_PORT":
+        PROXY_PORT = int(value)
+        os.environ["PROXY_PORT"] = str(PROXY_PORT)
+        return
+    if key == "CACHE_TTL_SEC":
+        CACHE_TTL_SEC = int(value)
+        os.environ["CACHE_TTL_SEC"] = str(CACHE_TTL_SEC)
+        return
+    if key == "NODE_BIN":
+        NODE_BIN = str(value or "node")
+        os.environ["NODE_BIN"] = NODE_BIN
+        return
+    if key == "JS_EXTRACTOR_NAME":
+        JS_EXTRACTOR_NAME = str(value or "")
+        os.environ["JS_EXTRACTOR"] = JS_EXTRACTOR_NAME
+        _refresh_js_extractor_path()
+        return
+    if key == "JS_TIMEOUT_SEC":
+        JS_TIMEOUT_SEC = int(value)
+        os.environ["JS_TIMEOUT_SEC"] = str(JS_TIMEOUT_SEC)
+        return
+    if key == "CLEAN_TMP_AFTER_JS":
+        CLEAN_TMP_AFTER_JS = bool(value)
+        os.environ["CLEAN_TMP_AFTER_JS"] = "1" if CLEAN_TMP_AFTER_JS else "0"
+        return
+    if key == "ORPHAN_CHROME_MAX_AGE_SEC":
+        ORPHAN_CHROME_MAX_AGE_SEC = int(value)
+        os.environ["ORPHAN_CHROME_MAX_AGE_SEC"] = str(ORPHAN_CHROME_MAX_AGE_SEC)
+        return
+    if key == "USER_AGENT":
+        USER_AGENT = str(value or "")
+        os.environ["USER_AGENT"] = USER_AGENT
+        return
+    if key == "PYTHON_BIN":
+        PYTHON_BIN = str(value or "python")
+        os.environ["PYTHON_BIN"] = PYTHON_BIN
+        _rebuild_action_commands()
+        return
+    if key == "ACTION_TIMEOUT_SCANNER":
+        ACTION_CATALOG["run-scanner"]["timeout"] = int(value)
+        os.environ["ACTION_TIMEOUT_SCANNER"] = str(value)
+        return
+    if key == "ACTION_TIMEOUT_UPDATE":
+        ACTION_CATALOG["update-playlists"]["timeout"] = int(value)
+        os.environ["ACTION_TIMEOUT_UPDATE"] = str(value)
+        return
+    if key == "ACTION_TIMEOUT_VALIDATE":
+        ACTION_CATALOG["validate-playlists"]["timeout"] = int(value)
+        os.environ["ACTION_TIMEOUT_VALIDATE"] = str(value)
+        return
+    if key == "ACTION_TIMEOUT_PYTEST":
+        ACTION_CATALOG["python-tests"]["timeout"] = int(value)
+        os.environ["ACTION_TIMEOUT_PYTEST"] = str(value)
+        return
+    if key == "ACTION_TIMEOUT_JS":
+        ACTION_CATALOG["extractor-tests"]["timeout"] = int(value)
+        os.environ["ACTION_TIMEOUT_JS"] = str(value)
+        return
+    raise KeyError(key)
+
+
+def _apply_settings(values: dict[str, Any], *, persist: bool = True) -> dict[str, Any]:
+    if not isinstance(values, dict):
+        raise ValueError("Передайте объект со значениями настроек")
+    applied: dict[str, Any] = {}
+    for key, raw in values.items():
+        if key not in FIELD_MAP:
+            raise ValueError(f"Неизвестный параметр: {key}")
+        field = FIELD_MAP[key]
+        coerced = _coerce_value(field, raw)
+        _set_setting_value(key, coerced)
+        applied[key] = _get_setting_value(key)
+    _sync_current_settings()
+    if persist:
+        _persist_settings()
+    return applied
+
+
+def _describe_settings_groups() -> list[dict[str, Any]]:
+    _sync_current_settings()
+    groups: list[dict[str, Any]] = []
+    for spec in SETTINGS_LAYOUT:
+        fields: list[dict[str, Any]] = []
+        for field in spec["fields"]:
+            key = field["key"]
+            data = {
+                "key": key,
+                "label": field.get("label", key),
+                "type": field.get("type", "text"),
+                "description": field.get("description", ""),
+                "value": CURRENT_SETTINGS.get(key),
+            }
+            if field.get("unit"):
+                data["unit"] = field["unit"]
+            if field.get("attrs"):
+                data["attrs"] = field["attrs"]
+            fields.append(data)
+        groups.append(
+            {
+                "id": spec.get("id"),
+                "title": spec.get("title"),
+                "description": spec.get("description", ""),
+                "fields": fields,
+            }
+        )
+    return groups
+
+
+def _load_settings_from_file() -> None:
+    path = _settings_file_path()
+    if not os.path.exists(path):
+        return
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+    except FileNotFoundError:
+        return
+    except Exception as exc:  # noqa: BLE001
+        print(f"[settings] не удалось прочитать {path}: {exc}")
+        return
+    if isinstance(data, dict) and data:
+        try:
+            _apply_settings(data, persist=False)
+        except ValueError as exc:
+            print(f"[settings] не удалось применить настройки из {path}: {exc}")
+
+
+_sync_current_settings()
+_load_settings_from_file()
+
 
 # ------------------ УТИЛИТЫ ЧИСТКИ ------------------
 
@@ -74,6 +618,40 @@ def _list_pids():
                 yield int(name)
     except Exception:
         return
+
+
+def _list_playlists() -> list[str]:
+    """Возвращает список файлов плейлистов (без путей)."""
+    if not os.path.isdir(M3U_DIR):
+        return []
+    items = []
+    for entry in os.listdir(M3U_DIR):
+        if entry.lower().endswith(".m3u"):
+            items.append(entry)
+    return sorted(items)
+
+
+def _load_channels_safe() -> dict:
+    """Загружает channels.json, не выбрасывая исключения."""
+    if not os.path.exists(CHANNELS_FILE):
+        return {}
+    try:
+        with open(CHANNELS_FILE, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+            return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _render(page: str, **ctx):
+    """Рисует HTML-страницу панели с общим контекстом."""
+    payload = {
+        "host": PROXY_HOST,
+        "port": PROXY_PORT,
+        "year": datetime.utcnow().year,
+    }
+    payload.update(ctx)
+    return render_template(page, **payload)
 
 def _proc_comm(pid: int) -> str:
     return _read_file(f"/proc/{pid}/comm").strip()
@@ -117,14 +695,14 @@ def _proc_age_sec(pid: int) -> float:
 
 def kill_orphan_chrome(max_age_sec: int = ORPHAN_CHROME_MAX_AGE_SEC) -> int:
     """
-    Убивает осиротевшие процессы chrome/chromium (обычно оставленные Puppeteer):
+    Убивает осиротевшие процессы chrome/chromium (обычно оставленные Playwright):
     - ppid == 1,
     - имя/командная строка содержит chrome/chromium,
-    - и есть маркеры puppeteer/headless.
+    - и есть маркеры playwright/headless.
     """
     victims = 0
     name_mark = ("chrome", "chromium", "chromium-browser")
-    puppet_mark = ("puppeteer", "/tmp/puppeteer_", ".org.chromium", "--remote-debugging", "--headless")
+    automation_mark = ("playwright", "/tmp/playwright", "ms-playwright", ".org.chromium", "--remote-debugging", "--headless")
     for pid in list(_list_pids() or []):
         try:
             if _proc_ppid(pid) != 1:
@@ -133,9 +711,11 @@ def kill_orphan_chrome(max_age_sec: int = ORPHAN_CHROME_MAX_AGE_SEC) -> int:
             cmd = _proc_cmdline(pid).lower()
             if not any(m in comm or m in cmd for m in name_mark):
                 continue
-            if not any(m in cmd for m in puppet_mark):
+            if not any(m in cmd for m in automation_mark):
                 continue
-            if _proc_age_sec(pid) > max_age_sec:
+            # Убиваем только процессы, "зависшие" дольше порога.
+            # Ранее логика была инвертирована и пропускала старые chrome.
+            if _proc_age_sec(pid) < max_age_sec:
                 continue
             try:
                 os.kill(pid, signal.SIGKILL)
@@ -147,6 +727,91 @@ def kill_orphan_chrome(max_age_sec: int = ORPHAN_CHROME_MAX_AGE_SEC) -> int:
         except Exception:
             continue
     return victims
+
+
+def _summarize_action(action_id: str, meta: dict) -> dict:
+    """Готовит JSON-описание команды для фронтенда."""
+    command = meta.get("command", [])
+    available = True
+    if command:
+        bin_name = command[0]
+        if os.path.isabs(bin_name):
+            available = os.path.exists(bin_name)
+        elif bin_name.endswith(".py"):
+            available = os.path.exists(bin_name)
+        # если команда обращается к скрипту, проверим второй элемент
+        if available and len(command) >= 2 and command[0] in {PYTHON_BIN, "python", "python3"}:
+            script_path = command[1]
+            if script_path != "-m" and script_path.endswith(".py"):
+                available = os.path.exists(script_path)
+    return {
+        "id": action_id,
+        "label": meta.get("label", action_id),
+        "description": meta.get("description", ""),
+        "available": bool(available),
+    }
+
+
+def _run_action(meta: dict, *, command_override: list[str] | None = None, extra_env: dict | None = None) -> dict:
+    """Запускает команду и возвращает результат для JSON."""
+    command = command_override or meta.get("command")
+    timeout = int(meta.get("timeout", 300))
+    started = time.time()
+    if not command:
+        return {
+            "ok": False,
+            "error": "Команда не задана",
+        }
+    env = None
+    if extra_env:
+        env = os.environ.copy()
+        env.update(extra_env)
+    try:
+        proc = subprocess.Popen(
+            command,
+            cwd=BASE_DIR,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            env=env,
+        )
+    except FileNotFoundError as exc:
+        return {
+            "ok": False,
+            "error": f"Не найдена команда: {exc}",
+        }
+    except Exception as exc:
+        return {
+            "ok": False,
+            "error": f"Не удалось запустить процесс: {exc}",
+        }
+
+    timed_out = False
+    output = ""
+    try:
+        output, _ = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        timed_out = True
+        try:
+            proc.kill()
+        except Exception:
+            pass
+        try:
+            output, _ = proc.communicate(timeout=5)
+        except Exception:
+            output = output or ""
+    except Exception as exc:
+        output = f"Ошибка исполнения: {exc}"
+
+    duration = time.time() - started
+    rc = proc.poll()
+    return {
+        "ok": (rc == 0) and not timed_out,
+        "returncode": rc,
+        "timedOut": timed_out,
+        "duration": duration,
+        "output": output,
+    }
 
 # ------------------ SITE CONTROLLER ------------------
 
@@ -358,7 +1023,8 @@ def load_cache():
         try:
             with open(CACHE_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
-        except Exception:
+        except Exception as e:
+            print(f"[cache] не удалось прочитать {CACHE_FILE}: {e}")
             return {}
     return {}
 
@@ -370,18 +1036,42 @@ def save_cache(cache):
     except Exception as e:
         print(f"[!] Не удалось сохранить кэш: {e}")
 
+
+def _cache_entry_is_fresh(entry: dict) -> bool:
+    """Проверяет, не протухла ли запись кэша по таймстемпу."""
+    if CACHE_TTL_SEC <= 0:
+        return True
+    if not isinstance(entry, dict):
+        return False
+    ts = entry.get("timestamp")
+    if not ts:
+        return False
+    try:
+        when = datetime.fromisoformat(ts)
+    except Exception:
+        return False
+    age = (datetime.utcnow() - when).total_seconds()
+    return age <= CACHE_TTL_SEC
+
 def is_m3u8_alive(url, referer=None):
     try:
         headers = {"User-Agent": USER_AGENT}
         if referer:
             headers["Referer"] = referer
         r = requests.head(url, timeout=5, allow_redirects=True, headers=headers)
-        # HEAD не всегда даёт content-type для HLS; подстрахуемся GET'ом маленького чанка
-        if r.status_code == 200 and "mpegurl" in r.headers.get("Content-Type", "").lower():
-            return True
+        try:
+            # HEAD не всегда даёт content-type для HLS; подстрахуемся GET'ом маленького чанка
+            if r.status_code == 200 and "mpegurl" in r.headers.get("Content-Type", "").lower():
+                return True
+        finally:
+            r.close()
+
         # fallback: небольшой GET и проверка сигнатуры
         r2 = requests.get(url, timeout=7, headers=headers, stream=True, allow_redirects=True)
-        chunk = next(r2.iter_content(chunk_size=2048), b"")
+        try:
+            chunk = next(r2.iter_content(chunk_size=2048), b"")
+        finally:
+            r2.close()
         txt = ""
         try:
             txt = chunk.decode("utf-8", errors="ignore")
@@ -394,15 +1084,190 @@ def is_m3u8_alive(url, referer=None):
 # ------------------ HTTP-РОУТЫ ------------------
 
 @app.route("/")
-def index():
+def dashboard():
+    """Главная страница с панелью управления."""
+    return _render("dashboard.html", active_page="dashboard")
+
+
+@app.route("/playlists")
+def playlists_page():
+    return _render("playlists.html", active_page="playlists")
+
+
+@app.route("/channels")
+def channels_page():
+    return _render("channels.html", active_page="channels")
+
+
+@app.route("/player")
+def player_page():
+    return _render("player.html", active_page="player")
+
+
+@app.route("/scanner")
+def scanner_page():
+    return _render("scanner.html", active_page="scanner")
+
+
+@app.route("/settings")
+def settings_page():
+    return _render("settings.html", active_page="settings")
+
+
+@app.route("/api/actions", methods=["GET"])
+def api_list_actions():
+    payload = [_summarize_action(k, v) for k, v in ACTION_CATALOG.items()]
+    return jsonify({"items": payload})
+
+
+@app.route("/api/actions/<action_id>", methods=["POST"])
+def api_run_action(action_id):
+    meta = ACTION_CATALOG.get(action_id)
+    if not meta:
+        return jsonify({"ok": False, "error": f"Неизвестное действие: {action_id}"}), 404
+
+    payload = request.get_json(silent=True) or {}
+    command_override = None
+    extra_env = None
+
+    if action_id == "run-scanner":
+        start_url = (payload.get("startUrl") or "").strip()
+        site_tag = (payload.get("siteTag") or "").strip()
+        if not start_url:
+            return jsonify({"ok": False, "error": "Укажите стартовую страницу для сканера."}), 400
+        command_override = list(meta.get("command", [])) + ["--start-url", start_url]
+        if site_tag:
+            command_override += ["--site-tag", site_tag]
+
+    result = _run_action(meta, command_override=command_override, extra_env=extra_env)
+    return jsonify(result)
+
+
+@app.route("/api/playlists", methods=["GET"])
+def api_playlists():
+    return jsonify({"items": _list_playlists()})
+
+
+@app.route("/api/channels", methods=["GET"])
+def api_channels():
+    include_source = request.args.get("withSource")
+    items = []
+    for slug, meta in _load_channels_safe().items():
+        name = ""
+        url = ""
+        group = ""
+        description = ""
+        favorite = False
+        logo = ""
+        schedule = []
+
+        if isinstance(meta, dict):
+            name = meta.get("title") or meta.get("name") or ""
+            url = meta.get("url") or meta.get("page") or meta.get("source") or ""
+            group = meta.get("group") or meta.get("category") or ""
+            description = meta.get("description") or meta.get("summary") or ""
+            logo = meta.get("logo") or meta.get("icon") or ""
+            favorite = bool(meta.get("favorite") or meta.get("is_favorite"))
+            raw_schedule = meta.get("epg") or meta.get("schedule")
+            if isinstance(raw_schedule, list):
+                for entry in raw_schedule:
+                    if isinstance(entry, dict):
+                        schedule.append(
+                            {
+                                "time": entry.get("time") or entry.get("start") or "",
+                                "title": entry.get("title") or entry.get("name") or "",
+                                "description": entry.get("description") or entry.get("desc") or "",
+                                "startIso": entry.get("startIso")
+                                or entry.get("start_iso")
+                                or entry.get("startAt"),
+                                "endIso": entry.get("endIso")
+                                or entry.get("end_iso")
+                                or entry.get("endAt"),
+                            }
+                        )
+                    elif isinstance(entry, str):
+                        schedule.append({"time": entry, "title": entry})
+        elif isinstance(meta, str):
+            url = meta
+
+        entry = {"slug": slug, "name": name}
+        if description:
+            entry["description"] = description
+        if group:
+            entry["group"] = group
+        if logo:
+            entry["logo"] = logo
+        if favorite:
+            entry["favorite"] = True
+        if schedule:
+            entry["epg"] = schedule
+        if include_source:
+            entry["url"] = url
+        items.append(entry)
+    items.sort(key=lambda x: x["slug"])
+    return jsonify({"items": items})
+
+
+def _load_json_safe(path: str):
     try:
-        files = []
-        if os.path.isdir(M3U_DIR):
-            files = sorted([f for f in os.listdir(M3U_DIR) if f.endswith(".m3u")])
-        links = "\n".join([f"<li><a href='/playlist/{f}'>{f}</a></li>" for f in files]) or "<li>(пусто)</li>"
-        return f"<h2>📺 Доступные плейлисты (из каталога m3u):</h2><ul>{links}</ul>"
-    except Exception as e:
-        return f"<h2>Ошибка чтения каталога плейлистов:</h2><pre>{e}</pre>"
+        with open(path, "r", encoding="utf-8") as fh:
+            return json.load(fh)
+    except Exception:
+        return None
+
+
+@app.route("/api/settings", methods=["GET"])
+def api_settings():
+    site_controller = _load_site_controller()
+    search_map = _load_json_safe(os.path.join(CONFIG_DIR, "search.json"))
+
+    controller_summary = []
+    if isinstance(site_controller, dict):
+        default_cfg = site_controller.get("default", {}) if isinstance(site_controller.get("default"), dict) else {}
+        for host, cfg in site_controller.items():
+            if host == "default":
+                continue
+            if not isinstance(cfg, dict):
+                continue
+            entry = {
+                "host": host,
+                "script": cfg.get("script") or default_cfg.get("script") or "",
+                "timeout": int(cfg.get("timeout_sec") or default_cfg.get("timeout_sec") or 10),
+            }
+            controller_summary.append(entry)
+        controller_summary.sort(key=lambda x: x["host"])
+
+    search_summary = []
+    if isinstance(search_map, dict):
+        for host, cfg in search_map.items():
+            if isinstance(cfg, dict):
+                search_summary.append({
+                    "host": host,
+                    "parser": cfg.get("parser") or "search-generic.js",
+                    "timeout": int(cfg.get("timeout_sec") or 10),
+                })
+        search_summary.sort(key=lambda x: x["host"])
+
+    return jsonify(
+        {
+            "groups": _describe_settings_groups(),
+            "siteController": controller_summary,
+            "search": search_summary,
+        }
+    )
+
+
+@app.route("/api/settings", methods=["POST"])
+def api_settings_update():
+    payload = request.get_json(silent=True) or {}
+    values = payload.get("values")
+    if not isinstance(values, dict):
+        return jsonify({"ok": False, "error": "Передайте объект values с изменениями."}), 400
+    try:
+        applied = _apply_settings(values, persist=True)
+    except ValueError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 400
+    return jsonify({"ok": True, "applied": applied, "groups": _describe_settings_groups()})
 
 @app.route("/playlist/<filename>")
 def serve_playlist(filename):
@@ -444,13 +1309,16 @@ def proxy(channel_slug):
     # Проверка кэша
     cached = cache.get(channel_slug)
     if cached:
-        stream_url = cached.get("url")
-        print(f"📁 Проверка кэшированной ссылки: {stream_url}")
-        if stream_url and is_m3u8_alive(stream_url, referer=referer_url):
-            print("✅ Используется кэш.")
-            return redirect(stream_url, code=302)
+        if not _cache_entry_is_fresh(cached):
+            print("🗑️ Кэш просрочен, нужен новый поток.")
         else:
-            print("❌ Кэш устарел, пробуем заново.")
+            stream_url = cached.get("url")
+            print(f"📁 Проверка кэшированной ссылки: {stream_url}")
+            if stream_url and is_m3u8_alive(stream_url, referer=referer_url):
+                print("✅ Используется кэш.")
+                return redirect(stream_url, code=302)
+            else:
+                print("❌ Кэш устарел, пробуем заново.")
 
     # Получение новой ссылки через JS-экстрактор(ы)
     print(f"🔵 Запрос к каналу: {channel_slug}")
@@ -471,5 +1339,5 @@ def proxy(channel_slug):
 # ------------------ MAIN ------------------
 
 if __name__ == "__main__":
-    print("\n🚀 Прокси запущен: http://127.0.0.1:6060")
-    app.run(host="127.0.0.1", port=6060)
+    print(f"\n🚀 Прокси запущен: http://{PROXY_HOST}:{PROXY_PORT}")
+    app.run(host=PROXY_HOST, port=PROXY_PORT)
