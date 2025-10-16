@@ -11,19 +11,21 @@ class ProxyDashboardTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self._old_m3u = proxy_server.M3U_DIR
-        self._old_config = proxy_server.CONFIG_DIR
-        self._old_channels = proxy_server.CHANNELS_FILE
-        proxy_server.M3U_DIR = self.tmp.name
-        proxy_server.CONFIG_DIR = self.tmp.name
-        proxy_server.CHANNELS_FILE = os.path.join(self.tmp.name, "channels.json")
+        self._settings_backup = proxy_server.CURRENT_SETTINGS.copy()
+        proxy_server._apply_settings(
+            {
+                "CONFIG_DIR": self.tmp.name,
+                "M3U_DIR": self.tmp.name,
+            },
+            persist=False,
+        )
+        proxy_server.CACHE_FILE = os.path.join(proxy_server.CONFIG_DIR, "m3u8_cache.json")
+        proxy_server.CHANNELS_FILE = os.path.join(proxy_server.CONFIG_DIR, "channels.json")
         self.client = proxy_server.app.test_client()
         self.addCleanup(self._restore_globals)
 
     def _restore_globals(self):
-        proxy_server.M3U_DIR = self._old_m3u
-        proxy_server.CONFIG_DIR = self._old_config
-        proxy_server.CHANNELS_FILE = self._old_channels
+        proxy_server._apply_settings(self._settings_backup, persist=False)
 
     def test_api_playlists_empty(self):
         resp = self.client.get("/api/playlists")
@@ -136,9 +138,26 @@ class ProxyDashboardTests(unittest.TestCase):
         resp = self.client.get("/api/settings")
         self.assertEqual(resp.status_code, 200)
         payload = resp.get_json()
-        self.assertIn("paths", payload)
-        self.assertIn("proxy", payload)
-        self.assertIn("scanner", payload)
+        self.assertIn("groups", payload)
+        self.assertTrue(any(group.get("fields") for group in payload["groups"]))
+
+    def test_settings_update_changes_cache_ttl(self):
+        resp = self.client.post(
+            "/api/settings",
+            json={"values": {"CACHE_TTL_SEC": 1234, "CLEAN_TMP_AFTER_JS": False}},
+        )
+        self.assertEqual(resp.status_code, 200)
+        payload = resp.get_json()
+        self.assertTrue(payload["ok"])
+        self.assertEqual(proxy_server.CACHE_TTL_SEC, 1234)
+        self.assertFalse(proxy_server.CLEAN_TMP_AFTER_JS)
+        self.assertEqual(os.environ.get("CACHE_TTL_SEC"), "1234")
+        settings_path = os.path.join(proxy_server.CONFIG_DIR, "settings.json")
+        self.assertTrue(os.path.exists(settings_path))
+        with open(settings_path, "r", encoding="utf-8") as fh:
+            saved = json.load(fh)
+        self.assertEqual(saved["CACHE_TTL_SEC"], 1234)
+        self.assertFalse(saved["CLEAN_TMP_AFTER_JS"])
 
 
 if __name__ == "__main__":  # pragma: no cover

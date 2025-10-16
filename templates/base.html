@@ -196,6 +196,70 @@
         margin: 0;
         color: rgba(148, 163, 184, 0.8);
       }
+      .settings-form {
+        display: grid;
+        gap: 24px;
+      }
+      .settings-blocks {
+        display: grid;
+        gap: 24px;
+      }
+      .settings-block h2 {
+        margin-bottom: 4px;
+      }
+      .field-grid {
+        display: grid;
+        gap: 18px;
+      }
+      .field-row {
+        display: grid;
+        gap: 6px;
+      }
+      .field-label {
+        font-weight: 600;
+      }
+      .field-control {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .field-control input[type="text"],
+      .field-control input[type="number"] {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        background: rgba(15, 23, 42, 0.6);
+        color: #e2e8f0;
+        font: inherit;
+      }
+      .field-control input[type="text"]:focus,
+      .field-control input[type="number"]:focus {
+        outline: 2px solid rgba(56, 189, 248, 0.35);
+        border-color: rgba(56, 189, 248, 0.45);
+      }
+      .field-unit {
+        font-size: 0.85rem;
+        color: rgba(148, 163, 184, 0.75);
+        white-space: nowrap;
+      }
+      .field-hint {
+        font-size: 0.85rem;
+      }
+      .field-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+      }
+      .field-toggle input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        accent-color: #38bdf8;
+      }
+      .status-error {
+        color: #f87171;
+      }
       .player-shell {
         background: rgba(15, 23, 42, 0.7);
         border-radius: 16px;
