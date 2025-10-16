@@ -19,6 +19,8 @@ m3u/         # результирующие .m3u плейлисты
 1. Установите зависимости:
    ```bash
    npm install
+   npx playwright install chromium  # однократно скачивает браузер для экстракторов
+   npx playwright install-deps      # устанавливает системные зависимости Chromium (Linux)
    pip install -r requirements.txt  # при наличии файла требований
    ```
 2. Запустите самотесты экстракторов:

@@ -49,10 +49,15 @@ JS_EXTRACTOR_NAME = os.environ.get("JS_EXTRACTOR", "smotru-m3u-one-stealth.js")
 JS_EXTRACTOR_PATH = os.path.join(EXTRACTOR_DIR, JS_EXTRACTOR_NAME)
 JS_TIMEOUT_SEC = int(os.environ.get("JS_TIMEOUT_SEC", "10"))
 
-# Очистка мусора Puppeteer/Chromium
+# Очистка мусора Playwright/Chromium
 ORPHAN_CHROME_MAX_AGE_SEC = 180
 CLEAN_TMP_AFTER_JS = True
-TMP_PATTERNS = ("/tmp/puppeteer_*", "/tmp/.org.chromium.*", "/dev/shm/.org.chromium.*")
+TMP_PATTERNS = (
+    "/tmp/playwright*",
+    "/tmp/.org.chromium.*",
+    "/dev/shm/.org.chromium.*",
+    "/tmp/ms-playwright*",
+)
 
 # TTL кэша (в секундах) — чтобы избегать навечно застрявших ссылок.
 CACHE_TTL_SEC = int(os.environ.get("CACHE_TTL_SEC", "900"))  # 15 минут по умолчанию
@@ -208,14 +213,14 @@ def _proc_age_sec(pid: int) -> float:
 
 def kill_orphan_chrome(max_age_sec: int = ORPHAN_CHROME_MAX_AGE_SEC) -> int:
     """
-    Убивает осиротевшие процессы chrome/chromium (обычно оставленные Puppeteer):
+    Убивает осиротевшие процессы chrome/chromium (обычно оставленные Playwright):
     - ppid == 1,
     - имя/командная строка содержит chrome/chromium,
-    - и есть маркеры puppeteer/headless.
+    - и есть маркеры playwright/headless.
     """
     victims = 0
     name_mark = ("chrome", "chromium", "chromium-browser")
-    puppet_mark = ("puppeteer", "/tmp/puppeteer_", ".org.chromium", "--remote-debugging", "--headless")
+    automation_mark = ("playwright", "/tmp/playwright", "ms-playwright", ".org.chromium", "--remote-debugging", "--headless")
     for pid in list(_list_pids() or []):
         try:
             if _proc_ppid(pid) != 1:
@@ -224,7 +229,7 @@ def kill_orphan_chrome(max_age_sec: int = ORPHAN_CHROME_MAX_AGE_SEC) -> int:
             cmd = _proc_cmdline(pid).lower()
             if not any(m in comm or m in cmd for m in name_mark):
                 continue
-            if not any(m in cmd for m in puppet_mark):
+            if not any(m in cmd for m in automation_mark):
                 continue
             # Убиваем только процессы, "зависшие" дольше порога.
             # Ранее логика была инвертирована и пропускала старые chrome.
