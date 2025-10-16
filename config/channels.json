@@ -1,0 +1,2459 @@
+{
+  "nba-tv-mediamaniya": {
+    "name": "Nba Tv",
+    "url": "https://mediamaniya.ru/tv/nba-tv"
+  },
+  "setanta-sports-1-mediamaniya": {
+    "name": "Setanta Sports 1",
+    "url": "https://mediamaniya.ru/tv/setanta-sports-1"
+  },
+  "setanta-sports-2-mediamaniya": {
+    "name": "Setanta Sports 2",
+    "url": "https://mediamaniya.ru/tv/setanta-sports-2"
+  },
+  "belarus-5-mediamaniya": {
+    "name": "Беларусь 5",
+    "url": "https://mediamaniya.ru/tv/belarus-5"
+  },
+  "belarus-5-internet-mediamaniya": {
+    "name": "Беларусь 5 Интернет",
+    "url": "https://mediamaniya.ru/tv/belarus-5-internet"
+  },
+  "voleibol-mediamaniya": {
+    "name": "Волейбол HD",
+    "url": "https://mediamaniya.ru/tv/volleyball"
+  },
+  "evrosport-1-mediamaniya": {
+    "name": "Eurosport 1",
+    "url": "https://mediamaniya.ru/tv/eurosport-1"
+  },
+  "konnyi-mir-mediamaniya": {
+    "name": "Конный Мир",
+    "url": "https://mediamaniya.ru/tv/konnyj-mir"
+  },
+  "match-tv-mediamaniya": {
+    "name": "Матч! Тв",
+    "url": "https://mediamaniya.ru/tv/match-tv"
+  },
+  "sony-sci-fi-viks": {
+    "name": "Sony Sci-Fi",
+    "url": "http://live.viks.tv/466-sony-sci-fi.html"
+  },
+  "eralash-viks": {
+    "name": "Ералаш",
+    "url": "http://live.viks.tv/103826-eralash.html"
+  },
+  "muzhskoe-kino-viks": {
+    "name": "Мужское Кино",
+    "url": "http://live.viks.tv/035912-muzhskoe-kino.html"
+  },
+  "strashnoe-hd-viks": {
+    "name": "Страшное HD",
+    "url": "http://live.viks.tv/022512-strashnoe-hd.html"
+  },
+  "mosfil-m-viks": {
+    "name": "Мосфильм «Золотая Коллекция»",
+    "url": "http://live.viks.tv/106326-mosfilm.html"
+  },
+  "hollywood-viks": {
+    "name": "Hollywood HD",
+    "url": "http://live.viks.tv/576-hollywood.html"
+  },
+  "nash-detektiv-viks": {
+    "name": "Наше крутое HD",
+    "url": "http://live.viks.tv/526-nash-detektiv.html"
+  },
+  "kinosemya-viks": {
+    "name": "Киносемья",
+    "url": "http://live.viks.tv/553-kinosemya_9.html"
+  },
+  "red-viks": {
+    "name": ".red",
+    "url": "http://live.viks.tv/105426-sony.html"
+  },
+  "kinoseriya-viks": {
+    "name": "Киносерия",
+    "url": "http://live.viks.tv/587-kinoseriya_5.html"
+  },
+  "piatyi-viks": {
+    "name": "Пятый Канал",
+    "url": "http://live.viks.tv/105326-pyatyy.html"
+  },
+  "amedia-hit-viks": {
+    "name": "Amedia Hit",
+    "url": "http://live.viks.tv/604-amedia-hit.html"
+  },
+  "amedia-premium-hd-viks": {
+    "name": "Amedia Premium",
+    "url": "http://live.viks.tv/497-amedia-premium-hd_2.html"
+  },
+  "sts-viks": {
+    "name": "Стс",
+    "url": "http://live.viks.tv/023117-sts.html"
+  },
+  "dorama-viks": {
+    "name": "Дорама",
+    "url": "http://live.viks.tv/558-dorama.html"
+  },
+  "evrokino-viks": {
+    "name": "Еврокино",
+    "url": "http://live.viks.tv/104226-evrokino.html"
+  },
+  "nostal-giia-viks": {
+    "name": "Ностальгия",
+    "url": "http://live.viks.tv/469-nostalgiya.html"
+  },
+  "romantichnoe-hd-viks": {
+    "name": "Романтичное HD",
+    "url": "http://live.viks.tv/588-romantichnoe-hd.html"
+  },
+  "dushevnoe-viks": {
+    "name": "Душевное",
+    "url": "http://live.viks.tv/586-dushevnoe.html"
+  },
+  "domashnii-viks": {
+    "name": "Домашний",
+    "url": "http://live.viks.tv/337-domashniy.html"
+  },
+  "bollywood-viks": {
+    "name": "Bollywood HD",
+    "url": "http://live.viks.tv/521-bollywood.html"
+  },
+  "mir-seriala-viks": {
+    "name": "Мир Сериала",
+    "url": "http://live.viks.tv/540-mir-seriala.html"
+  },
+  "russkii-illiuzion-viks": {
+    "name": "Русский Иллюзион",
+    "url": "http://live.viks.tv/535-russkiy-illyuzion.html"
+  },
+  "a2-viks": {
+    "name": "Amedia 2",
+    "url": "http://live.viks.tv/500-a2.html"
+  },
+  "a1-viks": {
+    "name": "Amedia 1",
+    "url": "http://live.viks.tv/499-a1.html"
+  },
+  "tv-xxi-viks": {
+    "name": "Tv Xxi",
+    "url": "http://live.viks.tv/498-tv-xxi.html"
+  },
+  "indiiskoe-kino-viks": {
+    "name": "Индийское Кино",
+    "url": "http://live.viks.tv/473-indiya-tv.html"
+  },
+  "kul-tura-viks": {
+    "name": "Культура",
+    "url": "http://live.viks.tv/336-kultura.html"
+  },
+  "russkii-ekstrim-viks": {
+    "name": "Русский Экстрим",
+    "url": "http://live.viks.tv/517-russkiy-ekstrim.html"
+  },
+  "sarafan-viks": {
+    "name": "Сарафан",
+    "url": "http://live.viks.tv/101626-sarafan.html"
+  },
+  "dom-kino-smotru": {
+    "name": "Дом Кино",
+    "url": "https://smotru.tv/dom-kino.html",
+    "cdn": "https://cdniptvpotok.com/dom-kino.php"
+  },
+  "russkii-illiuzion-smotru": {
+    "name": "Русский Иллюзион",
+    "url": "https://smotru.tv/russkij-illyuzion.html",
+    "cdn": "https://cdniptvpotok.com/russkij-illyuzion.php"
+  },
+  "ntv-khit-smotru": {
+    "name": "Нтв Хит",
+    "url": "https://smotru.tv/ntv-hit.html",
+    "cdn": "https://cdniptvpotok.com/ntv-hit.php"
+  },
+  "fox-smotru": {
+    "name": "FX",
+    "url": "https://smotru.tv/fox.html",
+    "cdn": "https://cdniptvpotok.com/fox.php"
+  },
+  "illiuzion-plius-smotru": {
+    "name": "Иллюзион+",
+    "url": "https://smotru.tv/illyuzion-plus.html",
+    "cdn": "https://cdniptvpotok.com/illyuzionplus.php"
+  },
+  "evrokino-smotru": {
+    "name": "Еврокино",
+    "url": "https://smotru.tv/evrokino.html",
+    "cdn": "https://cdniptvpotok.com/evrokino.php"
+  },
+  "hollywood-hd-smotru": {
+    "name": "Hollywood HD",
+    "url": "https://smotru.tv/hollywood-hd.html",
+    "cdn": "https://cdniptvpotok.com/mgm.php"
+  },
+  "cinema-smotru": {
+    "name": "Cinema",
+    "url": "https://smotru.tv/cinema.html",
+    "cdn": "https://cdniptvpotok.com/cinema.php"
+  },
+  "1filmax-smotru": {
+    "name": "VIP Megahit HD",
+    "url": "https://smotru.tv/1filmax.html",
+    "cdn": "https://cdniptvpotok.com/filmax/filmax1/filmax1.php"
+  },
+  "fox-life-smotru": {
+    "name": "FX Life",
+    "url": "https://smotru.tv/fox-life.html",
+    "cdn": "https://cdniptvpotok.com/fox-life.php"
+  },
+  "mir-seriala-smotru": {
+    "name": "Мир Сериала",
+    "url": "https://smotru.tv/mir-seriala.html",
+    "cdn": "https://cdniptvpotok.com/mir-seriala.php"
+  },
+  "bollywood-smotru": {
+    "name": "Bollywood HD",
+    "url": "https://smotru.tv/bollywood.html",
+    "cdn": "https://cdniptvpotok.com/bollywood.php"
+  },
+  "nashe-krutoe-smotru": {
+    "name": "Наше крутое HD",
+    "url": "https://smotru.tv/nashe-krutoe.html",
+    "cdn": "https://cdniptvpotok.com/nash-detektiv.php"
+  },
+  "premial-noe-hd-smotru": {
+    "name": "Премиальное HD",
+    "url": "https://smotru.tv/premialnoe-hd.html",
+    "cdn": "https://cdniptvpotok.com/kinopremium-hd.php"
+  },
+  "4filmax-smotru": {
+    "name": "viju TV1000",
+    "url": "https://smotru.tv/4filmax.html",
+    "cdn": "https://cdniptvpotok.com/filmax/filmax4/filmax4.php"
+  },
+  "nst-smotru": {
+    "name": "Нст",
+    "url": "https://smotru.tv/nst.html",
+    "cdn": "https://cdniptvpotok.com/nst.php"
+  },
+  "tv-21-smotru": {
+    "name": "Tv Xxi",
+    "url": "https://smotru.tv/tv-xxi.html",
+    "cdn": "https://cdniptvpotok.com/tvxxi.php"
+  },
+  "russkaia-komediia-smotru": {
+    "name": "Русская Комедия",
+    "url": "https://smotru.tv/russkaya-komediya.html",
+    "cdn": "https://cdniptvpotok.com/russkaya-komediya.php"
+  },
+  "nash-kinoroman-smotru": {
+    "name": "Душевное",
+    "url": "https://smotru.tv/nash-kinoroman.html",
+    "cdn": "https://cdniptvpotok.com/nash-kinoroman.php"
+  },
+  "russkii-bestseller-smotru": {
+    "name": "Русский Бестселлер",
+    "url": "https://smotru.tv/russkij-bestseller.html",
+    "cdn": "https://cdniptvpotok.com/russkij-bestseller.php"
+  },
+  "russkii-roman-smotru": {
+    "name": "Русский Роман",
+    "url": "https://smotru.tv/russkij-roman.html",
+    "cdn": "https://cdniptvpotok.com/russkij-roman.php"
+  },
+  "russkii-detektiv-smotru": {
+    "name": "Русский Детектив",
+    "url": "https://smotru.tv/russkij-detektiv.html",
+    "cdn": "https://cdniptvpotok.com/russkij-detektiv.php"
+  },
+  "kino-tv-smotru": {
+    "name": "Кино Тв",
+    "url": "https://smotru.tv/kino-tv.html",
+    "cdn": "https://cdniptvpotok.com/kino-tv.php"
+  },
+  "5filmax-smotru": {
+    "name": "viju TV1000 Action",
+    "url": "https://smotru.tv/5filmax.html",
+    "cdn": "https://cdniptvpotok.com/filmax/filmax5/filmax5.php"
+  },
+  "strashnoe-hd-smotru": {
+    "name": "Страшное HD",
+    "url": "https://smotru.tv/strashnoe-hd.html",
+    "cdn": "https://cdniptvpotok.com/strashnoe-hd.php"
+  },
+  "3filmax-smotru": {
+    "name": "VIP Comedy HD",
+    "url": "https://smotru.tv/3filmax.html",
+    "cdn": "https://cdniptvpotok.com/filmax/filmax3/filmax3.php"
+  },
+  "ostrosiuzhetnoe-hd-smotru": {
+    "name": "Остросюжетное HD",
+    "url": "https://smotru.tv/ostrosyuzhetnoe-hd.html",
+    "cdn": "https://cdniptvpotok.com/ostrosyuzhetnoe-hd.php"
+  },
+  "dorama-smotru": {
+    "name": "Дорама",
+    "url": "https://smotru.tv/dorama.html",
+    "cdn": "https://cdniptvpotok.com/dorama.php"
+  },
+  "kinopokaz-smotru": {
+    "name": "Кинопоказ HD",
+    "url": "https://smotru.tv/kinopokaz.html",
+    "cdn": "https://cdniptvpotok.com/kinopokaz.php"
+  },
+  "black-smotru": {
+    "name": ".black",
+    "url": "https://smotru.tv/sony-turbo.html",
+    "cdn": "https://cdniptvpotok.com/sony-turbo.php"
+  },
+  "red-smotru": {
+    "name": ".red",
+    "url": "https://smotru.tv/set.html",
+    "cdn": "https://cdniptvpotok.com/set.php"
+  },
+  "2filmax-smotru": {
+    "name": "VIP Premiere HD",
+    "url": "https://smotru.tv/2filmax.html",
+    "cdn": "https://cdniptvpotok.com/filmax/filmax2/filmax2.php"
+  },
+  "ntv-serial-smotru": {
+    "name": "Нтв Сериал",
+    "url": "https://smotru.tv/ntv-serial.html",
+    "cdn": "https://cdniptvpotok.com/ntv-serial.php"
+  },
+  "shokiruiushchee-hd-smotru": {
+    "name": "Шокирующее HD",
+    "url": "https://smotru.tv/shokiruyushchee-hd.html",
+    "cdn": "https://cdniptvpotok.com/kinopokaz-hd1.php"
+  },
+  "6filmax-smotru": {
+    "name": "viju TV1000 romantica",
+    "url": "https://smotru.tv/6filmax.html",
+    "cdn": "https://cdniptvpotok.com/filmax/filmax6/filmax6.php"
+  },
+  "komediinoe-hd-smotru": {
+    "name": "Комедийное HD",
+    "url": "https://smotru.tv/komedijnoe-hd.html",
+    "cdn": "https://cdniptvpotok.com/kinopokaz-hd2.php"
+  },
+  "liubimoe-kino-smotru": {
+    "name": "Любимое Кино",
+    "url": "https://smotru.tv/lyubimoe-kino.html",
+    "cdn": "https://cdniptvpotok.com/lyubimoe-kino.php"
+  },
+  "filmbox-smotru": {
+    "name": "Filmbox",
+    "url": "https://smotru.tv/filmbox.html",
+    "cdn": "https://cdniptvpotok.com/filmbox.php"
+  },
+  "kinosat-smotru": {
+    "name": "Киносат",
+    "url": "https://smotru.tv/kinosat.html",
+    "cdn": "https://cdniptvpotok.com/kinosat.php"
+  },
+  "romantichnoe-hd-smotru": {
+    "name": "Романтичное HD",
+    "url": "https://smotru.tv/romantichnoe-hd.html",
+    "cdn": "https://cdniptvpotok.com/romantichnoe-hd.php"
+  },
+  "fmc-tv-smotru": {
+    "name": "Fmc Tv",
+    "url": "https://smotru.tv/fmc-tv.html",
+    "cdn": "https://cdniptvpotok.com/fmc-tv.php"
+  },
+  "telekafe-smotru": {
+    "name": "Телекафе",
+    "url": "https://smotru.tv/telekafe.html",
+    "cdn": "https://cdniptvpotok.com/telekafe.php"
+  },
+  "kineko-smotru": {
+    "name": "Кинеко HD",
+    "url": "https://smotru.tv/kineko.html",
+    "cdn": "https://cdniptvpotok.com/kineko.php"
+  },
+  "kino-1-international-smotru": {
+    "name": "Кино 1 International",
+    "url": "https://smotru.tv/kino-1-international.html",
+    "cdn": "https://cdniptvpotok.com/kino-1-international.php"
+  },
+  "filmax-fantastika-smotru": {
+    "name": "Filmax Фантастика",
+    "url": "https://smotru.tv/filmax-fantastika.html",
+    "cdn": "https://cdniptvpotok.com/filmax-fantastika.php"
+  },
+  "filmax-komediia-smotru": {
+    "name": "Filmax Комедия",
+    "url": "https://smotru.tv/filmax-komediya.html",
+    "cdn": "https://cdniptvpotok.com/filmax-komediya.php"
+  },
+  "mosfil-m-zolotaia-kollektsiia-smotru": {
+    "name": "Мосфильм «Золотая Коллекция»",
+    "url": "https://smotru.tv/mosfilm-zolotaya-kollektsiya.html",
+    "cdn": "https://cdniptvpotok.com/mosfilm-zolotaya-kollektsiya.php"
+  },
+  "avto-24-smotru": {
+    "name": "Авто 24",
+    "url": "https://smotru.tv/avto-24.html",
+    "cdn": "https://cdniptvpotok.com/avto-24.php"
+  },
+  "draiv-tv-smotru": {
+    "name": "Драйв Тв",
+    "url": "https://smotru.tv/drajv-tv.html",
+    "cdn": "https://cdniptvpotok.com/drajv-tv.php"
+  },
+  "real-madrid-tv-smotru": {
+    "name": "Real Madrid Tv",
+    "url": "https://smotru.tv/real-madrid-tv.html",
+    "cdn": "https://cdniptvpotok.com/real-madrid-tv.php"
+  },
+  "setanta-sports-1-smotru": {
+    "name": "Setanta Sports 1",
+    "url": "https://smotru.tv/setanta-sports-1.html",
+    "cdn": "https://cdniptvpotok.com/setanta_sport_pl_1.php"
+  },
+  "extreme-sports-smotru": {
+    "name": "Extreme Sports",
+    "url": "https://smotru.tv/extreme-sports.html",
+    "cdn": "https://cdniptvpotok.com/extreme-sports.php"
+  },
+  "tochka-otryva-smotru": {
+    "name": "Точка Отрыва",
+    "url": "https://smotru.tv/tochka-otryva.html",
+    "cdn": "https://cdniptvpotok.com/tochka-otryva.php"
+  },
+  "setanta-sports-2-smotru": {
+    "name": "Setanta Sports 2",
+    "url": "https://smotru.tv/setanta-sports-2.html",
+    "cdn": "https://cdniptvpotok.com/setanta_sport_pl_2.php"
+  },
+  "belarus-5-smotru": {
+    "name": "Беларусь 5",
+    "url": "https://smotru.tv/belarus-5.html",
+    "cdn": "https://cdniptvpotok.com/belarus-5.php"
+  },
+  "konnyi-mir-smotru": {
+    "name": "Конный Мир",
+    "url": "https://smotru.tv/konnyj-mir.html",
+    "cdn": "https://cdniptvpotok.com/konnyj-mir.php"
+  },
+  "sci-fi-smotru": {
+    "name": "Sony Sci-Fi",
+    "url": "https://smotru.tv/sony-sci-fi.html",
+    "cdn": "https://cdniptvpotok.com/sony-sci-fi.php"
+  },
+  "kinoekshen-smotru": {
+    "name": "Киноэкшен",
+    "url": "https://smotru.tv/kinoekshen.html",
+    "cdn": "https://cdniptvpotok.com/kinoekshen.php"
+  },
+  "kinodetektiv-smotru": {
+    "name": "Кинодетектив",
+    "url": "https://smotru.tv/kinodetektiv.html",
+    "cdn": "https://cdniptvpotok.com/kinodetektiv.php"
+  },
+  "kinokomediia-smotru": {
+    "name": "Кинокомедия",
+    "url": "https://smotru.tv/kinokomediya.html",
+    "cdn": "https://cdniptvpotok.com/kinokomediya.php"
+  },
+  "kinomistika-smotru": {
+    "name": "Киномистика",
+    "url": "https://smotru.tv/kinomistika.html",
+    "cdn": "https://cdniptvpotok.com/kinomistika.php"
+  },
+  "viju-tv1000-action-mediamaniya": {
+    "name": "Viju Tv1000 Action",
+    "url": "https://mediamaniya.ru/tv/viju-tv1000-action"
+  },
+  "dom-kino-mediamaniya": {
+    "name": "Дом Кино",
+    "url": "https://mediamaniya.ru/tv/dom-kino"
+  },
+  "rossiia-1-smotru": {
+    "name": "Россия 1",
+    "url": "https://smotru.tv/rossiya-1.html",
+    "cdn": "https://cdniptvpotok.com/rossiya1.php"
+  },
+  "ntv-smotru": {
+    "name": "Нтв",
+    "url": "https://smotru.tv/ntv.html",
+    "cdn": "https://cdniptvpotok.com/ntv.php"
+  },
+  "ren-tv-smotru": {
+    "name": "Рен Тв",
+    "url": "https://smotru.tv/ren.html",
+    "cdn": "https://cdniptvpotok.com/ren-tv.php"
+  },
+  "tvts-smotru": {
+    "name": "Твц",
+    "url": "https://smotru.tv/tvc.html",
+    "cdn": "https://cdniptvpotok.com/tvc.php"
+  },
+  "mir-smotru": {
+    "name": "Мир",
+    "url": "https://smotru.tv/mir.html",
+    "cdn": "https://cdniptvpotok.com/mir.php"
+  },
+  "zvezda-smotru": {
+    "name": "Звезда",
+    "url": "https://smotru.tv/zvezda.html",
+    "cdn": "https://cdniptvpotok.com/zvezda.php"
+  },
+  "krasnaia-liniia-smotru": {
+    "name": "Красная Линия",
+    "url": "https://smotru.tv/krasnaya-liniya.html",
+    "cdn": "https://cdniptvpotok.com/krasnaya-liniya.php"
+  },
+  "piatyi-kanal-smotru": {
+    "name": "Пятый Канал",
+    "url": "https://smotru.tv/pyatyj-kanal.html",
+    "cdn": "https://cdniptvpotok.com/5kanal.php"
+  },
+  "domashnii-smotru": {
+    "name": "Домашний",
+    "url": "https://smotru.tv/domashnij.html",
+    "cdn": "https://cdniptvpotok.com/domashnij.php"
+  },
+  "rossiia-k-kul-tura-smotru": {
+    "name": "Культура",
+    "url": "https://smotru.tv/rossiya-kultura.html",
+    "cdn": "https://cdntvmedia.com/common/rossiya-kultura.php"
+  },
+  "ntv-mir-smotru": {
+    "name": "НТВ-Мир",
+    "url": "https://smotru.tv/ntv-mir.html",
+    "cdn": "https://cdniptvpotok.com/ntv-mir.php"
+  },
+  "prodvizhenie-smotru": {
+    "name": "Продвижение",
+    "url": "https://smotru.tv/prodvizhenie.html",
+    "cdn": "https://cdniptvpotok.com/prodvizhenie.php"
+  },
+  "zvezda-plius-smotru": {
+    "name": "Звезда Плюс",
+    "url": "https://smotru.tv/zvezda-plyus.html",
+    "cdn": "https://cdniptvpotok.com/zvezda-plyus.php"
+  },
+  "360-gradusov-smotru": {
+    "name": "360 Градусов",
+    "url": "https://smotru.tv/360-gradusov.html",
+    "cdn": "https://cdniptvpotok.com/360-gradusov.php"
+  },
+  "8-kanal-smotru": {
+    "name": "8 Канал",
+    "url": "https://smotru.tv/8-kanal.html",
+    "cdn": "https://cdniptvpotok.com/8-kanal.php"
+  },
+  "sts-smotru": {
+    "name": "Стс",
+    "url": "https://smotru.tv/sts.html",
+    "cdn": "https://cdniptvpotok.com/sts.php"
+  },
+  "ekho-tv-smotru": {
+    "name": "Эхо TV",
+    "url": "https://smotru.tv/ekho-tv.html",
+    "cdn": "https://cdniptvpotok.com/ekho-tv.php"
+  },
+  "kaleidoskop-tv-smotru": {
+    "name": "Калейдоскоп ТВ",
+    "url": "https://smotru.tv/kalejdoskop-tv.html",
+    "cdn": "https://cdniptvpotok.com/kalejdoskop-tv.php"
+  },
+  "rtg-smotru": {
+    "name": "RTG",
+    "url": "https://smotru.tv/rtg.html",
+    "cdn": "https://cdniptvpotok.com/rtg.php"
+  },
+  "history-2-smotru": {
+    "name": "History2",
+    "url": "https://smotru.tv/history-2.html",
+    "cdn": "https://cdniptvpotok.com/history-2.php"
+  },
+  "prikliucheniia-hd-smotru": {
+    "name": "Приключения HD",
+    "url": "https://smotru.tv/priklyucheniya-hd.html",
+    "cdn": "https://cdniptvpotok.com/priklyucheniya-hd.php"
+  },
+  "diskaveri-smotru": {
+    "name": "Discovery",
+    "url": "https://smotru.tv/discovery.html",
+    "cdn": "https://cdniptvpotok.com/discovery.php"
+  },
+  "tainy-galaktiki-smotru": {
+    "name": "Galaxy Tv",
+    "url": "https://smotru.tv/tajny-galaktiki.html",
+    "cdn": "https://cdniptvpotok.com/galaxy-tv.php"
+  },
+  "okhota-i-rybalka-smotru": {
+    "name": "Охота И Рыбалка",
+    "url": "https://smotru.tv/okhota-i-rybalka.html",
+    "cdn": "https://cdniptvpotok.com/okhota-i-rybalka.php"
+  },
+  "oruzhie-smotru": {
+    "name": "Оружие",
+    "url": "https://smotru.tv/oruzhie.html",
+    "cdn": "https://cdniptvpotok.com/oruzhie.php"
+  },
+  "istoriia-smotru": {
+    "name": "История",
+    "url": "https://smotru.tv/istoriya.html",
+    "cdn": "https://cdniptvpotok.com/istoriya.php"
+  },
+  "viasat-explorer-smotru": {
+    "name": "Viasat Explorer",
+    "url": "https://smotru.tv/viasat-explorer.html",
+    "cdn": "https://cdniptvpotok.com/viasat-explorer.php"
+  },
+  "national-geographic-smotru": {
+    "name": "National Geographic",
+    "url": "https://smotru.tv/national-geographic.html",
+    "cdn": "https://cdniptvpotok.com/national-geographic.php"
+  },
+  "morskoi-smotru": {
+    "name": "Морской",
+    "url": "https://smotru.tv/morskoj.html",
+    "cdn": "https://cdniptvpotok.com/morskoj.php"
+  },
+  "animal-planet-smotru": {
+    "name": "Animal Planet",
+    "url": "https://smotru.tv/animal-planet.html",
+    "cdn": "https://cdniptvpotok.com/animal-planet.php"
+  },
+  "viasat-nature-smotru": {
+    "name": "Viasat Nature",
+    "url": "https://smotru.tv/viasat-nature.html",
+    "cdn": "https://cdniptvpotok.com/viasat-nature.php"
+  },
+  "bober-tv-smotru": {
+    "name": "Бобер",
+    "url": "https://smotru.tv/bober-tv.html",
+    "cdn": "https://cdniptvpotok.com/bober-tv.php"
+  },
+  "viasat-history-smotru": {
+    "name": "Viasat History",
+    "url": "https://smotru.tv/viasat-history.html",
+    "cdn": "https://cdniptvpotok.com/viasat-history.php"
+  },
+  "nat-geo-wild-smotru": {
+    "name": "Nat Geo Wild",
+    "url": "https://smotru.tv/nat-geo-wild.html",
+    "cdn": "https://cdniptvpotok.com/nat-geo-wild.php"
+  },
+  "24-tekhno-smotru": {
+    "name": "Т24",
+    "url": "https://smotru.tv/24-tekhno.html",
+    "cdn": "https://cdniptvpotok.com/24-tekhno.php"
+  },
+  "history-smotru": {
+    "name": "History",
+    "url": "https://smotru.tv/history-channel.html",
+    "cdn": "https://cdniptvpotok.com/history.php"
+  },
+  "moia-planeta-smotru": {
+    "name": "Моя Планета",
+    "url": "https://smotru.tv/moya-planeta.html",
+    "cdn": "https://cdniptvpotok.com/moya-planeta.php"
+  },
+  "sovershenno-sekretno-smotru": {
+    "name": "Совершенно Секретно",
+    "url": "https://smotru.tv/sovershenno-sekretno.html",
+    "cdn": "https://cdniptvpotok.com/sovershenno-sekretno.php"
+  },
+  "okhotnik-i-rybolov-smotru": {
+    "name": "Охотник и рыболов",
+    "url": "https://smotru.tv/okhotnik-i-rybolov.html",
+    "cdn": "https://cdniptvpotok.com/okhotnik-i-rybolov.php"
+  },
+  "nano-tv-smotru": {
+    "name": "Нано",
+    "url": "https://smotru.tv/nano-tv.html",
+    "cdn": "https://cdniptvpotok.com/nano-tv.php"
+  },
+  "eda-tv-smotru": {
+    "name": "Еда",
+    "url": "https://smotru.tv/eda-tv.html",
+    "cdn": "https://cdniptvpotok.com/eda-tv.php"
+  },
+  "travel-channel-smotru": {
+    "name": "Travel Channel",
+    "url": "https://smotru.tv/travel-channel.html",
+    "cdn": "https://cdniptvpotok.com/travel-channel.php"
+  },
+  "travel-and-adventure-smotru": {
+    "name": "Travel And Adventure",
+    "url": "https://smotru.tv/travel-and-adventure.html",
+    "cdn": "https://cdniptvpotok.com/travel-and-adventure.php"
+  },
+  "zoopark-smotru": {
+    "name": "Zooпарк",
+    "url": "https://smotru.tv/zoopark.html",
+    "cdn": "https://cdniptvpotok.com/zoopark.php"
+  },
+  "muzhskoi-smotru": {
+    "name": "Мужской",
+    "url": "https://smotru.tv/muzhskoj.html",
+    "cdn": "https://cdniptvpotok.com/muzhskoj.php"
+  },
+  "pervyi-kosmicheskii-smotru": {
+    "name": "Первый Космический",
+    "url": "https://smotru.tv/pervyj-kosmicheskij.html",
+    "cdn": "https://cdniptvpotok.com/pervyj-kosmicheskij.php"
+  },
+  "univer-tv-smotru": {
+    "name": "Univer Tv",
+    "url": "https://smotru.tv/univer-tv.html",
+    "cdn": "https://cdniptvpotok.com/univer-tv.php"
+  },
+  "sts-domatv": {
+    "name": "Стс",
+    "url": "http://live.domatv.net/065824-sts.html"
+  },
+  "dom-kino-premium-domatv": {
+    "name": "Дом Кино Премиум HD",
+    "url": "http://live.domatv.net/100-dom-kino-premium.html"
+  },
+  "russkaia-komediia-domatv": {
+    "name": "Русская Комедия",
+    "url": "http://live.domatv.net/215-russkaja-komedija.html"
+  },
+  "kino-tv-domatv": {
+    "name": "Кино ТВ",
+    "url": "http://live.domatv.net/037212-kino-tv.html"
+  },
+  "shokiruiushchee-hd-domatv": {
+    "name": "Шокирующее HD",
+    "url": "http://live.domatv.net/199-shokirujuschee-hd.html"
+  },
+  "dorama-domatv": {
+    "name": "Дорама",
+    "url": "http://live.domatv.net/125-dorama.html"
+  },
+  "vip-comedy-domatv": {
+    "name": "Vip Comedy",
+    "url": "http://live.domatv.net/117-vip-comedy-tv-d1.html"
+  },
+  "vip-megahit-domatv": {
+    "name": "Vip Megahit",
+    "url": "http://live.domatv.net/118-vip-megahit-tv.html"
+  },
+  "sony-sci-fi-domatv": {
+    "name": "Sony Sci-Fi",
+    "url": "http://live.domatv.net/81-sony-sci-fi.html"
+  },
+  "ostrosiuzhetnoe-hd-domatv": {
+    "name": "Остросюжетное HD",
+    "url": "http://live.domatv.net/79-ostrosjuzhetnoe-hd-tv.html"
+  },
+  "domashnii-domatv": {
+    "name": "Домашний",
+    "url": "http://live.domatv.net/46-domashnij-tv.html"
+  },
+  "dom-kino-domatv": {
+    "name": "Дом Кино",
+    "url": "http://live.domatv.net/45-dom-kino.html"
+  },
+  "zvezda-domatv": {
+    "name": "Звезда",
+    "url": "http://live.domatv.net/69-zvezda.html"
+  },
+  "piatyi-kanal-domatv": {
+    "name": "Пятый Канал",
+    "url": "http://live.domatv.net/34-5-kanal-tv.html"
+  },
+  "romantichnoe-hd-domatv": {
+    "name": "Романтичное HD",
+    "url": "http://live.domatv.net/223-romantichnoe-hd-tv.html"
+  },
+  "dushevnoe-domatv": {
+    "name": "Душевное",
+    "url": "http://live.domatv.net/221-dushevnoe.html"
+  },
+  "hollywood-domatv": {
+    "name": "Hollywood",
+    "url": "http://live.domatv.net/212-hollywood-tv.html"
+  },
+  "ntv-khit-domatv": {
+    "name": "Нтв Хит",
+    "url": "http://live.domatv.net/210-ntv-hit.html"
+  },
+  "ntv-serial-domatv": {
+    "name": "Нтв Сериал",
+    "url": "http://live.domatv.net/209-ntv-serial-tv.html"
+  },
+  "vip-premiere-domatv": {
+    "name": "Vip Premiere",
+    "url": "http://live.domatv.net/194-vip-premiere-tv.html"
+  },
+  "evrokino-domatv": {
+    "name": "Еврокино",
+    "url": "http://live.domatv.net/178-evrokino.html"
+  },
+  "bollywood-domatv": {
+    "name": "Bollywood",
+    "url": "http://live.domatv.net/177-bollywood.html"
+  },
+  "9-kanal-izrail-domatv": {
+    "name": "9 Канал Израиль",
+    "url": "http://live.domatv.net/154-9-kanal-izrail-tv.html"
+  },
+  "nash-detektiv-domatv": {
+    "name": "Наше крутое HD",
+    "url": "http://live.domatv.net/152-nash-detektiv.html"
+  },
+  "a2-domatv": {
+    "name": "Amedia 2",
+    "url": "http://live.domatv.net/147-a2.html"
+  },
+  "a1-domatv": {
+    "name": "Amedia 1",
+    "url": "http://live.domatv.net/146-a1.html"
+  },
+  "liubimoe-kino-domatv": {
+    "name": "Любимое Кино",
+    "url": "http://live.domatv.net/133-ljubimoe-kino-tv.html"
+  },
+  "illiuzion-domatv": {
+    "name": "Иллюзион+",
+    "url": "http://live.domatv.net/114-illjuzion.html"
+  },
+  "russkii-illiuzion-domatv": {
+    "name": "Русский Иллюзион",
+    "url": "http://live.domatv.net/109-russkij-illjuzion.html"
+  },
+  "mir-domatv": {
+    "name": "Мир",
+    "url": "http://live.domatv.net/38-mir.html"
+  },
+  "mul-timuzyka-domatv": {
+    "name": "Мультимузыка",
+    "url": "http://live.domatv.net/217-multimuzyka.html"
+  },
+  "muz-tv-domatv": {
+    "name": "Муз Тв",
+    "url": "http://live.domatv.net/55-muz-tv.html"
+  },
+  "vh1-classic-domatv": {
+    "name": "Vh1 Classic",
+    "url": "http://live.domatv.net/50-vh1-classic.html"
+  },
+  "vh1-europe-domatv": {
+    "name": "Vh1 Europe",
+    "url": "http://live.domatv.net/51-vh1-europe-tv.html"
+  },
+  "bridge-tv-domatv": {
+    "name": "Bridge Tv",
+    "url": "http://live.domatv.net/219-bridge-tv-online.html"
+  },
+  "mtv-hits-domatv": {
+    "name": "MTV Hits",
+    "url": "http://live.domatv.net/203-mtv-hits-tv.html"
+  },
+  "tnt-music-domatv": {
+    "name": "ТНТ Music",
+    "url": "http://live.domatv.net/180-tnt-music.html"
+  },
+  "msm-tor-domatv": {
+    "name": "MCM Top",
+    "url": "http://live.domatv.net/120-msm-tor-tv.html"
+  },
+  "ru-tv-domatv": {
+    "name": "Ru Tv",
+    "url": "http://live.domatv.net/94-ru-tv.html"
+  },
+  "shanson-tv-domatv": {
+    "name": "Шансон-TB",
+    "url": "http://live.domatv.net/92-shanson-tv.html"
+  },
+  "tnt4-domatv": {
+    "name": "Тнт4",
+    "url": "http://live.domatv.net/9-tnt-4.html"
+  },
+  "ren-tv-domatv": {
+    "name": "Рен ТВ",
+    "url": "http://live.domatv.net/64-ren-tv.html"
+  },
+  "tnt-domatv": {
+    "name": "Тнт",
+    "url": "http://live.domatv.net/2-post2.html"
+  },
+  "che-tv-domatv": {
+    "name": "Че",
+    "url": "http://live.domatv.net/59-che-tv-online.html"
+  },
+  "2x2-domatv": {
+    "name": "2x2",
+    "url": "http://live.domatv.net/44-2x2-tv.html"
+  },
+  "soiuzmul-tfil-m-domatv": {
+    "name": "Союзмультфильм",
+    "url": "http://live.domatv.net/163-sojuzmultfilm-tv.html"
+  },
+  "v-gostiakh-u-skazki-domatv": {
+    "name": "В Гостях У Сказки",
+    "url": "http://live.domatv.net/134-v-gostjah-u-skazki.html"
+  },
+  "tiji-domatv": {
+    "name": "Tiji",
+    "url": "http://live.domatv.net/73-tiji.html"
+  },
+  "nick-jr-domatv": {
+    "name": "Nick Jr",
+    "url": "http://live.domatv.net/77-nick-jr.html"
+  },
+  "nickelodeon-domatv": {
+    "name": "Nickelodeon",
+    "url": "http://live.domatv.net/6-nickelodeon.html"
+  },
+  "disney-domatv": {
+    "name": "Disney",
+    "url": "http://live.domatv.net/65-disney.html"
+  },
+  "gulli-girl-domatv": {
+    "name": "Gulli Girl",
+    "url": "http://live.domatv.net/166-gulli-girl.html"
+  },
+  "eralash-domatv": {
+    "name": "Ералаш",
+    "url": "http://live.domatv.net/164-eralash.html"
+  },
+  "ani-domatv": {
+    "name": "Ani",
+    "url": "http://live.domatv.net/161-ani.html"
+  },
+  "mul-t-domatv": {
+    "name": "Мульт",
+    "url": "http://live.domatv.net/138-mult.html"
+  },
+  "karusel-domatv": {
+    "name": "Карусель",
+    "url": "http://live.domatv.net/95-karusel.html"
+  },
+  "travel-adventure-xittv": {
+    "name": "Travel+Adventure",
+    "url": "https://xittv.net/travel-adventure.html"
+  },
+  "travel-channel-xittv": {
+    "name": "Travel Channel",
+    "url": "https://xittv.net/travel-channel.html"
+  },
+  "history-xittv": {
+    "name": "History",
+    "url": "https://xittv.net/history.html"
+  },
+  "nauka-2-0-xittv": {
+    "name": "Наука 2.0",
+    "url": "https://xittv.net/nauka.html"
+  },
+  "t24-xittv": {
+    "name": "Т24",
+    "url": "https://xittv.net/t24.html"
+  },
+  "oruzhie-xittv": {
+    "name": "Оружие",
+    "url": "https://xittv.net/oruzhie.html"
+  },
+  "moia-planeta-xittv": {
+    "name": "Моя Планета",
+    "url": "https://xittv.net/moya-planeta.html"
+  },
+  "zhivaia-planeta-xittv": {
+    "name": "Живая Планета",
+    "url": "https://xittv.net/zivaya-planeta.html"
+  },
+  "doktor-xittv": {
+    "name": "Доктор",
+    "url": "https://xittv.net/doktor.html"
+  },
+  "okhotnik-i-rybolov-xittv": {
+    "name": "Охотник И Рыболов",
+    "url": "https://xittv.net/ohotnik-i-rybolov.html"
+  },
+  "avto-plius-xittv": {
+    "name": "Авто Плюс",
+    "url": "https://xittv.net/avtoplys.html"
+  },
+  "moia-stikhiia-xittv": {
+    "name": "Моя Стихия",
+    "url": "https://xittv.net/morskoy.html"
+  },
+  "bobior-xittv": {
+    "name": "Бобер",
+    "url": "https://xittv.net/bober.html"
+  },
+  "mama-xittv": {
+    "name": "Мама",
+    "url": "https://xittv.net/mama.html"
+  },
+  "zagorodnaia-zhizn-xittv": {
+    "name": "Загородная Жизнь",
+    "url": "https://xittv.net/zagorodnaya-zhizn.html"
+  },
+  "kukhnia-tv-xittv": {
+    "name": "Кухня Тв",
+    "url": "https://xittv.net/kuhnya-tv.html"
+  },
+  "galaxy-tv-xittv": {
+    "name": "Galaxy Tv",
+    "url": "https://xittv.net/galaxy.html"
+  },
+  "istoriia-xittv": {
+    "name": "История",
+    "url": "https://xittv.net/istoriya.html"
+  },
+  "9-kanal-izrail-xittv": {
+    "name": "9 Канал Израиль",
+    "url": "https://xittv.net/9-kanal-izrail.html"
+  },
+  "tnt4-xittv": {
+    "name": "Тнт4",
+    "url": "https://xittv.net/tnt4.html"
+  },
+  "sarafan-xittv": {
+    "name": "Сарафан",
+    "url": "https://xittv.net/sarafan.html"
+  },
+  "dom-kino-xittv": {
+    "name": "Дом Кино",
+    "url": "https://xittv.net/domkino.html"
+  },
+  "kino-tv-xittv": {
+    "name": "Кино Тв",
+    "url": "https://xittv.net/kino-tv.html"
+  },
+  "cinema-xittv": {
+    "name": "Cinema",
+    "url": "https://xittv.net/cinema.html"
+  },
+  "romantichnoe-hd-xittv": {
+    "name": "Романтичное HD",
+    "url": "https://xittv.net/romantichnoe.html"
+  },
+  "strashnoe-hd-xittv": {
+    "name": "Страшное HD",
+    "url": "https://xittv.net/strashnoe-hd.html"
+  },
+  "premial-noe-hd-xittv": {
+    "name": "Премиальное HD",
+    "url": "https://xittv.net/premialnoe-hd.html"
+  },
+  "khit-hd-xittv": {
+    "name": "Хит HD",
+    "url": "https://xittv.net/xit-hd.html"
+  },
+  "mosfil-m-zolotaia-xittv": {
+    "name": "Мосфильм «Золотая Коллекция»",
+    "url": "https://xittv.net/mosfilm.html"
+  },
+  "pobeda-xittv": {
+    "name": "Победа",
+    "url": "https://xittv.net/pobeda.html"
+  },
+  "kinosat-xittv": {
+    "name": "Киносат",
+    "url": "https://xittv.net/kinosat.html"
+  },
+  "kinopokaz-xittv": {
+    "name": "Кинопоказ",
+    "url": "https://xittv.net/kinopokaz.html"
+  },
+  "zvezda-xittv": {
+    "name": "Звезда",
+    "url": "https://xittv.net/zvezda.html"
+  },
+  "evrokino-xittv": {
+    "name": "Еврокино",
+    "url": "https://xittv.net/evrokino.html"
+  },
+  "nst-xittv": {
+    "name": "Нст",
+    "url": "https://xittv.net/nst.html"
+  },
+  "illiuzion-xittv": {
+    "name": "Иллюзион+",
+    "url": "https://xittv.net/illyuzion-pl.html"
+  },
+  "russkii-illiuzion-xittv": {
+    "name": "Русский Иллюзион",
+    "url": "https://xittv.net/illuzionrus.html"
+  },
+  "tv-xxi-tv-21-xittv": {
+    "name": "Tv Xxi",
+    "url": "https://xittv.net/tv-21.html"
+  },
+  "russkii-roman-xittv": {
+    "name": "Русский Роман",
+    "url": "https://xittv.net/russkiy-roman.html"
+  },
+  "russkii-bestseller-xittv": {
+    "name": "Русский Бестселлер",
+    "url": "https://xittv.net/russkiy-bestseller.html"
+  },
+  "russkii-detektiv-xittv": {
+    "name": "Русский Детектив",
+    "url": "https://xittv.net/russkiy-detektiv.html"
+  },
+  "shokiruiushchee-hd-xittv": {
+    "name": "Шокирующее Hd",
+    "url": "https://xittv.net/kinopokaz1.html"
+  },
+  "komediinoe-hd-xittv": {
+    "name": "Комедийное HD",
+    "url": "https://xittv.net/kinopokaz2.html"
+  },
+  "nashe-xittv": {
+    "name": "Наше крутое HD",
+    "url": "https://xittv.net/nash-detektiv.html"
+  },
+  "dushevnoe-xittv": {
+    "name": "Душевное",
+    "url": "https://xittv.net/nash-kinoroman.html"
+  },
+  "ostrosiuzhetnoe-kino-xittv": {
+    "name": "Остросюжетное HD",
+    "url": "https://xittv.net/ostrosjuzhetnoe.html"
+  },
+  "bollywood-xittv": {
+    "name": "Bollywood",
+    "url": "https://xittv.net/bollywood.html"
+  },
+  "dom-kino-premium-xittv": {
+    "name": "Дом Кино Премиум",
+    "url": "https://xittv.net/dom-kino-premium.html"
+  },
+  "solntse-xittv": {
+    "name": "Солнце",
+    "url": "https://xittv.net/disney.html"
+  },
+  "nickelodeon-xittv": {
+    "name": "Nickelodeon",
+    "url": "https://xittv.net/nickelodeon.html"
+  },
+  "unikum-xittv": {
+    "name": "Уникум",
+    "url": "https://xittv.net/detskij.html"
+  },
+  "karusel-xittv": {
+    "name": "Карусель",
+    "url": "https://xittv.net/karusel.html"
+  },
+  "radost-moia-xittv": {
+    "name": "Радость Моя",
+    "url": "https://xittv.net/radost-moja.html"
+  },
+  "gulli-xittv": {
+    "name": "Gulli girl",
+    "url": "https://xittv.net/gulli.html"
+  },
+  "ani-xittv": {
+    "name": "Ani",
+    "url": "https://xittv.net/ani.html"
+  },
+  "tiji-xittv": {
+    "name": "Tiji",
+    "url": "https://xittv.net/tiji.html"
+  },
+  "mul-t-xittv": {
+    "name": "Мульт",
+    "url": "https://xittv.net/mult.html"
+  },
+  "nick-jr-xittv": {
+    "name": "Nick Jr",
+    "url": "https://xittv.net/nick-jr.html"
+  },
+  "1hd-xittv": {
+    "name": "1Hd",
+    "url": "https://xittv.net/1hd.html"
+  },
+  "tnt-music-xittv": {
+    "name": "Тнт Music",
+    "url": "https://xittv.net/tnt-musik.html"
+  },
+  "bridge-tv-xittv": {
+    "name": "Bridge Tv",
+    "url": "https://xittv.net/bridge-tv.html"
+  },
+  "mtv-00s-xittv": {
+    "name": "Mtv 00S",
+    "url": "https://xittv.net/vh1.html"
+  },
+  "mtv-80s-xittv": {
+    "name": "Mtv 80S",
+    "url": "https://xittv.net/vh1clas.html"
+  },
+  "muz-tv-xittv": {
+    "name": "Муз Тв",
+    "url": "https://xittv.net/muz-tv.html"
+  },
+  "shanson-tv-xittv": {
+    "name": "Шансон-TB",
+    "url": "https://xittv.net/shanson.html"
+  },
+  "ru-tv-xittv": {
+    "name": "Ru Tv",
+    "url": "https://xittv.net/ru-tv.html"
+  },
+  "russian-music-box-xittv": {
+    "name": "Music Box Russia",
+    "url": "https://xittv.net/russian-music-box.html"
+  },
+  "mtv-hits-xittv": {
+    "name": "MTV Hits",
+    "url": "https://xittv.net/mtv-hits.html"
+  },
+  "scream-ontivi": {
+    "name": "Scream",
+    "url": "https://ip.ontivi.net/scream.html"
+  },
+  "pervyy-kanal-ontivi": {
+    "name": "Первый канал",
+    "url": "https://ip.ontivi.net/025813-pervyy-kanal.html"
+  },
+  "detskoe-kino-ontivi": {
+    "name": "Детское кино",
+    "url": "https://ip.ontivi.net/detskoe-kino.html"
+  },
+  "dizi-ontivi": {
+    "name": "Timeless Dizi Channel",
+    "url": "https://ip.ontivi.net/dizi.html"
+  },
+  "blokbaster-hd-ontivi": {
+    "name": "Блокбастер HD",
+    "url": "https://ip.ontivi.net/blokbaster-hd.html"
+  },
+  "xit-hd-ontivi": {
+    "name": "Хит HD",
+    "url": "https://ip.ontivi.net/xit-hd.html"
+  },
+  "sovetskoe-kino-ontivi": {
+    "name": "Советское кино",
+    "url": "https://ip.ontivi.net/sovetskoe-kino.html"
+  },
+  "lyubimoe-ontivi": {
+    "name": "Любимое HD",
+    "url": "https://ip.ontivi.net/lyubimoe12.html"
+  },
+  "pobeda-ontivi": {
+    "name": "Победа",
+    "url": "https://ip.ontivi.net/pobeda14.html"
+  },
+  "kinosezon-ontivi": {
+    "name": "КиноСезон",
+    "url": "https://ip.ontivi.net/kinosezon.html"
+  },
+  "horror-ontivi": {
+    "name": "Horror TV",
+    "url": "https://ip.ontivi.net/horror.html"
+  },
+  "komedijnoe-hd-ontivi": {
+    "name": "Комедийное HD",
+    "url": "https://ip.ontivi.net/komedijnoe-hd5.html"
+  },
+  "premialnoe-hd-ontivi": {
+    "name": "Премиальное HD",
+    "url": "https://ip.ontivi.net/premialnoe-hd31.html"
+  },
+  "film-box-ontivi": {
+    "name": "FilmBox",
+    "url": "https://ip.ontivi.net/film-box3.html"
+  },
+  "fx-tv-ontivi": {
+    "name": "FX",
+    "url": "https://ip.ontivi.net/fx-tv.html"
+  },
+  "fx-life-ontivi": {
+    "name": "FX Life",
+    "url": "https://ip.ontivi.net/fx-life.html"
+  },
+  "feniks-plyus-kino-rutuner": {
+    "name": "Феникс плюс Кино",
+    "url": "http://rutuner.ru/watch/feniks-plyus-kino"
+  },
+  "nst-oneliketv": {
+    "name": "Нст",
+    "url": "http://oneliketv.net/nst.html",
+    "cdn": "http://cdntvpotok.com/onelike/nst.php"
+  },
+  "tv-1000-oneliketv": {
+    "name": "viju TV1000",
+    "url": "http://oneliketv.net/tv1000.html",
+    "cdn": "http://cdntvpotok.com/onelike/tv1000.php"
+  },
+  "amedia-hit-oneliketv": {
+    "name": "Amedia Hit",
+    "url": "http://oneliketv.net/amedia-hit.html",
+    "cdn": "http://cdntvpotok.com/onelike/amedia-hit.php"
+  },
+  "tv-1000-russkoe-kino-oneliketv": {
+    "name": "viju TV1000 Русское кино",
+    "url": "http://oneliketv.net/tv-1000-russkoe-kino.html",
+    "cdn": "http://cdntvpotok.com/onelike/tv1000rus.php"
+  },
+  "tv-xxi-tv-21-vek-oneliketv": {
+    "name": "Tv Xxi",
+    "url": "http://oneliketv.net/tv-21-vek.html",
+    "cdn": "http://cdntvpotok.com/onelike/tvxxi.php"
+  },
+  "tv1000-action-oneliketv": {
+    "name": "viju Tv1000 Action",
+    "url": "http://oneliketv.net/tv1000-action.html",
+    "cdn": "http://cdntvpotok.com/onelike/tv1000act.php"
+  },
+  "ostrosiuzhetnoe-hd-oneliketv": {
+    "name": "Остросюжетное Hd",
+    "url": "http://oneliketv.net/ostrosyuzhetnoe-hd.html",
+    "cdn": "http://cdntvpotok.com/onelike/ostrosyuzhetnoe-hd.php"
+  },
+  "strashnoe-hd-oneliketv": {
+    "name": "Страшное HD",
+    "url": "http://oneliketv.net/strashnoe-hd.html",
+    "cdn": "http://cdntvpotok.com/onelike/strashnoe-hd.php"
+  },
+  "nashe-krutoe-oneliketv": {
+    "name": "Наше Крутое HD",
+    "url": "http://oneliketv.net/nashe-krutoe.html",
+    "cdn": "http://cdntvpotok.com/onelike/nash-detektiv.php"
+  },
+  "tv3-oneliketv": {
+    "name": "ТВ3",
+    "url": "http://oneliketv.net/tv3.html",
+    "cdn": "http://cdntvpotok.com/onelike/tv3.php"
+  },
+  "premial-noe-hd-oneliketv": {
+    "name": "Премиальное HD",
+    "url": "http://oneliketv.net/premialnoe-hd.html",
+    "cdn": "http://cdntvpotok.com/onelike/kinopremium-hd.php"
+  },
+  "russkaia-komediia-oneliketv": {
+    "name": "Русская Комедия",
+    "url": "http://oneliketv.net/russkaya-komediya.html",
+    "cdn": "http://cdntvpotok.com/onelike/russkaya-komediya.php"
+  },
+  "sony-sci-fi-oneliketv": {
+    "name": "Sony Sci-Fi",
+    "url": "http://oneliketv.net/sony-sci-fi.html",
+    "cdn": "http://cdntvpotok.com/onelike/sony-sci-fi.php"
+  },
+  "piatyi-kanal-oneliketv": {
+    "name": "Пятый Канал",
+    "url": "http://oneliketv.net/5-kanal-russia.html",
+    "cdn": "http://cdntvpotok.com/onelike/5kanal.php"
+  },
+  "a1-oneliketv": {
+    "name": "Amedia 1",
+    "url": "http://oneliketv.net/a1.html",
+    "cdn": "http://cdntvpotok.com/onelike/a1.php"
+  },
+  "a2-oneliketv": {
+    "name": "Amedia 2",
+    "url": "http://oneliketv.net/a2.html",
+    "cdn": "http://cdntvpotok.com/onelike/a2.php"
+  },
+  "amedia-premium-hd-oneliketv": {
+    "name": "Amedia Premium",
+    "url": "http://oneliketv.net/amedia-premium-hd.html",
+    "cdn": "http://cdntvpotok.com/onelike/amedia-premium-hd.php"
+  },
+  "russkii-illiuzion-oneliketv": {
+    "name": "Русский Иллюзион",
+    "url": "http://oneliketv.net/russkij-illyuzion.html",
+    "cdn": "http://cdntvpotok.com/onelike/russkij-illyuzion.php"
+  },
+  "dom-kino-oneliketv": {
+    "name": "Дом Кино",
+    "url": "http://oneliketv.net/dom-kino.html",
+    "cdn": "http://cdntvpotok.com/onelike/dom-kino.php"
+  },
+  "russkii-bestseller-oneliketv": {
+    "name": "Русский Бестселлер",
+    "url": "http://oneliketv.net/russkij-bestseller.html",
+    "cdn": "http://cdntvpotok.com/onelike/russkij-bestseller.php"
+  },
+  "russkii-roman-oneliketv": {
+    "name": "Русский Роман",
+    "url": "http://oneliketv.net/russkij-roman.html",
+    "cdn": "http://cdntvpotok.com/onelike/russkij-roman.php"
+  },
+  "russkii-detektiv-oneliketv": {
+    "name": "Русский Детектив",
+    "url": "http://oneliketv.net/russkij-detektiv.html",
+    "cdn": "http://cdntvpotok.com/onelike/russkij-detektiv.php"
+  },
+  "kino-tv-oneliketv": {
+    "name": "Кино ТВ",
+    "url": "http://oneliketv.net/kino-tv.html",
+    "cdn": "http://cdntvpotok.com/onelike/kino-tv.php"
+  },
+  "evrokino-oneliketv": {
+    "name": "Еврокино",
+    "url": "http://oneliketv.net/evrokino.html",
+    "cdn": "http://cdntvpotok.com/onelike/evrokino.php"
+  },
+  "indiiskoe-kino-oneliketv": {
+    "name": "Индийское Кино",
+    "url": "http://oneliketv.net/indijskoe-kino.html",
+    "cdn": "http://cdntvpotok.com/onelike/indiya-tv.php"
+  },
+  "hollywood-oneliketv": {
+    "name": "Hollywood",
+    "url": "http://oneliketv.net/hollywood.html",
+    "cdn": "http://cdntvpotok.com/onelike/mgm.php"
+  },
+  "kinoprem-era-oneliketv": {
+    "name": "Кинопремьера",
+    "url": "http://oneliketv.net/kinopremera.html",
+    "cdn": "http://cdntvpotok.com/onelike/kinopremera.php"
+  },
+  "fox-oneliketv": {
+    "name": "FX",
+    "url": "http://oneliketv.net/fox.html",
+    "cdn": "http://cdntvpotok.com/onelike/fox.php"
+  },
+  "sony-turbo-oneliketv": {
+    "name": ".black",
+    "url": "http://oneliketv.net/sony-turbo.html",
+    "cdn": "http://cdntvpotok.com/onelike/sony-turbo.php"
+  },
+  "set-oneliketv": {
+    "name": ".red",
+    "url": "http://oneliketv.net/set.html",
+    "cdn": "http://cdntvpotok.com/onelike/set.php"
+  },
+  "nash-kinoroman-oneliketv": {
+    "name": "Душевное",
+    "url": "http://oneliketv.net/nash-kinoroman.html",
+    "cdn": "http://cdntvpotok.com/onelike/nash-kinoroman.php"
+  },
+  "mir-seriala-oneliketv": {
+    "name": "Мир Сериала",
+    "url": "http://oneliketv.net/mir-seriala.html",
+    "cdn": "http://cdntvpotok.com/onelike/mir-seriala.php"
+  },
+  "fox-life-oneliketv": {
+    "name": "FX Life",
+    "url": "http://oneliketv.net/fox-life.html",
+    "cdn": "http://cdntvpotok.com/onelike/fox-life.php"
+  },
+  "nashe-novoe-kino-oneliketv": {
+    "name": "Наше Новое Кино",
+    "url": "http://oneliketv.net/nashe-novoe-kino.html",
+    "cdn": "http://cdntvpotok.com/onelike/nashe-novoe-kino.php"
+  },
+  "dorama-oneliketv": {
+    "name": "Дорама",
+    "url": "http://oneliketv.net/dorama.html",
+    "cdn": "http://cdntvpotok.com/onelike/dorama.php"
+  },
+  "dom-kino-tivix": {
+    "name": "Дом Кино",
+    "url": "http://ip.tivix.co/035212-telekanal-dom-kino.html"
+  },
+  "dom-kino-premium-tivix": {
+    "name": "Дом Кино Премиум",
+    "url": "http://ip.tivix.co/031812-dom-kino-premium.html"
+  },
+  "ostrosiuzhetnoe-hd-tivix": {
+    "name": "Остросюжетное HD",
+    "url": "http://ip.tivix.co/330-ostrosyuzhetnoe-hd.html"
+  },
+  "hollywood-tivix": {
+    "name": "Hollywood",
+    "url": "http://ip.tivix.co/409-hollywood-tv.html"
+  },
+  "mosfil-m-tivix": {
+    "name": "Мосфильм «Золотая Коллекция»",
+    "url": "http://ip.tivix.co/450-mosfilm.html"
+  },
+  "pobeda-tivix": {
+    "name": "Победа",
+    "url": "http://ip.tivix.co/452-pobeda.html"
+  },
+  "vip-megahit-tivix": {
+    "name": "Vip Megahit",
+    "url": "http://ip.tivix.co/270-tv1000-megahit-hd-t1.html"
+  },
+  "vip-comedy-tivix": {
+    "name": "Vip Comedy",
+    "url": "http://ip.tivix.co/276-tv-1000-comedy-hd-t1.html"
+  },
+  "kinokhit-tivix": {
+    "name": "Кинохит",
+    "url": "http://ip.tivix.co/328-kinohit.html"
+  },
+  "kinosem-ia-tivix": {
+    "name": "Киносемья",
+    "url": "http://ip.tivix.co/396-kinosemya-tv.html"
+  },
+  "muzhskoe-kino-tivix": {
+    "name": "Мужское Кино",
+    "url": "http://ip.tivix.co/358-muzhskoe-kino.html"
+  },
+  "kinomiks-tivix": {
+    "name": "Киномикс",
+    "url": "http://ip.tivix.co/349-kinomiks.html"
+  },
+  "kinokomediia-tivix": {
+    "name": "Кинокомедия",
+    "url": "http://ip.tivix.co/110-komediya-tv.html"
+  },
+  "kinoprem-era-tivix": {
+    "name": "Кинопремьера",
+    "url": "http://ip.tivix.co/251-kino-tv.html"
+  },
+  "indiiskoe-kino-tivix": {
+    "name": "Индийское Кино",
+    "url": "http://ip.tivix.co/240-indiya-tv.html"
+  },
+  "kinoseriia-tivix": {
+    "name": "Киносерия",
+    "url": "http://ip.tivix.co/423-kinoseriya-tv.html"
+  },
+  "kinosvidanie-tivix": {
+    "name": "Киносвидание",
+    "url": "http://ip.tivix.co/395-telekanal-kinosvidanie.html"
+  },
+  "rodnoe-kino-tivix": {
+    "name": "Родное Кино",
+    "url": "http://ip.tivix.co/319-nashe-kino.html"
+  },
+  "russkii-detektiv-tivix": {
+    "name": "Русский Детектив",
+    "url": "http://ip.tivix.co/321-russkiy-detektiv.html"
+  },
+  "russkii-bestseller-tivix": {
+    "name": "Русский Бестселлер",
+    "url": "http://ip.tivix.co/303-russkiy-bestseller.html"
+  },
+  "russkii-roman-tivix": {
+    "name": "Русский Роман",
+    "url": "http://ip.tivix.co/302-russkiy-roman.html"
+  },
+  "dushevnoe-tivix": {
+    "name": "Душевное",
+    "url": "http://ip.tivix.co/425-dushevnoe.html"
+  },
+  "illiuzion-tivix": {
+    "name": "Иллюзион+",
+    "url": "http://ip.tivix.co/138-illyuzion.html"
+  },
+  "russkii-illiuzion-tivix": {
+    "name": "Русский Иллюзион",
+    "url": "http://ip.tivix.co/112-russkiy-illyuzion.html"
+  },
+  "mir-seriala-tivix": {
+    "name": "Мир Сериала",
+    "url": "http://ip.tivix.co/466-mir-seriala.html"
+  },
+  "evrokino-tivix": {
+    "name": "Еврокино",
+    "url": "http://ip.tivix.co/377-evrokino-tv.html"
+  },
+  "strashnoe-hd-tivix": {
+    "name": "Страшное HD",
+    "url": "http://ip.tivix.co/324-strashnoe-hd.html"
+  },
+  "nst-tivix": {
+    "name": "Нст",
+    "url": "http://ip.tivix.co/210-nst.html"
+  },
+  "black-tivix": {
+    "name": ".black",
+    "url": "http://ip.tivix.co/453-black.html"
+  },
+  "red-tivix": {
+    "name": ".red",
+    "url": "http://ip.tivix.co/454-sony.html"
+  },
+  "sony-sci-fi-tivix": {
+    "name": "Sony Sci-Fi",
+    "url": "http://ip.tivix.co/17-axn-scifi-sony-sci-fi.html"
+  },
+  "fox-tivix": {
+    "name": "FX",
+    "url": "http://ip.tivix.co/350-fox.html"
+  },
+  "fox-live-tivix": {
+    "name": "FX Life",
+    "url": "http://ip.tivix.co/345-fox-live.html"
+  },
+  "dorama-tivix": {
+    "name": "Дорама",
+    "url": "http://ip.tivix.co/401-dorama-tv.html"
+  },
+  "zee-tv-tivix": {
+    "name": "Zee Tv",
+    "url": "http://ip.tivix.co/332-zee-tv.html"
+  },
+  "bollywood-tivix": {
+    "name": "Bollywood",
+    "url": "http://ip.tivix.co/379-bollywood-tv.html"
+  },
+  "rodnoe-kino-viks": {
+    "name": "Родное кино",
+    "url": "http://live.viks.tv/534-rodnoe-kino_1.html"
+  },
+  "kinouzhas-viks": {
+    "name": "КиноУжас",
+    "url": "http://live.viks.tv/620-kinouzhas_8.html"
+  },
+  "kinohit-viks": {
+    "name": "Кинохит",
+    "url": "http://live.viks.tv/477-kinohit_14.html"
+  },
+  "russkii-roman-telik": {
+    "name": "Русский Роман",
+    "url": "https://telik.live/russkij-roman.html",
+    "cdn": "https://cdntvmedia.com/russkij-roman.php"
+  },
+  "nashe-krutoe-telik": {
+    "name": "Наше Крутое HD",
+    "url": "https://telik.live/nashe-krutoe.html",
+    "cdn": "https://cdntvmedia.com/nashe-krutoe.php"
+  },
+  "kino-1-telik": {
+    "name": "Кино 1 International",
+    "url": "https://telik.live/kino-1.html",
+    "cdn": "https://cdntvmedia.com/kino-1.php"
+  },
+  "kriminal-noe-hd-telik": {
+    "name": "Криминальное HD",
+    "url": "https://telik.live/kriminalnoe-hd.html",
+    "cdn": "https://cdntvmedia.com/kriminalnoe-hd.php"
+  },
+  "karusel-smotru": {
+    "name": "Карусель",
+    "url": "https://smotru.tv/karusel.html",
+    "cdn": "https://cdniptvpotok.com/karusel.php"
+  },
+  "nickelodeon-smotru": {
+    "name": "Nickelodeon",
+    "url": "https://smotru.tv/nickelodeon.html",
+    "cdn": "https://cdniptvpotok.com/nickelodeon.php"
+  },
+  "cartoon-network-smotru": {
+    "name": "Cartoon Network",
+    "url": "https://smotru.tv/cartoon-network.html",
+    "cdn": "https://cdniptvpotok.com/cartoon-network.php"
+  },
+  "mul-tilandiia-smotru": {
+    "name": "Мультиландия",
+    "url": "https://smotru.tv/multilandiya.html",
+    "cdn": "https://cdniptvpotok.com/multilandiya.php"
+  },
+  "mul-t-smotru": {
+    "name": "Мульт",
+    "url": "https://smotru.tv/mult.html",
+    "cdn": "https://cdniptvpotok.com/mult.php"
+  },
+  "mul-timuzyka-smotru": {
+    "name": "Мультимузыка",
+    "url": "https://smotru.tv/kanal-strana.html",
+    "cdn": "https://cdniptvpotok.com/strana.php"
+  },
+  "unikum-smotru": {
+    "name": "Уникум",
+    "url": "https://smotru.tv/unikum.html",
+    "cdn": "https://cdniptvpotok.com/unikum.php"
+  },
+  "ani-smotru": {
+    "name": "Ani",
+    "url": "https://smotru.tv/ani.html",
+    "cdn": "https://cdniptvpotok.com/ani.php"
+  },
+  "gulli-girl-smotru": {
+    "name": "Gulli Girl",
+    "url": "https://smotru.tv/gulli.html",
+    "cdn": "https://cdniptvpotok.com/gulli.php"
+  },
+  "kanal-o-smotru": {
+    "name": "Канал О!",
+    "url": "https://smotru.tv/kanal-o.html",
+    "cdn": "https://cdniptvpotok.com/kanal-o.php"
+  },
+  "radost-moia-smotru": {
+    "name": "Радость Моя",
+    "url": "https://smotru.tv/radost-moya.html",
+    "cdn": "https://cdniptvpotok.com/radost-moya.php"
+  },
+  "kanal-mama-smotru": {
+    "name": "Мама",
+    "url": "https://smotru.tv/mama.html",
+    "cdn": "https://cdniptvpotok.com/mama.php"
+  },
+  "detskii-mir-smotru": {
+    "name": "Детский Мир",
+    "url": "https://smotru.tv/detskij-mir.html",
+    "cdn": "https://cdniptvpotok.com/detskij-mir.php"
+  },
+  "tiji-smotru": {
+    "name": "Tiji",
+    "url": "https://smotru.tv/tiji.html",
+    "cdn": "https://cdniptvpotok.com/tiji.php"
+  },
+  "nick-jr-smotru": {
+    "name": "Nick Jr",
+    "url": "https://smotru.tv/nick-jr.html",
+    "cdn": "https://cdniptvpotok.com/nick-jr.php"
+  },
+  "kapitan-fantastika-smotru": {
+    "name": "Капитан Фантастика",
+    "url": "https://smotru.tv/kapitan-fantastika.html",
+    "cdn": "https://cdniptvpotok.com/kapitan-fantastika.php"
+  },
+  "detskoe-kino-smotru": {
+    "name": "Детское Кино",
+    "url": "https://smotru.tv/detskoe-kino.html",
+    "cdn": "https://cdniptvpotok.com/detskoe-kino.php"
+  },
+  "tom-i-dzherri-smotru": {
+    "name": "Том И Джерри",
+    "url": "https://smotru.tv/tom-i-dzherri.html",
+    "cdn": "https://cdniptvpotok.com/tom-i-dzherri.php"
+  },
+  "da-vinci-smotru": {
+    "name": "Da Vinci",
+    "url": "https://smotru.tv/da-vinci.html",
+    "cdn": "https://cdniptvpotok.com/da-vinci.php"
+  },
+  "sovetskie-multfilmy-ontivi": {
+    "name": "Советские мультфильмы",
+    "url": "https://ip.ontivi.net/sovetskie-multfilmy.html"
+  },
+  "trash-tv-telik": {
+    "name": "Trash TV",
+    "url": "https://telik.live/trash-tv.html",
+    "cdn": "https://tvcdn365.ru/live/1/trash-tv.php"
+  },
+  "komediya-telik": {
+    "name": "Комедия",
+    "url": "https://telik.live/komediya.html",
+    "cdn": "https://cdntvmedia.com/komediya.php"
+  },
+  "hit-hd-telik": {
+    "name": "Хит HD",
+    "url": "https://telik.live/hit-hd.html",
+    "cdn": "https://cdntvmedia.com/hit.php"
+  },
+  "bridge-tv-telik": {
+    "name": "Bridge Tv",
+    "url": "https://telik.live/bridge-tv.html",
+    "cdn": "https://cdntvmedia.com/bridge-tv.php"
+  },
+  "1hd-telik": {
+    "name": "1Hd",
+    "url": "https://telik.live/1hd.html",
+    "cdn": "https://cdntvmedia.com/3/1hd.php"
+  },
+  "music-box-russia-telik": {
+    "name": "Music Box Russia",
+    "url": "https://telik.live/music-box-russia.html",
+    "cdn": "https://cdntvmedia.com/music-box-russia.php"
+  },
+  "muzyka-pervogo-telik": {
+    "name": "Музыка Первого",
+    "url": "https://telik.live/muzyka-pervogo.html",
+    "cdn": "https://cdntvmedia.com/muzyka-pervogo.php"
+  },
+  "mezzo-telik": {
+    "name": "Mezzo",
+    "url": "https://telik.live/mezzo.html",
+    "cdn": "https://cdntvmedia.com/mezzo.php"
+  },
+  "mezzo-live-hd-telik": {
+    "name": "Mezzo Live Hd",
+    "url": "https://telik.live/mezzo-live-hd.html",
+    "cdn": "https://cdntvmedia.com/2/1mezzo-live-hd.php"
+  },
+  "shanson-tv-telik": {
+    "name": "Шансон-TB",
+    "url": "https://telik.live/shanson-tv.html",
+    "cdn": "https://cdntvmedia.com/shanson-tv.php"
+  },
+  "mcm-top-telik": {
+    "name": "MCM Top",
+    "url": "https://telik.live/mcm-top.html",
+    "cdn": "https://cdntvmedia.com/mcm-top.php"
+  },
+  "karusel-telik": {
+    "name": "Карусель",
+    "url": "https://telik.live/karusel.html",
+    "cdn": "https://cdntvmedia.com/karusel.php"
+  },
+  "gulli-girl-telik": {
+    "name": "Gulli Girl",
+    "url": "https://telik.live/gulli-girl.html",
+    "cdn": "https://cdntvmedia.com/gulli-girl.php"
+  },
+  "unikum-telik": {
+    "name": "Уникум",
+    "url": "https://telik.live/unikum.html",
+    "cdn": "https://cdntvmedia.com/unikum.php"
+  },
+  "nickelodeon-telik": {
+    "name": "Nickelodeon",
+    "url": "https://telik.live/nickelodeon.html",
+    "cdn": "https://cdntvmedia.com/nickelodeon.php"
+  },
+  "mul-t-telik": {
+    "name": "Мульт",
+    "url": "https://telik.live/mult.html",
+    "cdn": "https://cdntvmedia.com/mult.php"
+  },
+  "cartoon-network-telik": {
+    "name": "Cartoon Network",
+    "url": "https://telik.live/cartoon-network.html",
+    "cdn": "https://cdntvmedia.com/4/1cartoon-network.php"
+  },
+  "mul-tilandiia-telik": {
+    "name": "Мультиландия",
+    "url": "https://telik.live/multilandiya.html",
+    "cdn": "https://cdntvmedia.com/6/1multilandiya.php"
+  },
+  "tiji-telik": {
+    "name": "Tiji",
+    "url": "https://telik.live/tiji.html",
+    "cdn": "https://cdntvmedia.com/tiji.php"
+  },
+  "tom-i-dzherri-telik": {
+    "name": "Том И Джерри",
+    "url": "https://telik.live/tom-i-dzherri.html",
+    "cdn": "https://cdntvmedia.com/tom-i-dzherri.php"
+  },
+  "nick-jr-telik": {
+    "name": "Nick Jr",
+    "url": "https://telik.live/nick-jr.html",
+    "cdn": "https://cdntvmedia.com/nick-jr.php"
+  },
+  "detskii-mir-telik": {
+    "name": "Детский Мир",
+    "url": "https://telik.live/detskij-mir.html",
+    "cdn": "https://cdntvmedia.com/detskij-mir.php"
+  },
+  "mul-timuzyka-telik": {
+    "name": "Мультимузыка",
+    "url": "https://telik.live/multimuzyka.html",
+    "cdn": "https://cdntvmedia.com/multimuzyka.php"
+  },
+  "kapitan-fantastika-telik": {
+    "name": "Капитан Фантастика",
+    "url": "https://telik.live/kapitan-fantastika.html",
+    "cdn": "https://cdntvmedia.com/3/1kapitan-fantastika.php"
+  },
+  "ani-telik": {
+    "name": "Ani",
+    "url": "https://telik.live/ani.html",
+    "cdn": "https://cdntvmedia.com/ani.php"
+  },
+  "mama-telik": {
+    "name": "Мама",
+    "url": "https://telik.live/mama.html",
+    "cdn": "https://cdntvmedia.com/mama.php"
+  },
+  "kanal-o-telik": {
+    "name": "Канал О!",
+    "url": "https://telik.live/kanal-o.html",
+    "cdn": "https://cdntvmedia.com/4/1o-kanal.php"
+  },
+  "sovetskie-mul-tfil-my-telik": {
+    "name": "Советские Мультфильмы",
+    "url": "https://telik.live/sovetskie-multfilmy.html",
+    "cdn": "https://cdntvmedia.com/sovetskie-multfilmy.php"
+  },
+  "radost-moia-telik": {
+    "name": "Радость Моя",
+    "url": "https://telik.live/radost-moya.html",
+    "cdn": "https://cdntvmedia.com/radost-moya.php"
+  },
+  "cartoonito-telik": {
+    "name": "Cartoonito",
+    "url": "https://telik.live/cartoonito.html",
+    "cdn": "https://cdntvmedia.com/2/1cartoonito.php"
+  },
+  "nicktoons-telik": {
+    "name": "Nicktoons",
+    "url": "https://telik.live/nicktoons.html",
+    "cdn": "https://cdntvmedia.com/nicktoons.php"
+  },
+  "v-gostiakh-u-skazki-telik": {
+    "name": "В Гостях У Сказки",
+    "url": "https://telik.live/v-gostyakh-u-skazki.html",
+    "cdn": "https://cdntvmedia.com/v-gostyakh-u-skazki.php"
+  },
+  "soiuzmul-tfil-m-telik": {
+    "name": "Союзмультфильм",
+    "url": "https://telik.live/soyuzmultfilm.html",
+    "cdn": "https://cdntvmedia.com/soyuzmultfilm.php"
+  },
+  "da-vinci-telik": {
+    "name": "Da Vinci",
+    "url": "https://telik.live/da-vinci.html",
+    "cdn": "https://cdntvmedia.com/6/1da-vinci.php"
+  },
+  "tlc-priamoi-efir-telik": {
+    "name": "Tlc",
+    "url": "https://telik.live/tlc.html",
+    "cdn": "https://cdntvmedia.com/tlc.php"
+  },
+  "sts-lav-priamoi-efir-telik": {
+    "name": "Стс Love",
+    "url": "https://telik.live/sts-love.html",
+    "cdn": "https://cdntvmedia.com/sts-love.php"
+  },
+  "sarafan-priamoi-efir-telik": {
+    "name": "Сарафан",
+    "url": "https://telik.live/sarafan.html",
+    "cdn": "https://cdntvmedia.com/sarafan.php"
+  },
+  "telekafe-priamoi-efir-telik": {
+    "name": "Телекафе",
+    "url": "https://telik.live/telekafe.html",
+    "cdn": "https://cdntvmedia.com/telekafe.php"
+  },
+  "foodtime-priamoi-efir-telik": {
+    "name": "Foodtime",
+    "url": "https://telik.live/foodtime.html",
+    "cdn": "https://cdntvmedia.com/eda-premium.php"
+  },
+  "moskva-doverie-priamoi-efir-telik": {
+    "name": "Москва Доверие",
+    "url": "https://telik.live/moskva-doverie.html",
+    "cdn": "https://cdntvmedia.com/moskva-doverie.php"
+  },
+  "ntv-stil-priamoi-efir-telik": {
+    "name": "Нтв Стиль",
+    "url": "https://telik.live/ntv-stil.html",
+    "cdn": "https://cdntvmedia.com/4/1ntv-style.php"
+  },
+  "illiuzion-telik": {
+    "name": "Иллюзион+",
+    "url": "https://telik.live/illyuzion.html",
+    "cdn": "https://cdntvmedia.com/illyuzion.php"
+  },
+  "nst-telik": {
+    "name": "Нст",
+    "url": "https://telik.live/nst.html",
+    "cdn": "https://cdntvmedia.com/nst.php"
+  },
+  "mir-seriala-telik": {
+    "name": "Мир Сериала",
+    "url": "https://telik.live/mir-seriala.html",
+    "cdn": "https://cdntvmedia.com/mir-seriala.php"
+  },
+  "kino-tv-telik": {
+    "name": "Кино Тв",
+    "url": "https://telik.live/kino-tv.html",
+    "cdn": "https://cdntvmedia.com/kino-tv.php"
+  },
+  "dom-kino-telik": {
+    "name": "Дом Кино",
+    "url": "https://telik.live/dom-kino.html",
+    "cdn": "https://cdntvmedia.com/dom-kino.php"
+  },
+  "cinema-telik": {
+    "name": "Cinema",
+    "url": "https://telik.live/cinema.html",
+    "cdn": "https://cdntvmedia.com/cinema.php"
+  },
+  "ntv-khit-telik": {
+    "name": "Нтв Хит",
+    "url": "https://telik.live/ntv-khit.html",
+    "cdn": "https://cdntvmedia.com/ntv-khit.php"
+  },
+  "hollywood-telik": {
+    "name": "Hollywood",
+    "url": "https://telik.live/hollywood.html",
+    "cdn": "https://cdntvmedia.com/hollywood.php"
+  },
+  "turetskie-serialy-telik": {
+    "name": "Timeless Dizi Channel",
+    "url": "https://telik.live/turetskie-serialy.html",
+    "cdn": "https://cdntvmedia.com/turetskie-serialy.php"
+  },
+  "ostrosiuzhetnoe-hd-telik": {
+    "name": "Остросюжетное HD",
+    "url": "https://telik.live/ostrosyuzhetnoe-hd.html",
+    "cdn": "https://cdntvmedia.com/ostrosyuzhetnoe-hd.php"
+  },
+  "nash-kinoroman-telik": {
+    "name": "Душевное",
+    "url": "https://telik.live/nash-kinoroman.html",
+    "cdn": "https://cdntvmedia.com/nash-kinoroman.php"
+  },
+  "russkii-illiuzion-telik": {
+    "name": "Русский Иллюзион",
+    "url": "https://telik.live/russkij-illyuzion.html",
+    "cdn": "https://cdntvmedia.com/russkij-illyuzion.php"
+  },
+  "russkii-bestseller-telik": {
+    "name": "Русский Бестселлер",
+    "url": "https://telik.live/russkij-bestseller.html",
+    "cdn": "https://cdntvmedia.com/russkij-bestseller.php"
+  },
+  "russkii-detektiv-telik": {
+    "name": "Русский Детектив",
+    "url": "https://telik.live/russkij-detektiv.html",
+    "cdn": "https://cdntvmedia.com/russkij-detektiv.php"
+  },
+  "fox-telik": {
+    "name": "FX",
+    "url": "https://telik.live/fox.html",
+    "cdn": "https://cdntvmedia.com/fox.php"
+  },
+  "fox-life-telik": {
+    "name": "FX Life",
+    "url": "https://telik.live/fox-life.html",
+    "cdn": "https://cdntvmedia.com/fox-life.php"
+  },
+  "shokiruiushchee-hd-telik": {
+    "name": "Шокирующее HD",
+    "url": "https://telik.live/shokiruyushchee.html",
+    "cdn": "https://cdntvmedia.com/shokiruyushchee.php"
+  },
+  "liubimoe-hd-telik": {
+    "name": "Любимое HD",
+    "url": "https://telik.live/lyubimoe-hd.html",
+    "cdn": "https://cdntvmedia.com/lyubimoe-hd.php"
+  },
+  "strashnoe-hd-telik": {
+    "name": "Страшное HD",
+    "url": "https://telik.live/strashnoe-hd.html",
+    "cdn": "https://cdntvmedia.com/strashnoe-hd.php"
+  },
+  "premial-noe-hd-telik": {
+    "name": "Премиальное HD",
+    "url": "https://telik.live/premialnoe-hd.html",
+    "cdn": "https://cdntvmedia.com/premialnoe-hd.php"
+  },
+  "filmbox-telik": {
+    "name": "Filmbox",
+    "url": "https://telik.live/filmbox.html",
+    "cdn": "https://cdntvmedia.com/filmbox.php"
+  },
+  "red-telik": {
+    "name": ".red",
+    "url": "https://telik.live/sony-channel.html",
+    "cdn": "https://cdntvmedia.com/sony-channel.php"
+  },
+  "sci-fi-telik": {
+    "name": "Sony Sci-Fi",
+    "url": "https://telik.live/sony-sci-fi.html",
+    "cdn": "https://cdntvmedia.com/sony-sci-fi.php"
+  },
+  "black-telik": {
+    "name": ".black",
+    "url": "https://telik.live/sony-turbo.html",
+    "cdn": "https://cdntvmedia.com/sony-turbo.php"
+  },
+  "bollywood-hd-telik": {
+    "name": "Bollywood HD",
+    "url": "https://telik.live/bollywood-hd.html",
+    "cdn": "https://cdntvmedia.com/bollywood-hd.php"
+  },
+  "romantichnoe-hd-telik": {
+    "name": "Романтичное HD",
+    "url": "https://telik.live/romantichnoe-hd.html",
+    "cdn": "https://cdntvmedia.com/romantichnoe-hd.php"
+  },
+  "dorama-telik": {
+    "name": "Дорама",
+    "url": "https://telik.live/dorama.html",
+    "cdn": "https://cdntvmedia.com/dorama.php"
+  },
+  "scream-telik": {
+    "name": "Scream",
+    "url": "https://telik.live/scream.html",
+    "cdn": "https://cdntvmedia.com/scream.php"
+  },
+  "evrokino-telik": {
+    "name": "Еврокино",
+    "url": "https://telik.live/evrokino.html",
+    "cdn": "https://cdntvmedia.com/evrokino.php"
+  },
+  "kinopokaz-telik": {
+    "name": "Кинопоказ",
+    "url": "https://telik.live/kinopokaz.html",
+    "cdn": "https://cdntvmedia.com/kinopokaz-hd.php"
+  },
+  "kinosat-telik": {
+    "name": "Киносат",
+    "url": "https://telik.live/kinosat.html",
+    "cdn": "https://cdntvmedia.com/kinosat.php"
+  },
+  "komediinoe-telik": {
+    "name": "Комедийное",
+    "url": "https://telik.live/komedijnoe.html",
+    "cdn": "https://cdntvmedia.com/komedijnoe.php"
+  },
+  "fantastika-hd-telik": {
+    "name": "Fresh Fantastic",
+    "url": "https://telik.live/fantastika-hd.html",
+    "cdn": "https://cdntvmedia.com/cinemas/fresh-fantastic.php"
+  },
+  "ntv-serial-telik": {
+    "name": "Нтв Сериал",
+    "url": "https://telik.live/ntv-serial.html",
+    "cdn": "https://cdntvmedia.com/ntv-serial.php"
+  },
+  "liubimoe-kino-telik": {
+    "name": "Любимое Кино",
+    "url": "https://telik.live/lyubimoe-kino.html",
+    "cdn": "https://cdntvmedia.com/lyubimoe-kino.php"
+  },
+  "tv-21-telik": {
+    "name": "Tv Xxi",
+    "url": "https://telik.live/tv-xxi.html",
+    "cdn": "https://cdntvmedia.com/tv-xxi.php"
+  },
+  "blokbaster-hd-telik": {
+    "name": "Блокбастер HD",
+    "url": "https://telik.live/blokbaster-hd.html",
+    "cdn": "https://cdntvmedia.com/blokbaster-hd.php"
+  },
+  "epic-drama-telik": {
+    "name": "Amedia Hit",
+    "url": "https://telik.live/epic-drama.html",
+    "cdn": "https://cdntvmedia.com/epic-drama.php"
+  },
+  "kinozal-1-telik": {
+    "name": "VIP Megahit HD",
+    "url": "https://telik.live/kinozal-1.html",
+    "cdn": "https://cdntvmedia.com/kinozal/kinozal1/kinozal1.php"
+  },
+  "kinozal-2-telik": {
+    "name": "VIP Comedy HD",
+    "url": "https://telik.live/kinozal-2.html",
+    "cdn": "https://cdntvmedia.com/kinozal/kinozal2/kinozal2.php"
+  },
+  "kinozal-3-telik": {
+    "name": "VIP Premiere HD",
+    "url": "https://telik.live/kinozal-3.html",
+    "cdn": "https://cdntvmedia.com/kinozal/kinozal3/kinozal3.php"
+  },
+  "kinozal-4-telik": {
+    "name": "viju TV1000 Action",
+    "url": "https://telik.live/kinozal-4.html",
+    "cdn": "https://cdntvmedia.com/kinozal/kinozal4/kinozal4.php"
+  },
+  "kinozal-5-telik": {
+    "name": "viju TV1000",
+    "url": "https://telik.live/kinozal-5.html",
+    "cdn": "https://cdntvmedia.com/kinozal/kinozal5/kinozal5.php"
+  },
+  "kinozal-6-telik": {
+    "name": "viju+ Serial",
+    "url": "https://telik.live/kinozal-6.html",
+    "cdn": "https://cdntvmedia.com/kinozal/kinozal6/kinozal6.php"
+  },
+  "kinozal-7-telik": {
+    "name": "viju TV1000 Русское кино",
+    "url": "https://telik.live/kinozal-7.html",
+    "cdn": "https://cdntvmedia.com/kinozal/kinozal7/kinozal7.php"
+  },
+  "sovetskoe-kino-telik": {
+    "name": "Советское Кино",
+    "url": "https://telik.live/sovetskoe-kino.html",
+    "cdn": "https://cdntvmedia.com/sovetskoe-kino.php"
+  },
+  "mosfil-m-zolotaia-kollektsiia-telik": {
+    "name": "Мосфильм «Золотая Коллекция»",
+    "url": "https://telik.live/mosfilm-zolotaya-kolleksiya.html",
+    "cdn": "https://cdntvmedia.com/mosfilm-zolotaya-kollektsiya.php"
+  },
+  "kineko-telik": {
+    "name": "Кинеко",
+    "url": "https://telik.live/kineko.html",
+    "cdn": "https://cdntvmedia.com/3/1kineko.php"
+  },
+  "feniks-plius-kino-telik": {
+    "name": "Феникс Плюс Кино",
+    "url": "https://telik.live/feniks-kino.html",
+    "cdn": "https://cdntvmedia.com/3/1feniks-kino.php"
+  },
+  "kinojam-1-telik": {
+    "name": "Kinojam 1",
+    "url": "https://telik.live/kinojam-1.html",
+    "cdn": "https://cdntvmedia.com/kinojam-1.php"
+  },
+  "kinojam-2-telik": {
+    "name": "Kinojam 2",
+    "url": "https://telik.live/kinojam-2.html",
+    "cdn": "https://cdntvmedia.com/kinojam-2.php"
+  },
+  "familyjam-telik": {
+    "name": "Familyjam",
+    "url": "https://telik.live/familyjam.html",
+    "cdn": "https://cdntvmedia.com/familyjam.php"
+  },
+  "detectivejam-telik": {
+    "name": "Detectivejam",
+    "url": "https://telik.live/detectivejam.html",
+    "cdn": "https://cdntvmedia.com/detectivejam.php"
+  },
+  "marvel-tv-telik": {
+    "name": "CineMan Marvel",
+    "url": "https://telik.live/marvel-tv.html",
+    "cdn": "https://cdntvmedia.com/cinemas/cineman-marvel.php"
+  },
+  "plan-b-telik": {
+    "name": "Plan B",
+    "url": "https://telik.live/plan-b.html",
+    "cdn": "https://cdntvmedia.com/4/1plan-b.php"
+  },
+  "boeviki-hd-telik": {
+    "name": "Боевики HD",
+    "url": "https://telik.live/boeviki-hd.html",
+    "cdn": "https://cdntvmedia.com/boeviki-hd.php"
+  },
+  "uzhasy-hd-telik": {
+    "name": "Ужасы HD",
+    "url": "https://telik.live/uzhasy-hd.html",
+    "cdn": "https://cdntvmedia.com/uzhasy-hd.php"
+  },
+  "istoricheskii-hd-telik": {
+    "name": "Исторический HD",
+    "url": "https://telik.live/istoricheskij-hd.html",
+    "cdn": "https://cdntvmedia.com/istoricheskij-hd.php"
+  },
+  "retro-tv-telik": {
+    "name": "Ретро",
+    "url": "https://telik.live/retro-tv.html",
+    "cdn": "https://cdntvmedia.com/retro-tv.php"
+  },
+  "pro-liubov-telik": {
+    "name": "Про Любовь",
+    "url": "https://telik.live/pro-lyubov.html",
+    "cdn": "https://cdntvmedia.com/pro-lyubov.php"
+  },
+  "lavstori-telik": {
+    "name": "Лавстори HD",
+    "url": "https://telik.live/lavstori.html",
+    "cdn": "https://cdntvmedia.com/lavstori.php"
+  },
+  "romance-telik": {
+    "name": "Romance",
+    "url": "https://telik.live/romance.html",
+    "cdn": "https://cdntvmedia.com/romance.php"
+  },
+  "cineman-telik": {
+    "name": "CineMan",
+    "url": "https://telik.live/cineman.html",
+    "cdn": "https://cdntvmedia.com/cinemas/cineman.php"
+  },
+  "cineman-action-telik": {
+    "name": "CineMan Action",
+    "url": "https://telik.live/cineman-action.html",
+    "cdn": "https://cdntvmedia.com/cinemas/cineman-action.php"
+  },
+  "cineman-katastrofy-telik": {
+    "name": "CineMan Катастрофы",
+    "url": "https://telik.live/cineman-katastrofy.html",
+    "cdn": "https://cdntvmedia.com/cinemas/cineman-katastrofy.php"
+  },
+  "cineman-komediia-telik": {
+    "name": "Cineman Комедия",
+    "url": "https://telik.live/cineman-komediya.html",
+    "cdn": "https://cdntvmedia.com/cinemas/cineman-komediya.php"
+  },
+  "cineman-marvel-telik": {
+    "name": "CineMan Marvel",
+    "url": "https://telik.live/cineman-marvel.html",
+    "cdn": "https://cdntvmedia.com/cinemas/cineman-marvel.php"
+  },
+  "cineman-melodrama-telik": {
+    "name": "Cineman Мелодрама",
+    "url": "https://telik.live/cineman-melodrama.html",
+    "cdn": "https://cdntvmedia.com/cinemas/cineman-melodrama.php"
+  },
+  "cineman-triller-telik": {
+    "name": "Cineman Триллер",
+    "url": "https://telik.live/cineman-triller.html",
+    "cdn": "https://cdntvmedia.com/cinemas/cineman-thriller.php"
+  },
+  "cineman-top-telik": {
+    "name": "Cineman Топ",
+    "url": "https://telik.live/cineman-top.html",
+    "cdn": "https://cdntvmedia.com/cinemas/cineman-top.php"
+  },
+  "cineman-uzhasy-telik": {
+    "name": "CineMan Ужасы",
+    "url": "https://telik.live/cineman-uzhasy.html",
+    "cdn": "https://cdntvmedia.com/cinemas/cineman-uzhasy.php"
+  },
+  "cineman-vhs-telik": {
+    "name": "CineMan VHS",
+    "url": "https://telik.live/cineman-vhs.html",
+    "cdn": "https://cdntvmedia.com/cinemas/cineman-vhs.php"
+  },
+  "fresh-adventure-telik": {
+    "name": "Fresh Adventure",
+    "url": "https://telik.live/fresh-adventure.html",
+    "cdn": "https://cdntvmedia.com/cinemas/fresh-adventure.php"
+  },
+  "fresh-cinema-telik": {
+    "name": "Fresh Cinema",
+    "url": "https://telik.live/fresh-cinema.html",
+    "cdn": "https://cdntvmedia.com/cinemas/fresh-cinema.php"
+  },
+  "fresh-comedy-telik": {
+    "name": "Fresh Comedy",
+    "url": "https://telik.live/fresh-comedy.html",
+    "cdn": "https://cdntvmedia.com/cinemas/fresh-comedy.php"
+  },
+  "fresh-family-telik": {
+    "name": "Fresh Family",
+    "url": "https://telik.live/fresh-family.html",
+    "cdn": "https://cdntvmedia.com/cinemas/fresh-family.php"
+  },
+  "fresh-fantastic-telik": {
+    "name": "Fresh Fantastic",
+    "url": "https://telik.live/fresh-fantastic.html",
+    "cdn": "https://cdntvmedia.com/cinemas/fresh-fantastic.php"
+  },
+  "fresh-horror-telik": {
+    "name": "Fresh Horror",
+    "url": "https://telik.live/fresh-horror.html",
+    "cdn": "https://cdntvmedia.com/cinemas/fresh-horror.php"
+  },
+  "fresh-premiere-telik": {
+    "name": "Fresh Premiere",
+    "url": "https://telik.live/fresh-premiere.html",
+    "cdn": "https://cdntvmedia.com/cinemas/fresh-premiere.php"
+  },
+  "fresh-rating-telik": {
+    "name": "Fresh Rating",
+    "url": "https://telik.live/fresh-rating.html",
+    "cdn": "https://cdntvmedia.com/cinemas/fresh-rating.php"
+  },
+  "fresh-romantic-telik": {
+    "name": "Fresh Romantic",
+    "url": "https://telik.live/fresh-romantic.html",
+    "cdn": "https://cdntvmedia.com/cinemas/fresh-romantic.php"
+  },
+  "fresh-soviet-telik": {
+    "name": "Fresh Soviet",
+    "url": "https://telik.live/fresh-soviet.html",
+    "cdn": "https://cdntvmedia.com/cinemas/fresh-soviet.php"
+  },
+  "fresh-thriller-telik": {
+    "name": "Fresh Thriller",
+    "url": "https://telik.live/fresh-thriller.html",
+    "cdn": "https://cdntvmedia.com/cinemas/fresh-thriller.php"
+  },
+  "fresh-vhs-telik": {
+    "name": "Fresh Vhs",
+    "url": "https://telik.live/fresh-vhs.html",
+    "cdn": "https://cdntvmedia.com/cinemas/fresh-vhs.php"
+  },
+  "cineman-komediya-telik": {
+    "name": "CineMan Комедия",
+    "url": "https://telik.live/cineman-komediya.html",
+    "cdn": "https://cdntvmedia.com/cinemas/cineman-komediya.php"
+  },
+  "khl-smotrettv": {
+    "name": "KHL",
+    "url": "https://smotrettv.com/tv/sport/768-khl.html"
+  },
+  "khl-prime-smotrettv": {
+    "name": "KHL Prime",
+    "url": "https://smotrettv.com/tv/sport/319-khl-prime.html"
+  },
+  "match-futbol-2-smotrettv": {
+    "name": "Матч! Футбол 2",
+    "url": "https://smotrettv.com/tv/sport/323-match-futbol-2.html"
+  },
+  "match-igra-smotrettv": {
+    "name": "Матч! Игра",
+    "url": "https://smotrettv.com/tv/sport/760-match-igra.html"
+  },
+  "match-planeta-smotrettv": {
+    "name": "Матч! Планета",
+    "url": "https://smotrettv.com/tv/sport/729-match-planeta.html"
+  },
+  "match-arena-smotrettv": {
+    "name": "Матч! Арена",
+    "url": "https://smotrettv.com/tv/sport/325-match-arena.html"
+  },
+  "futbol-smotrettv": {
+    "name": "Футбол",
+    "url": "https://smotrettv.com/tv/sport/140-futbol.html"
+  },
+  "match-premer-smotrettv": {
+    "name": "Матч! Премьер",
+    "url": "https://smotrettv.com/tv/sport/748-match-premer.html"
+  },
+  "setanta-sports-1-smotrettv": {
+    "name": "Setanta Sports 1",
+    "url": "https://smotrettv.com/tv/sport/144-setanta-sports-1.html"
+  },
+  "comedy-central-smotrettv": {
+    "name": "Paramount Comedy",
+    "url": "https://smotrettv.com/tv/entertainment/37-comedy-central.html"
+  },
+  "amedia-premium-smotrettv": {
+    "name": "Amedia Premium HD",
+    "url": "https://smotrettv.com/tv/kino/404-amedia-premium.html"
+  },
+  "klassika-kino-smotrettv": {
+    "name": "Классика Кино",
+    "url": "https://smotrettv.com/tv/kino/352-klassika-kino.html"
+  },
+  "retro-tv-smotrettv": {
+    "name": "Ретро",
+    "url": "https://smotrettv.com/tv/kino/125-retro-tv.html"
+  },
+  "sapfir-smotrettv": {
+    "name": "Сапфир",
+    "url": "https://smotrettv.com/tv/kino/262-sapfir.html"
+  },
+  "viju-sport-smotrettv": {
+    "name": "viju+ Sport",
+    "url": "https://smotrettv.com/tv/sport/133-viju-sport.html"
+  },
+  "setanta-sports-2-smotrettv": {
+    "name": "Setanta Sports 2",
+    "url": "https://smotrettv.com/tv/sport/145-setanta-sports-2.html"
+  },
+  "setanta-qazaqstan-smotrettv": {
+    "name": "Setanta Казахстан",
+    "url": "https://smotrettv.com/tv/sport/143-setanta-qazaqstan.html"
+  },
+  "draiv-tv-oneliketv": {
+    "name": "Драйв Тв",
+    "url": "http://oneliketv.net/drajv-tv.html",
+    "cdn": "http://cdntvpotok.com/onelike/drajv-tv.php"
+  },
+  "konnyi-mir-oneliketv": {
+    "name": "Конный Мир",
+    "url": "http://oneliketv.net/konnyj-mir.html",
+    "cdn": "http://cdntvpotok.com/onelike/konnyj-mir.php"
+  },
+  "avto-24-oneliketv": {
+    "name": "Авто 24",
+    "url": "http://oneliketv.net/avto-24.html",
+    "cdn": "http://cdntvpotok.com/onelike/avto-24.php"
+  },
+  "okhota-i-rybalka-oneliketv": {
+    "name": "Охота И Рыбалка",
+    "url": "http://oneliketv.net/okhota-i-rybalka.html",
+    "cdn": "http://cdntvpotok.com/onelike/okhota-i-rybalka.php"
+  },
+  "kazsport-oneliketv": {
+    "name": "Казспорт",
+    "url": "http://oneliketv.net/kazsport.html",
+    "cdn": "http://cdntvpotok.com/onelike/kazsport.php"
+  },
+  "belarus-5-oneliketv": {
+    "name": "Беларусь 5",
+    "url": "http://oneliketv.net/belarus-5.html",
+    "cdn": "http://cdntvpotok.com/onelike/belarus-5.php"
+  },
+  "okhotnik-i-rybolov-oneliketv": {
+    "name": "Охотник И Рыболов",
+    "url": "http://oneliketv.net/okhotnik-i-rybolov.html",
+    "cdn": "http://cdntvpotok.com/onelike/okhotnik-i-rybolov.php"
+  },
+    "khl_hd-oneliketv": {
+    "name": "KHL Prime",
+    "url": "http://oneliketv.net/khl-tv.html",
+    "cdn": "http://cdntvpotok.com/onelike/snes/khl_hd.php"
+  }
+  
+}
