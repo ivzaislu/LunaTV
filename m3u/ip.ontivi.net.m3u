@@ -1,0 +1,52 @@
+#EXTM3U
+#EXTINF:-1 tvg-name="Scream" group-title="OnlineTV",Scream
+http://127.0.0.1:5000/stream/scream-ontivi
+
+#EXTINF:-1 tvg-name="Первый канал" group-title="OnlineTV",Первый канал
+http://127.0.0.1:5000/stream/pervyy-kanal-ontivi
+
+#EXTINF:-1 tvg-name="Детское кино" group-title="OnlineTV",Детское кино
+http://127.0.0.1:5000/stream/detskoe-kino-ontivi
+
+#EXTINF:-1 tvg-name="Timeless Dizi Channel" group-title="OnlineTV",Timeless Dizi Channel
+http://127.0.0.1:5000/stream/dizi-ontivi
+
+#EXTINF:-1 tvg-name="Блокбастер HD" group-title="OnlineTV",Блокбастер HD
+http://127.0.0.1:5000/stream/blokbaster-hd-ontivi
+
+#EXTINF:-1 tvg-name="Хит HD" group-title="OnlineTV",Хит HD
+http://127.0.0.1:5000/stream/xit-hd-ontivi
+
+#EXTINF:-1 tvg-name="Советское кино" group-title="OnlineTV",Советское кино
+http://127.0.0.1:5000/stream/sovetskoe-kino-ontivi
+
+#EXTINF:-1 tvg-name="Любимое HD" group-title="OnlineTV",Любимое HD
+http://127.0.0.1:5000/stream/lyubimoe-ontivi
+
+#EXTINF:-1 tvg-name="Победа" group-title="OnlineTV",Победа
+http://127.0.0.1:5000/stream/pobeda-ontivi
+
+#EXTINF:-1 tvg-name="КиноСезон" group-title="OnlineTV",КиноСезон
+http://127.0.0.1:5000/stream/kinosezon-ontivi
+
+#EXTINF:-1 tvg-name="Horror TV" group-title="OnlineTV",Horror TV
+http://127.0.0.1:5000/stream/horror-ontivi
+
+#EXTINF:-1 tvg-name="Комедийное HD" group-title="OnlineTV",Комедийное HD
+http://127.0.0.1:5000/stream/komedijnoe-hd-ontivi
+
+#EXTINF:-1 tvg-name="Премиальное HD" group-title="OnlineTV",Премиальное HD
+http://127.0.0.1:5000/stream/premialnoe-hd-ontivi
+
+#EXTINF:-1 tvg-name="FilmBox" group-title="OnlineTV",FilmBox
+http://127.0.0.1:5000/stream/film-box-ontivi
+
+#EXTINF:-1 tvg-name="FX" group-title="OnlineTV",FX
+http://127.0.0.1:5000/stream/fx-tv-ontivi
+
+#EXTINF:-1 tvg-name="FX Life" group-title="OnlineTV",FX Life
+http://127.0.0.1:5000/stream/fx-life-ontivi
+
+#EXTINF:-1 tvg-name="Советские мультфильмы" group-title="OnlineTV",Советские мультфильмы
+http://127.0.0.1:5000/stream/sovetskie-multfilmy-ontivi
+
