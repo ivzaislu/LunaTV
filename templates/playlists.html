@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Плейлисты · LunaTV{% endblock %}
+{% block content %}
+  <div class="card" style="margin-bottom: 24px;">
+    <h2>Список плейлистов</h2>
+    <p class="muted">Все *.m3u из каталога <code>m3u/</code>. Кликните, чтобы посмотреть содержимое и скачать.</p>
+    <ul id="playlistList" class="clean"><li class="muted">Загрузка…</li></ul>
+  </div>
+  <div class="card">
+    <h2 id="playlistTitle">Содержимое</h2>
+    <pre id="playlistViewer" class="viewer">Выберите плейлист слева.</pre>
+  </div>
+{% endblock %}
+{% block scripts %}
+  <script>
+    const listEl = document.getElementById('playlistList');
+    const titleEl = document.getElementById('playlistTitle');
+    const viewerEl = document.getElementById('playlistViewer');
+
+    async function loadPlaylists() {
+      const resp = await fetch('/api/playlists');
+      const payload = await resp.json();
+      renderList(payload.items || []);
+    }
+
+    function renderList(items) {
+      if (!items.length) {
+        listEl.innerHTML = '<li class="muted">Файлы не найдены</li>';
+        viewerEl.textContent = 'Каталог m3u пуст.';
+        return;
+      }
+      listEl.innerHTML = '';
+      for (const name of items) {
+        const li = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = '#';
+        link.textContent = name;
+        link.addEventListener('click', evt => {
+          evt.preventDefault();
+          openPlaylist(name);
+        });
+        const download = document.createElement('a');
+        download.href = `/playlist/${encodeURIComponent(name)}`;
+        download.textContent = 'Скачать';
+        download.style.marginLeft = '8px';
+        download.className = 'muted';
+        li.appendChild(link);
+        li.appendChild(download);
+        listEl.appendChild(li);
+      }
+    }
+
+    async function openPlaylist(name) {
+      titleEl.textContent = `Содержимое · ${name}`;
+      viewerEl.textContent = 'Загрузка…';
+      try {
+        const resp = await fetch(`/playlist/${encodeURIComponent(name)}`);
+        if (!resp.ok) {
+          viewerEl.textContent = 'Не удалось загрузить файл';
+          return;
+        }
+        const text = await resp.text();
+        viewerEl.textContent = text;
+      } catch (err) {
+        viewerEl.textContent = 'Ошибка: ' + err;
+      }
+    }
+
+    loadPlaylists();
+  </script>
+{% endblock %}

@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, redirect, abort, send_file
+from flask import (
+    Flask,
+    abort,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    send_file,
+)
 from urllib.parse import urlparse
 from datetime import datetime
 import re
@@ -12,6 +20,7 @@ import subprocess
 import signal
 import requests
 import fnmatch  # ⬅️ для сопоставления масок хостов (*.example.com)
+import sys
 
 app = Flask(__name__)
 
@@ -40,10 +49,63 @@ JS_EXTRACTOR_NAME = os.environ.get("JS_EXTRACTOR", "smotru-m3u-one-stealth.js")
 JS_EXTRACTOR_PATH = os.path.join(EXTRACTOR_DIR, JS_EXTRACTOR_NAME)
 JS_TIMEOUT_SEC = int(os.environ.get("JS_TIMEOUT_SEC", "10"))
 
-# Очистка мусора Puppeteer/Chromium
+# Очистка мусора Playwright/Chromium
 ORPHAN_CHROME_MAX_AGE_SEC = 180
 CLEAN_TMP_AFTER_JS = True
-TMP_PATTERNS = ("/tmp/puppeteer_*", "/tmp/.org.chromium.*", "/dev/shm/.org.chromium.*")
+TMP_PATTERNS = (
+    "/tmp/playwright*",
+    "/tmp/.org.chromium.*",
+    "/dev/shm/.org.chromium.*",
+    "/tmp/ms-playwright*",
+)
+
+# TTL кэша (в секундах) — чтобы избегать навечно застрявших ссылок.
+CACHE_TTL_SEC = int(os.environ.get("CACHE_TTL_SEC", "900"))  # 15 минут по умолчанию
+
+# Настройки HTTP-сервера Flask
+PROXY_HOST = os.environ.get("PROXY_HOST", "0.0.0.0")
+PROXY_PORT = int(os.environ.get("PROXY_PORT", "6060"))
+
+# Команды, доступные из веб-интерфейса
+PYTHON_BIN = os.environ.get("PYTHON_BIN", sys.executable or "python")
+
+
+def _script_path(name: str) -> str:
+    return os.path.join(BASE_DIR, name)
+
+
+ACTION_CATALOG: dict[str, dict] = {
+    "run-scanner": {
+        "label": "Полный скан каналов",
+        "description": "Запускает scaner.py с контроллером сайтов",
+        "command": [PYTHON_BIN, _script_path("scaner.py")],
+        "timeout": int(os.environ.get("ACTION_TIMEOUT_SCANNER", "900")),
+    },
+    "update-playlists": {
+        "label": "Обновить плейлисты",
+        "description": "Запускает update_playlist.py, пересобирая M3U-файлы из channels.json",
+        "command": [PYTHON_BIN, _script_path("update_playlist.py")],
+        "timeout": int(os.environ.get("ACTION_TIMEOUT_UPDATE", "300")),
+    },
+    "validate-playlists": {
+        "label": "Проверить плейлисты",
+        "description": "Выполняет тест m3u потоков (test_m3u_playlists.py)",
+        "command": [PYTHON_BIN, _script_path("test_m3u_playlists.py")],
+        "timeout": int(os.environ.get("ACTION_TIMEOUT_VALIDATE", "420")),
+    },
+    "python-tests": {
+        "label": "Python unit-тесты",
+        "description": "Запускает python -m unittest discover",
+        "command": [PYTHON_BIN, "-m", "unittest", "discover"],
+        "timeout": int(os.environ.get("ACTION_TIMEOUT_PYTEST", "420")),
+    },
+    "extractor-tests": {
+        "label": "JS тесты экстракторов",
+        "description": "Выполняет npm test",
+        "command": ["npm", "test"],
+        "timeout": int(os.environ.get("ACTION_TIMEOUT_JS", "420")),
+    },
+}
 
 # ------------------ УТИЛИТЫ ЧИСТКИ ------------------
 
@@ -74,6 +136,40 @@ def _list_pids():
                 yield int(name)
     except Exception:
         return
+
+
+def _list_playlists() -> list[str]:
+    """Возвращает список файлов плейлистов (без путей)."""
+    if not os.path.isdir(M3U_DIR):
+        return []
+    items = []
+    for entry in os.listdir(M3U_DIR):
+        if entry.lower().endswith(".m3u"):
+            items.append(entry)
+    return sorted(items)
+
+
+def _load_channels_safe() -> dict:
+    """Загружает channels.json, не выбрасывая исключения."""
+    if not os.path.exists(CHANNELS_FILE):
+        return {}
+    try:
+        with open(CHANNELS_FILE, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+            return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _render(page: str, **ctx):
+    """Рисует HTML-страницу панели с общим контекстом."""
+    payload = {
+        "host": PROXY_HOST,
+        "port": PROXY_PORT,
+        "year": datetime.utcnow().year,
+    }
+    payload.update(ctx)
+    return render_template(page, **payload)
 
 def _proc_comm(pid: int) -> str:
     return _read_file(f"/proc/{pid}/comm").strip()
@@ -117,14 +213,14 @@ def _proc_age_sec(pid: int) -> float:
 
 def kill_orphan_chrome(max_age_sec: int = ORPHAN_CHROME_MAX_AGE_SEC) -> int:
     """
-    Убивает осиротевшие процессы chrome/chromium (обычно оставленные Puppeteer):
+    Убивает осиротевшие процессы chrome/chromium (обычно оставленные Playwright):
     - ppid == 1,
     - имя/командная строка содержит chrome/chromium,
-    - и есть маркеры puppeteer/headless.
+    - и есть маркеры playwright/headless.
     """
     victims = 0
     name_mark = ("chrome", "chromium", "chromium-browser")
-    puppet_mark = ("puppeteer", "/tmp/puppeteer_", ".org.chromium", "--remote-debugging", "--headless")
+    automation_mark = ("playwright", "/tmp/playwright", "ms-playwright", ".org.chromium", "--remote-debugging", "--headless")
     for pid in list(_list_pids() or []):
         try:
             if _proc_ppid(pid) != 1:
@@ -133,9 +229,11 @@ def kill_orphan_chrome(max_age_sec: int = ORPHAN_CHROME_MAX_AGE_SEC) -> int:
             cmd = _proc_cmdline(pid).lower()
             if not any(m in comm or m in cmd for m in name_mark):
                 continue
-            if not any(m in cmd for m in puppet_mark):
+            if not any(m in cmd for m in automation_mark):
                 continue
-            if _proc_age_sec(pid) > max_age_sec:
+            # Убиваем только процессы, "зависшие" дольше порога.
+            # Ранее логика была инвертирована и пропускала старые chrome.
+            if _proc_age_sec(pid) < max_age_sec:
                 continue
             try:
                 os.kill(pid, signal.SIGKILL)
@@ -147,6 +245,86 @@ def kill_orphan_chrome(max_age_sec: int = ORPHAN_CHROME_MAX_AGE_SEC) -> int:
         except Exception:
             continue
     return victims
+
+
+def _summarize_action(action_id: str, meta: dict) -> dict:
+    """Готовит JSON-описание команды для фронтенда."""
+    command = meta.get("command", [])
+    available = True
+    if command:
+        bin_name = command[0]
+        if os.path.isabs(bin_name):
+            available = os.path.exists(bin_name)
+        elif bin_name.endswith(".py"):
+            available = os.path.exists(bin_name)
+        # если команда обращается к скрипту, проверим второй элемент
+        if available and len(command) >= 2 and command[0] in {PYTHON_BIN, "python", "python3"}:
+            script_path = command[1]
+            if script_path != "-m" and script_path.endswith(".py"):
+                available = os.path.exists(script_path)
+    return {
+        "id": action_id,
+        "label": meta.get("label", action_id),
+        "description": meta.get("description", ""),
+        "available": bool(available),
+    }
+
+
+def _run_action(meta: dict) -> dict:
+    """Запускает команду и возвращает результат для JSON."""
+    command = meta.get("command")
+    timeout = int(meta.get("timeout", 300))
+    started = time.time()
+    if not command:
+        return {
+            "ok": False,
+            "error": "Команда не задана",
+        }
+    try:
+        proc = subprocess.Popen(
+            command,
+            cwd=BASE_DIR,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+    except FileNotFoundError as exc:
+        return {
+            "ok": False,
+            "error": f"Не найдена команда: {exc}",
+        }
+    except Exception as exc:
+        return {
+            "ok": False,
+            "error": f"Не удалось запустить процесс: {exc}",
+        }
+
+    timed_out = False
+    output = ""
+    try:
+        output, _ = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        timed_out = True
+        try:
+            proc.kill()
+        except Exception:
+            pass
+        try:
+            output, _ = proc.communicate(timeout=5)
+        except Exception:
+            output = output or ""
+    except Exception as exc:
+        output = f"Ошибка исполнения: {exc}"
+
+    duration = time.time() - started
+    rc = proc.poll()
+    return {
+        "ok": (rc == 0) and not timed_out,
+        "returncode": rc,
+        "timedOut": timed_out,
+        "duration": duration,
+        "output": output,
+    }
 
 # ------------------ SITE CONTROLLER ------------------
 
@@ -358,7 +536,8 @@ def load_cache():
         try:
             with open(CACHE_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
-        except Exception:
+        except Exception as e:
+            print(f"[cache] не удалось прочитать {CACHE_FILE}: {e}")
             return {}
     return {}
 
@@ -370,18 +549,42 @@ def save_cache(cache):
     except Exception as e:
         print(f"[!] Не удалось сохранить кэш: {e}")
 
+
+def _cache_entry_is_fresh(entry: dict) -> bool:
+    """Проверяет, не протухла ли запись кэша по таймстемпу."""
+    if CACHE_TTL_SEC <= 0:
+        return True
+    if not isinstance(entry, dict):
+        return False
+    ts = entry.get("timestamp")
+    if not ts:
+        return False
+    try:
+        when = datetime.fromisoformat(ts)
+    except Exception:
+        return False
+    age = (datetime.utcnow() - when).total_seconds()
+    return age <= CACHE_TTL_SEC
+
 def is_m3u8_alive(url, referer=None):
     try:
         headers = {"User-Agent": USER_AGENT}
         if referer:
             headers["Referer"] = referer
         r = requests.head(url, timeout=5, allow_redirects=True, headers=headers)
-        # HEAD не всегда даёт content-type для HLS; подстрахуемся GET'ом маленького чанка
-        if r.status_code == 200 and "mpegurl" in r.headers.get("Content-Type", "").lower():
-            return True
+        try:
+            # HEAD не всегда даёт content-type для HLS; подстрахуемся GET'ом маленького чанка
+            if r.status_code == 200 and "mpegurl" in r.headers.get("Content-Type", "").lower():
+                return True
+        finally:
+            r.close()
+
         # fallback: небольшой GET и проверка сигнатуры
         r2 = requests.get(url, timeout=7, headers=headers, stream=True, allow_redirects=True)
-        chunk = next(r2.iter_content(chunk_size=2048), b"")
+        try:
+            chunk = next(r2.iter_content(chunk_size=2048), b"")
+        finally:
+            r2.close()
         txt = ""
         try:
             txt = chunk.decode("utf-8", errors="ignore")
@@ -394,15 +597,64 @@ def is_m3u8_alive(url, referer=None):
 # ------------------ HTTP-РОУТЫ ------------------
 
 @app.route("/")
-def index():
-    try:
-        files = []
-        if os.path.isdir(M3U_DIR):
-            files = sorted([f for f in os.listdir(M3U_DIR) if f.endswith(".m3u")])
-        links = "\n".join([f"<li><a href='/playlist/{f}'>{f}</a></li>" for f in files]) or "<li>(пусто)</li>"
-        return f"<h2>📺 Доступные плейлисты (из каталога m3u):</h2><ul>{links}</ul>"
-    except Exception as e:
-        return f"<h2>Ошибка чтения каталога плейлистов:</h2><pre>{e}</pre>"
+def dashboard():
+    """Главная страница с панелью управления."""
+    return _render("dashboard.html", active_page="dashboard")
+
+
+@app.route("/playlists")
+def playlists_page():
+    return _render("playlists.html", active_page="playlists")
+
+
+@app.route("/channels")
+def channels_page():
+    return _render("channels.html", active_page="channels")
+
+
+@app.route("/scanner")
+def scanner_page():
+    return _render("scanner.html", active_page="scanner")
+
+
+@app.route("/api/actions", methods=["GET"])
+def api_list_actions():
+    payload = [_summarize_action(k, v) for k, v in ACTION_CATALOG.items()]
+    return jsonify({"items": payload})
+
+
+@app.route("/api/actions/<action_id>", methods=["POST"])
+def api_run_action(action_id):
+    meta = ACTION_CATALOG.get(action_id)
+    if not meta:
+        return jsonify({"ok": False, "error": f"Неизвестное действие: {action_id}"}), 404
+    result = _run_action(meta)
+    return jsonify(result)
+
+
+@app.route("/api/playlists", methods=["GET"])
+def api_playlists():
+    return jsonify({"items": _list_playlists()})
+
+
+@app.route("/api/channels", methods=["GET"])
+def api_channels():
+    include_source = request.args.get("withSource")
+    items = []
+    for slug, meta in _load_channels_safe().items():
+        name = ""
+        url = ""
+        if isinstance(meta, dict):
+            name = meta.get("title") or meta.get("name") or ""
+            url = meta.get("url") or meta.get("page") or meta.get("source") or ""
+        elif isinstance(meta, str):
+            url = meta
+        entry = {"slug": slug, "name": name}
+        if include_source:
+            entry["url"] = url
+        items.append(entry)
+    items.sort(key=lambda x: x["slug"])
+    return jsonify({"items": items})
 
 @app.route("/playlist/<filename>")
 def serve_playlist(filename):
@@ -444,13 +696,16 @@ def proxy(channel_slug):
     # Проверка кэша
     cached = cache.get(channel_slug)
     if cached:
-        stream_url = cached.get("url")
-        print(f"📁 Проверка кэшированной ссылки: {stream_url}")
-        if stream_url and is_m3u8_alive(stream_url, referer=referer_url):
-            print("✅ Используется кэш.")
-            return redirect(stream_url, code=302)
+        if not _cache_entry_is_fresh(cached):
+            print("🗑️ Кэш просрочен, нужен новый поток.")
         else:
-            print("❌ Кэш устарел, пробуем заново.")
+            stream_url = cached.get("url")
+            print(f"📁 Проверка кэшированной ссылки: {stream_url}")
+            if stream_url and is_m3u8_alive(stream_url, referer=referer_url):
+                print("✅ Используется кэш.")
+                return redirect(stream_url, code=302)
+            else:
+                print("❌ Кэш устарел, пробуем заново.")
 
     # Получение новой ссылки через JS-экстрактор(ы)
     print(f"🔵 Запрос к каналу: {channel_slug}")
@@ -471,5 +726,5 @@ def proxy(channel_slug):
 # ------------------ MAIN ------------------
 
 if __name__ == "__main__":
-    print("\n🚀 Прокси запущен: http://127.0.0.1:6060")
-    app.run(host="127.0.0.1", port=6060)
+    print(f"\n🚀 Прокси запущен: http://{PROXY_HOST}:{PROXY_PORT}")
+    app.run(host=PROXY_HOST, port=PROXY_PORT)

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Каналы · LunaTV{% endblock %}
+{% block content %}
+  <div class="card">
+    <h2>База каналов</h2>
+    <p class="muted">Данные читаются из <code>config/channels.json</code>. Доступны slug, название и исходный URL.</p>
+    <div style="overflow-x:auto;">
+      <table class="data" id="channelTable">
+        <thead>
+          <tr><th>Slug</th><th>Название</th><th>Источник</th></tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="3" class="muted">Загрузка…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}
+{% block scripts %}
+  <script>
+    const tableBody = document.querySelector('#channelTable tbody');
+
+    async function loadChannels() {
+      const resp = await fetch('/api/channels?withSource=1');
+      const payload = await resp.json();
+      renderChannels(payload.items || []);
+    }
+
+    function renderChannels(items) {
+      if (!items.length) {
+        tableBody.innerHTML = '<tr><td colspan="3" class="muted">Файл channels.json не найден или пуст</td></tr>';
+        return;
+      }
+      tableBody.innerHTML = '';
+      for (const item of items) {
+        const tr = document.createElement('tr');
+        const slug = document.createElement('td');
+        slug.textContent = item.slug;
+        const name = document.createElement('td');
+        name.textContent = item.name || '—';
+        const url = document.createElement('td');
+        if (item.url) {
+          const link = document.createElement('a');
+          link.href = item.url;
+          link.textContent = item.url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          url.appendChild(link);
+        } else {
+          url.textContent = '—';
+        }
+        tr.appendChild(slug);
+        tr.appendChild(name);
+        tr.appendChild(url);
+        tableBody.appendChild(tr);
+      }
+    }
+
+    loadChannels();
+  </script>
+{% endblock %}
