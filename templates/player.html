@@ -1,0 +1,582 @@
+{% extends "base.html" %}
+{% block title %}Плеер · LunaTV{% endblock %}
+{% block head %}
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.6/dist/hls.min.js" defer></script>
+  <style>
+    .player-layout {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr) 280px;
+      gap: 18px;
+    }
+    .panel {
+      display: flex;
+      flex-direction: column;
+      background: rgba(15, 23, 42, 0.75);
+      border-radius: 20px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      box-shadow: 0 16px 34px rgba(8, 15, 34, 0.55);
+      overflow: hidden;
+      min-height: 540px;
+    }
+    .panel-header {
+      padding: 18px 20px 12px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+      backdrop-filter: blur(4px);
+    }
+    .panel-header h2 {
+      margin: 0 0 6px;
+      font-size: 1.15rem;
+    }
+    .panel-header p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: rgba(148, 163, 184, 0.75);
+    }
+    .channel-search {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 20px 12px;
+    }
+    .channel-search input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(15, 23, 42, 0.6);
+      color: #e2e8f0;
+      font: inherit;
+    }
+    .channel-groups {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 8px 16px;
+      display: grid;
+      gap: 10px;
+    }
+    .group-block {
+      border-radius: 14px;
+      background: rgba(30, 41, 59, 0.55);
+      border: 1px solid transparent;
+      overflow: hidden;
+    }
+    .group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .group-header:hover {
+      background: rgba(56, 189, 248, 0.08);
+    }
+    .group-header h3 {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+    .group-count {
+      font-size: 0.75rem;
+      color: rgba(148, 163, 184, 0.7);
+    }
+    .channel-items {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+    }
+    .channel-item {
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid rgba(15, 23, 42, 0.4);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 6px 12px;
+      cursor: pointer;
+      transition: transform 0.15s ease, border 0.15s ease, background 0.15s ease;
+    }
+    .channel-item:hover {
+      transform: translateY(-1px);
+      border-color: rgba(56, 189, 248, 0.4);
+      background: rgba(56, 189, 248, 0.08);
+    }
+    .channel-item.active {
+      border-color: rgba(56, 189, 248, 0.8);
+      background: rgba(56, 189, 248, 0.18);
+      box-shadow: 0 10px 28px rgba(56, 189, 248, 0.24);
+    }
+    .channel-title {
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    .channel-subtitle {
+      font-size: 0.8rem;
+      color: rgba(148, 163, 184, 0.75);
+      line-height: 1.1;
+    }
+    .favorite-toggle {
+      border: none;
+      background: none;
+      color: rgba(226, 232, 240, 0.45);
+      cursor: pointer;
+      transition: color 0.15s ease;
+    }
+    .favorite-toggle.active {
+      color: #fbbf24;
+      filter: drop-shadow(0 6px 14px rgba(251, 191, 36, 0.35));
+    }
+    .player-surface {
+      flex: 1;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+    .player-meta {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .player-meta h2 {
+      margin: 0;
+      font-size: 1.35rem;
+    }
+    .player-meta .muted {
+      margin-top: 4px;
+    }
+    .player-meta-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .open-source-link {
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.16);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #e0f2fe;
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: background 0.2s ease, border 0.2s ease;
+    }
+    .open-source-link:hover {
+      background: rgba(56, 189, 248, 0.26);
+      border-color: rgba(56, 189, 248, 0.6);
+    }
+    .player-stage {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 0;
+    }
+    .video-shell {
+      position: relative;
+      background: #020617;
+      border-radius: 18px;
+      overflow: hidden;
+      aspect-ratio: 16 / 9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 20px 38px rgba(8, 15, 34, 0.6);
+    }
+    .video-shell video {
+      width: 100%;
+      height: 100%;
+      background: black;
+    }
+    .player-status {
+      font-size: 0.9rem;
+      color: rgba(148, 163, 184, 0.78);
+    }
+    .schedule-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 18px 22px;
+      display: grid;
+      gap: 12px;
+    }
+    .schedule-item {
+      background: rgba(30, 41, 59, 0.55);
+      border-radius: 14px;
+      padding: 12px 14px;
+      border: 1px solid rgba(148, 163, 184, 0.08);
+      display: grid;
+      gap: 6px;
+    }
+    .schedule-item.current {
+      border-color: rgba(74, 222, 128, 0.5);
+      background: rgba(22, 163, 74, 0.22);
+      box-shadow: 0 12px 26px rgba(22, 163, 74, 0.35);
+    }
+    .schedule-time {
+      font-size: 0.82rem;
+      color: rgba(148, 163, 184, 0.78);
+    }
+    .schedule-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .schedule-desc {
+      font-size: 0.8rem;
+      color: rgba(148, 163, 184, 0.7);
+    }
+    .empty-placeholder {
+      color: rgba(148, 163, 184, 0.7);
+      font-size: 0.85rem;
+      padding: 18px;
+      text-align: center;
+    }
+    @media (max-width: 1200px) {
+      .player-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .panel {
+        min-height: auto;
+      }
+    }
+  </style>
+{% endblock %}
+{% block content %}
+  <div class="player-layout">
+    <aside class="panel channel-panel">
+      <div class="panel-header">
+        <h2>Каналы</h2>
+        <p>Выберите станцию или используйте поиск по названию/slug.</p>
+      </div>
+      <div class="channel-search">
+        <input type="search" id="channelSearch" placeholder="Поиск по каналам" autocomplete="off" />
+      </div>
+      <div class="channel-groups" id="groupContainer">
+        <div class="empty-placeholder">Загрузка списка каналов…</div>
+      </div>
+    </aside>
+    <section class="panel player-surface">
+      <div class="player-meta">
+        <div>
+          <h2 id="currentChannelTitle">Плеер</h2>
+          <div class="muted" id="currentChannelMeta">Выберите канал из списка, чтобы начать воспроизведение.</div>
+        </div>
+        <div class="player-meta-actions">
+          <button id="favoriteCurrent" class="favorite-toggle" title="Добавить в избранное" disabled>★</button>
+          <a id="openSourceLink" class="open-source-link" href="#" target="_blank" rel="noopener" hidden>Открыть источник</a>
+        </div>
+      </div>
+      <div class="player-stage">
+        <div class="video-shell">
+          <video id="streamPlayer" controls playsinline></video>
+        </div>
+        <div class="player-status" id="playerStatus">Загрузите список каналов, чтобы начать просмотр.</div>
+      </div>
+    </section>
+    <aside class="panel schedule-panel">
+      <div class="panel-header">
+        <h2>Программа передач</h2>
+        <p>Расписание текущего канала, если оно указано в channels.json.</p>
+      </div>
+      <div class="schedule-list" id="scheduleList">
+        <div class="empty-placeholder">Выберите канал, чтобы увидеть программу.</div>
+      </div>
+    </aside>
+  </div>
+{% endblock %}
+{% block scripts %}
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const selectState = {
+        channels: [],
+        favorites: new Set(JSON.parse(localStorage.getItem('playerFavorites') || '[]')),
+        expandedGroups: new Set(),
+        activeSlug: null,
+        searchTerm: ''
+      };
+
+      const videoEl = document.getElementById('streamPlayer');
+      const statusEl = document.getElementById('playerStatus');
+      const titleEl = document.getElementById('currentChannelTitle');
+      const metaEl = document.getElementById('currentChannelMeta');
+      const scheduleEl = document.getElementById('scheduleList');
+      const groupContainer = document.getElementById('groupContainer');
+      const searchInput = document.getElementById('channelSearch');
+      const favoriteCurrentBtn = document.getElementById('favoriteCurrent');
+      const openSourceLink = document.getElementById('openSourceLink');
+      let hlsInstance = null;
+
+      function persistFavorites() {
+        localStorage.setItem('playerFavorites', JSON.stringify(Array.from(selectState.favorites)));
+      }
+
+      function teardownPlayer() {
+        if (hlsInstance) {
+          hlsInstance.destroy();
+          hlsInstance = null;
+        }
+        videoEl.removeAttribute('src');
+        videoEl.load();
+      }
+
+      function updateFavoriteButton(slug) {
+        if (!slug) {
+          favoriteCurrentBtn.disabled = true;
+          favoriteCurrentBtn.classList.remove('active');
+          return;
+        }
+        favoriteCurrentBtn.disabled = false;
+        if (selectState.favorites.has(slug)) {
+          favoriteCurrentBtn.classList.add('active');
+          favoriteCurrentBtn.title = 'Убрать из избранного';
+        } else {
+          favoriteCurrentBtn.classList.remove('active');
+          favoriteCurrentBtn.title = 'Добавить в избранное';
+        }
+      }
+
+      function findChannel(slug) {
+        return selectState.channels.find((item) => item.slug === slug);
+      }
+
+      function renderSchedule(items) {
+        scheduleEl.innerHTML = '';
+        if (!items || !items.length) {
+          scheduleEl.innerHTML = '<div class="empty-placeholder">Расписание для этого канала не указано.</div>';
+          return;
+        }
+        const now = new Date();
+        const fragment = document.createDocumentFragment();
+        for (const entry of items) {
+          const row = document.createElement('div');
+          row.className = 'schedule-item';
+          const startText = entry.time || entry.start || '';
+          const startDate = entry.startIso ? new Date(entry.startIso) : null;
+          if (startDate && startDate <= now && (!entry.endIso || new Date(entry.endIso) > now)) {
+            row.classList.add('current');
+          }
+          row.innerHTML = `
+            <div class="schedule-time">${startText}</div>
+            <div class="schedule-title">${entry.title || entry.name || 'Без названия'}</div>
+            ${entry.description ? `<div class="schedule-desc">${entry.description}</div>` : ''}
+          `;
+          fragment.appendChild(row);
+        }
+        scheduleEl.appendChild(fragment);
+      }
+
+      function highlightActiveChannel() {
+        groupContainer.querySelectorAll('.channel-item').forEach((node) => {
+          if (node.dataset.slug === selectState.activeSlug) {
+            node.classList.add('active');
+          } else {
+            node.classList.remove('active');
+          }
+        });
+      }
+
+      function playChannel(slug) {
+        const entry = findChannel(slug);
+        selectState.activeSlug = entry ? entry.slug : null;
+        highlightActiveChannel();
+        updateFavoriteButton(selectState.activeSlug);
+        if (!entry) {
+          teardownPlayer();
+          titleEl.textContent = 'Плеер';
+          metaEl.textContent = 'Выберите канал из списка, чтобы начать воспроизведение.';
+          scheduleEl.innerHTML = '<div class="empty-placeholder">Выберите канал, чтобы увидеть программу.</div>';
+          statusEl.textContent = 'Канал не выбран.';
+          openSourceLink.hidden = true;
+          return;
+        }
+        const streamUrl = `/stream/${encodeURIComponent(entry.slug)}`;
+        titleEl.textContent = entry.name || entry.slug;
+        metaEl.textContent = entry.slug + (entry.group ? ` · ${entry.group}` : '');
+        renderSchedule(entry.epg);
+        if (entry.url) {
+          openSourceLink.href = entry.url;
+          openSourceLink.hidden = false;
+        } else {
+          openSourceLink.hidden = true;
+        }
+        teardownPlayer();
+        statusEl.textContent = 'Подключаемся…';
+        if (window.Hls && window.Hls.isSupported()) {
+          hlsInstance = new window.Hls({ lowLatencyMode: true, enableWorker: true });
+          hlsInstance.loadSource(streamUrl);
+          hlsInstance.attachMedia(videoEl);
+          hlsInstance.on(window.Hls.Events.MANIFEST_PARSED, () => {
+            statusEl.textContent = 'Идёт воспроизведение.';
+            videoEl.play().catch(() => {});
+          });
+          hlsInstance.on(window.Hls.Events.ERROR, (evt, data) => {
+            const detail = data && data.details ? data.details : 'неизвестно';
+            statusEl.textContent = `Ошибка плеера: ${detail}`;
+          });
+        } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
+          videoEl.src = streamUrl;
+          videoEl.addEventListener('loadedmetadata', () => {
+            statusEl.textContent = 'Идёт воспроизведение.';
+            videoEl.play().catch(() => {});
+          }, { once: true });
+        } else {
+          statusEl.innerHTML = `Браузер не поддерживает HLS. Откройте поток напрямую: <a href="${streamUrl}" target="_blank" rel="noopener">${streamUrl}</a>`;
+        }
+      }
+
+      function toggleGroup(id) {
+        if (selectState.expandedGroups.has(id)) {
+          selectState.expandedGroups.delete(id);
+        } else {
+          selectState.expandedGroups.add(id);
+        }
+        renderGroups();
+      }
+
+      function toggleFavorite(slug) {
+        if (selectState.favorites.has(slug)) {
+          selectState.favorites.delete(slug);
+        } else {
+          selectState.favorites.add(slug);
+        }
+        persistFavorites();
+        updateFavoriteButton(selectState.activeSlug);
+        renderGroups();
+      }
+
+      function renderGroups() {
+        const filtered = selectState.channels.filter((item) => {
+          if (!selectState.searchTerm) {
+            return true;
+          }
+          const query = selectState.searchTerm.toLowerCase();
+          return (
+            (item.name && item.name.toLowerCase().includes(query)) ||
+            item.slug.toLowerCase().includes(query) ||
+            (item.group && item.group.toLowerCase().includes(query))
+          );
+        });
+        const favorites = filtered.filter((item) => selectState.favorites.has(item.slug));
+        const groups = new Map();
+        for (const item of filtered) {
+          const groupName = item.group || 'Без категории';
+          if (!groups.has(groupName)) {
+            groups.set(groupName, []);
+          }
+          groups.get(groupName).push(item);
+        }
+        const fragment = document.createDocumentFragment();
+        if (favorites.length) {
+          fragment.appendChild(buildGroupBlock('favorites', 'Избранное', favorites));
+        }
+        Array.from(groups.entries())
+          .sort((a, b) => a[0].localeCompare(b[0], 'ru'))
+          .forEach(([groupName, items]) => {
+            fragment.appendChild(buildGroupBlock(`group-${groupName}`, groupName, items));
+          });
+        if (!filtered.length) {
+          groupContainer.innerHTML = '<div class="empty-placeholder">Ничего не найдено по текущему запросу.</div>';
+        } else {
+          groupContainer.innerHTML = '';
+          groupContainer.appendChild(fragment);
+        }
+        highlightActiveChannel();
+      }
+
+      function buildGroupBlock(id, title, items) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'group-block';
+        const header = document.createElement('div');
+        header.className = 'group-header';
+        const h3 = document.createElement('h3');
+        h3.textContent = title;
+        const counter = document.createElement('span');
+        counter.className = 'group-count';
+        counter.textContent = `${items.length}`;
+        header.appendChild(h3);
+        header.appendChild(counter);
+        header.addEventListener('click', () => toggleGroup(id));
+        wrapper.appendChild(header);
+        if (!selectState.expandedGroups.has(id)) {
+          selectState.expandedGroups.add(id);
+        }
+        if (selectState.expandedGroups.has(id)) {
+          const list = document.createElement('div');
+          list.className = 'channel-items';
+          for (const item of items.sort((a, b) => (a.name || a.slug).localeCompare(b.name || b.slug, 'ru'))) {
+            list.appendChild(buildChannelItem(item));
+          }
+          wrapper.appendChild(list);
+        }
+        return wrapper;
+      }
+
+      function buildChannelItem(item) {
+        const node = document.createElement('div');
+        node.className = 'channel-item';
+        node.dataset.slug = item.slug;
+        const info = document.createElement('div');
+        info.innerHTML = `
+          <div class="channel-title">${item.name || item.slug}</div>
+          <div class="channel-subtitle">${item.group || 'Без категории'} · ${item.slug}</div>
+        `;
+        const favBtn = document.createElement('button');
+        favBtn.className = 'favorite-toggle';
+        favBtn.type = 'button';
+        favBtn.innerText = '★';
+        if (selectState.favorites.has(item.slug)) {
+          favBtn.classList.add('active');
+        }
+        favBtn.addEventListener('click', (evt) => {
+          evt.stopPropagation();
+          toggleFavorite(item.slug);
+        });
+        node.appendChild(info);
+        node.appendChild(favBtn);
+        node.addEventListener('click', () => playChannel(item.slug));
+        return node;
+      }
+
+      async function loadChannels() {
+        try {
+          const resp = await fetch('/api/channels?withSource=1');
+          if (!resp.ok) {
+            throw new Error(`HTTP ${resp.status}`);
+          }
+          const data = await resp.json();
+          const items = Array.isArray(data.items) ? data.items : [];
+          selectState.channels = items.map((item) => ({
+            ...item,
+            group: item.group || item.category || '',
+            epg: Array.isArray(item.epg) ? item.epg : [],
+            favorite: Boolean(item.favorite)
+          }));
+          for (const channel of selectState.channels) {
+            if (channel.favorite) {
+              selectState.favorites.add(channel.slug);
+            }
+          }
+          renderGroups();
+          statusEl.textContent = 'Выберите канал слева для запуска потока.';
+        } catch (err) {
+          groupContainer.innerHTML = `<div class="empty-placeholder">Не удалось загрузить каналы: ${err}</div>`;
+          statusEl.textContent = 'Ошибка загрузки списка каналов.';
+        }
+      }
+
+      favoriteCurrentBtn.addEventListener('click', () => {
+        if (!selectState.activeSlug) {
+          return;
+        }
+        toggleFavorite(selectState.activeSlug);
+      });
+
+      searchInput.addEventListener('input', () => {
+        selectState.searchTerm = searchInput.value.trim();
+        renderGroups();
+      });
+
+      loadChannels();
+    });
+  </script>
+{% endblock %}

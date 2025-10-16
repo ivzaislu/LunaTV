@@ -1,43 +1,44 @@
 // update-channels-cdn.js
 import axios from "axios";
 import * as cheerio from "cheerio";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import { copyFile, readFile, writeFile, access } from "node:fs/promises";
+import { constants as fsConstants } from "node:fs";
+import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 // --- настройки ---
-const BLACKLIST = ["programma-peredach.com"]; // игнорируемые домены
-const TIMEOUT_MS = 20000;
+export const BLACKLIST = ["programma-peredach.com"]; // игнорируемые домены
+export const TIMEOUT_MS = 20000;
 
 // --- утилиты ---
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+export const __filename = fileURLToPath(import.meta.url);
+export const __dirname = path.dirname(__filename);
 
 const normalizeHost = (h) => h.replace(/^www\./i, "").toLowerCase();
-const isBlacklisted = (host) => {
+export const isBlacklisted = (host) => {
   const h = normalizeHost(host);
   return BLACKLIST.some((d) => h === d || h.endsWith("." + d));
 };
 
-function loadJson(filePath) {
-  const txt = fs.readFileSync(filePath, "utf-8");
+export async function loadJson(filePath) {
+  const txt = await readFile(filePath, "utf-8");
   return JSON.parse(txt);
 }
 
-function saveJson(filePath, data) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
+export async function saveJson(filePath, data) {
+  await writeFile(filePath, JSON.stringify(data, null, 2), "utf-8");
 }
 
-async function fetchHtml(url) {
+export async function fetchHtml(url, timeout = TIMEOUT_MS) {
   const res = await axios.get(url, {
     headers: { "User-Agent": "Mozilla/5.0" },
-    timeout: TIMEOUT_MS,
+    timeout,
     maxRedirects: 5,
   });
   return res.data;
 }
 
-function extractFirstCdnFromHtml(html, pageUrl) {
+export function extractFirstCdnFromHtml(html, pageUrl) {
   const $ = cheerio.load(html);
   const found = [];
 
@@ -66,7 +67,7 @@ function extractFirstCdnFromHtml(html, pageUrl) {
   return found[0] || null;
 }
 
-async function processChannel(key, channelObj, baseOrigin) {
+export async function processChannel(key, channelObj, baseOrigin, { fetcher = fetchHtml } = {}) {
   const pageUrl = channelObj?.url;
   if (!pageUrl || typeof pageUrl !== "string") return { updated: false, reason: "no-url" };
 
@@ -77,7 +78,7 @@ async function processChannel(key, channelObj, baseOrigin) {
 
   console.log(`→ Обработка [${key}] ${pageUrl}`);
   try {
-    const html = await fetchHtml(pageUrl);
+    const html = await fetcher(pageUrl);
     const cdn = extractFirstCdnFromHtml(html, pageUrl);
     if (!cdn) {
       console.log("  ⚠️  На странице не найден подходящий iframe.");
@@ -93,15 +94,23 @@ async function processChannel(key, channelObj, baseOrigin) {
 }
 
 // --- main ---
-async function main() {
-  const args = process.argv.slice(2);
-  if (args.length < 1) {
+export async function ensureFileExists(targetPath) {
+  try {
+    await access(targetPath, fsConstants.F_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function main(argv = process.argv.slice(2)) {
+  if (argv.length < 1) {
     console.log("Использование: node update-channels-cdn.js <base-origin>");
     console.log('Пример:     node update-channels-cdn.js "http://oneliketv.net/"');
     process.exit(1);
   }
 
-  const baseOriginArg = args[0];
+  const baseOriginArg = argv[0];
   let baseOrigin;
   try {
     // гарантируем слэш на конце origin
@@ -114,16 +123,17 @@ async function main() {
 
   const configDir = path.join(__dirname, "config");
   const channelsPath = path.join(configDir, "channels.json");
-  if (!fs.existsSync(channelsPath)) {
+  const fileExists = await ensureFileExists(channelsPath);
+  if (!fileExists) {
     console.error(`Файл не найден: ${channelsPath}`);
     process.exit(1);
   }
 
-  const channels = loadJson(channelsPath);
+  const channels = await loadJson(channelsPath);
 
   // делаем бэкап
   const backupPath = path.join(configDir, "channels.json.bak");
-  fs.copyFileSync(channelsPath, backupPath);
+  await copyFile(channelsPath, backupPath);
   console.log(`🗂  Бэкап создан: ${backupPath}`);
 
   let total = 0;
@@ -135,8 +145,15 @@ async function main() {
     if (res.updated) updated++;
   }
 
-  saveJson(channelsPath, channels);
+  await saveJson(channelsPath, channels);
   console.log(`\n✅ Готово. Обработано: ${total}, обновлено: ${updated}. Файл сохранён: ${channelsPath}`);
 }
 
-main();
+const invokedFromCli = process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url;
+
+if (invokedFromCli) {
+  main().catch((err) => {
+    console.error("Произошла непредвиденная ошибка:", err);
+    process.exit(1);
+  });
+}
