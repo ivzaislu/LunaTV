@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Сканер · LunaTV{% endblock %}
+{% block content %}
+  <div class="card" style="margin-bottom: 24px;">
+    <h2>Запуск сканера</h2>
+    <p class="muted">Сканер использует <code>scaner.py</code> для перебора сайтов и обновления потоков. Журнал выполнения появится ниже.</p>
+    <button id="scanButton" class="primary">Запустить скан</button>
+    <div id="scanStatus" class="badge" style="margin-top: 12px;">Готов к запуску</div>
+  </div>
+  <div class="card">
+    <h2>Журнал</h2>
+    <pre id="scanLog" class="viewer">—</pre>
+  </div>
+{% endblock %}
+{% block scripts %}
+  <script>
+    const scanButton = document.getElementById('scanButton');
+    const scanStatus = document.getElementById('scanStatus');
+    const scanLog = document.getElementById('scanLog');
+
+    async function refreshAvailability() {
+      const resp = await fetch('/api/actions');
+      const payload = await resp.json();
+      const item = (payload.items || []).find(it => it.id === 'run-scanner');
+      if (!item || !item.available) {
+        scanButton.disabled = true;
+        scanStatus.textContent = 'Сканер недоступен: проверьте зависимости';
+        scanStatus.className = 'badge status-fail';
+      }
+    }
+
+    async function runScan() {
+      scanButton.disabled = true;
+      scanStatus.textContent = 'Сканирование…';
+      scanStatus.className = 'badge status-running';
+      scanLog.textContent = '';
+      try {
+        const resp = await fetch('/api/actions/run-scanner', { method: 'POST' });
+        const data = await resp.json();
+        if (data.output) {
+          scanLog.textContent = data.output;
+        } else if (data.error) {
+          scanLog.textContent = data.error;
+        } else {
+          scanLog.textContent = JSON.stringify(data, null, 2);
+        }
+        if (data.ok) {
+          scanStatus.textContent = `Успешно · ${(data.duration || 0).toFixed(1)}s`;
+          scanStatus.className = 'badge status-ok';
+        } else {
+          const reason = data.error || `Код ${data.returncode}`;
+          scanStatus.textContent = `Ошибка · ${reason}`;
+          scanStatus.className = 'badge status-fail';
+        }
+      } catch (err) {
+        scanStatus.textContent = `Ошибка запроса: ${err}`;
+        scanStatus.className = 'badge status-fail';
+        scanLog.textContent = '';
+      } finally {
+        scanButton.disabled = false;
+        refreshAvailability();
+      }
+    }
+
+    scanButton.addEventListener('click', runScan);
+    refreshAvailability();
+  </script>
+{% endblock %}
