@@ -5,7 +5,7 @@ IFS=$'\n\t'
 # =======================
 #  Глобальные настройки
 # =======================
-PLAYWRIGHT_VER="${PLAYWRIGHT_VER:-1.48.2}"
+PLAYWRIGHT_VER="${PLAYWRIGHT_VER:-1.55.0}"
 
 # Proxy (systemd)
 SERVICE_NAME="${SERVICE_NAME:-proxy_server}"

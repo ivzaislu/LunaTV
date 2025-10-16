@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.6
-FROM mcr.microsoft.com/playwright/python:v1.48.2-jammy
+FROM mcr.microsoft.com/playwright/python:v1.55.0-jammy
 
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
