@@ -57,7 +57,7 @@ deps_install(){
   "private": true,
   "type": "module",
   "dependencies": {
-    "playwright": "${PLAYWRIGHT_VER}"
+    "playwright-core": "${PLAYWRIGHT_VER}"
   }
 }
 JSON
@@ -65,10 +65,10 @@ JSON
   npm i --no-audit --no-fund >/dev/null
   [[ ${#EXTRAS[@]} -gt 0 ]] && npm i --no-audit --no-fund "${EXTRAS[@]}" >/dev/null
   echo "🌐 Загружаю браузер Chromium через Playwright..."
-  npx playwright install chromium >/dev/null
+  npx playwright@"${PLAYWRIGHT_VER}" install chromium >/dev/null
   echo "🔎 Проверяю импорт..."
-  node --input-type=module -e "import('playwright').then(()=>console.log('  playwright OK')).catch(e=>{console.error(e);process.exit(1)})"
-  echo "✅ Готово."; npm ls playwright || true
+  node --input-type=module -e "import('playwright-core').then(()=>console.log('  playwright-core OK')).catch(e=>{console.error(e);process.exit(1)})"
+  echo "✅ Готово."; npm ls playwright-core || true
 }
 
 # =======================

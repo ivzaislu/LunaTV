@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import axios from "axios";
 import * as cheerio from "cheerio";
-import { chromium } from "playwright";
+import { chromium } from "playwright-core";
 
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +

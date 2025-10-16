@@ -16,7 +16,7 @@ RUN if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
 # Install Node dependencies (Playwright already present in base image)
 COPY package.json package-lock.json ./
-RUN npm ci && npx playwright install chromium
+RUN npm ci && npx playwright@1.55.0 install chromium
 
 # Copy application source
 COPY . .
