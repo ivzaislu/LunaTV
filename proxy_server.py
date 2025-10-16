@@ -1155,12 +1155,52 @@ def api_channels():
     for slug, meta in _load_channels_safe().items():
         name = ""
         url = ""
+        group = ""
+        description = ""
+        favorite = False
+        logo = ""
+        schedule = []
+
         if isinstance(meta, dict):
             name = meta.get("title") or meta.get("name") or ""
             url = meta.get("url") or meta.get("page") or meta.get("source") or ""
+            group = meta.get("group") or meta.get("category") or ""
+            description = meta.get("description") or meta.get("summary") or ""
+            logo = meta.get("logo") or meta.get("icon") or ""
+            favorite = bool(meta.get("favorite") or meta.get("is_favorite"))
+            raw_schedule = meta.get("epg") or meta.get("schedule")
+            if isinstance(raw_schedule, list):
+                for entry in raw_schedule:
+                    if isinstance(entry, dict):
+                        schedule.append(
+                            {
+                                "time": entry.get("time") or entry.get("start") or "",
+                                "title": entry.get("title") or entry.get("name") or "",
+                                "description": entry.get("description") or entry.get("desc") or "",
+                                "startIso": entry.get("startIso")
+                                or entry.get("start_iso")
+                                or entry.get("startAt"),
+                                "endIso": entry.get("endIso")
+                                or entry.get("end_iso")
+                                or entry.get("endAt"),
+                            }
+                        )
+                    elif isinstance(entry, str):
+                        schedule.append({"time": entry, "title": entry})
         elif isinstance(meta, str):
             url = meta
+
         entry = {"slug": slug, "name": name}
+        if description:
+            entry["description"] = description
+        if group:
+            entry["group"] = group
+        if logo:
+            entry["logo"] = logo
+        if favorite:
+            entry["favorite"] = True
+        if schedule:
+            entry["epg"] = schedule
         if include_source:
             entry["url"] = url
         items.append(entry)
