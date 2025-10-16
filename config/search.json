@@ -1,0 +1,14 @@
+{
+  "telik.live": {
+    "parser": "telik-search.js",
+    "timeout_sec": 12
+  },
+    "telik.live": {
+    "parser": "smotrettv-search.js",
+    "timeout_sec": 12
+  },
+    "ontivi.net": {
+    "parser": "telik-search.js",
+    "timeout_sec": 12
+  }
+}
