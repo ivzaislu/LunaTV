@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  lunatv:
+    build: .
+    container_name: lunatv_proxy
+    restart: unless-stopped
+    ports:
+      - "6060:6060"
+    environment:
+      PROXY_HOST: 0.0.0.0
+      PROXY_PORT: 6060
+      BASE_DIR: /app
+    volumes:
+      - ./config:/app/config
+      - ./m3u:/app/m3u
+    command: ["python", "proxy_server.py"]
