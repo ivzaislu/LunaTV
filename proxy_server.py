@@ -270,9 +270,9 @@ def _summarize_action(action_id: str, meta: dict) -> dict:
     }
 
 
-def _run_action(meta: dict) -> dict:
+def _run_action(meta: dict, *, command_override: list[str] | None = None, extra_env: dict | None = None) -> dict:
     """Запускает команду и возвращает результат для JSON."""
-    command = meta.get("command")
+    command = command_override or meta.get("command")
     timeout = int(meta.get("timeout", 300))
     started = time.time()
     if not command:
@@ -280,6 +280,10 @@ def _run_action(meta: dict) -> dict:
             "ok": False,
             "error": "Команда не задана",
         }
+    env = None
+    if extra_env:
+        env = os.environ.copy()
+        env.update(extra_env)
     try:
         proc = subprocess.Popen(
             command,
@@ -287,6 +291,7 @@ def _run_action(meta: dict) -> dict:
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
+            env=env,
         )
     except FileNotFoundError as exc:
         return {
@@ -612,9 +617,19 @@ def channels_page():
     return _render("channels.html", active_page="channels")
 
 
+@app.route("/player")
+def player_page():
+    return _render("player.html", active_page="player")
+
+
 @app.route("/scanner")
 def scanner_page():
     return _render("scanner.html", active_page="scanner")
+
+
+@app.route("/settings")
+def settings_page():
+    return _render("settings.html", active_page="settings")
 
 
 @app.route("/api/actions", methods=["GET"])
@@ -628,7 +643,21 @@ def api_run_action(action_id):
     meta = ACTION_CATALOG.get(action_id)
     if not meta:
         return jsonify({"ok": False, "error": f"Неизвестное действие: {action_id}"}), 404
-    result = _run_action(meta)
+
+    payload = request.get_json(silent=True) or {}
+    command_override = None
+    extra_env = None
+
+    if action_id == "run-scanner":
+        start_url = (payload.get("startUrl") or "").strip()
+        site_tag = (payload.get("siteTag") or "").strip()
+        if not start_url:
+            return jsonify({"ok": False, "error": "Укажите стартовую страницу для сканера."}), 400
+        command_override = list(meta.get("command", [])) + ["--start-url", start_url]
+        if site_tag:
+            command_override += ["--site-tag", site_tag]
+
+    result = _run_action(meta, command_override=command_override, extra_env=extra_env)
     return jsonify(result)
 
 
@@ -655,6 +684,68 @@ def api_channels():
         items.append(entry)
     items.sort(key=lambda x: x["slug"])
     return jsonify({"items": items})
+
+
+def _load_json_safe(path: str):
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            return json.load(fh)
+    except Exception:
+        return None
+
+
+@app.route("/api/settings", methods=["GET"])
+def api_settings():
+    site_controller = _load_site_controller()
+    search_map = _load_json_safe(os.path.join(CONFIG_DIR, "search.json"))
+
+    controller_summary = []
+    if isinstance(site_controller, dict):
+        default_cfg = site_controller.get("default", {}) if isinstance(site_controller.get("default"), dict) else {}
+        for host, cfg in site_controller.items():
+            if host == "default":
+                continue
+            if not isinstance(cfg, dict):
+                continue
+            entry = {
+                "host": host,
+                "script": cfg.get("script") or default_cfg.get("script") or "",
+                "timeout": int(cfg.get("timeout_sec") or default_cfg.get("timeout_sec") or 10),
+            }
+            controller_summary.append(entry)
+        controller_summary.sort(key=lambda x: x["host"])
+
+    search_summary = []
+    if isinstance(search_map, dict):
+        for host, cfg in search_map.items():
+            if isinstance(cfg, dict):
+                search_summary.append({
+                    "host": host,
+                    "parser": cfg.get("parser") or "search-generic.js",
+                    "timeout": int(cfg.get("timeout_sec") or 10),
+                })
+        search_summary.sort(key=lambda x: x["host"])
+
+    return jsonify({
+        "paths": {
+            "baseDir": BASE_DIR,
+            "extractorDir": EXTRACTOR_DIR,
+            "m3uDir": M3U_DIR,
+            "configDir": CONFIG_DIR,
+        },
+        "proxy": {"host": PROXY_HOST, "port": PROXY_PORT},
+        "cache": {"ttlSeconds": CACHE_TTL_SEC},
+        "actions": {
+            key: {"timeout": int(meta.get("timeout", 0))}
+            for key, meta in ACTION_CATALOG.items()
+        },
+        "scanner": {
+            "defaultExtractor": JS_EXTRACTOR_NAME,
+            "nodeBin": NODE_BIN,
+        },
+        "siteController": controller_summary,
+        "search": search_summary,
+    })
 
 @app.route("/playlist/<filename>")
 def serve_playlist(filename):

@@ -3,9 +3,24 @@
 {% block content %}
   <div class="card" style="margin-bottom: 24px;">
     <h2>Запуск сканера</h2>
-    <p class="muted">Сканер использует <code>scaner.py</code> для перебора сайтов и обновления потоков. Журнал выполнения появится ниже.</p>
-    <button id="scanButton" class="primary">Запустить скан</button>
+    <p class="muted">Сканер использует <code>scaner.py</code> и поддерживает Playwright-экстракторы. Укажите стартовую страницу площадки и (при необходимости) короткий тег для подписи каналов.</p>
+    <form id="scannerForm" class="stacked">
+      <label>
+        Стартовая страница
+        <input type="url" id="startUrl" name="startUrl" placeholder="https://example.com/tv/kanal" required>
+      </label>
+      <label>
+        Тег площадки
+        <input type="text" id="siteTag" name="siteTag" placeholder="smotru" autocomplete="off">
+      </label>
+      <div class="muted" id="scannerHints">Укажите URL страницы канала. Тег площадки заполнится автоматически, если оставить поле пустым.</div>
+      <button id="scanButton" class="primary" type="submit">Запустить скан</button>
+    </form>
     <div id="scanStatus" class="badge" style="margin-top: 12px;">Готов к запуску</div>
+  </div>
+  <div class="card" style="margin-bottom: 24px;">
+    <h2>Подсказки конфигурации</h2>
+    <div id="scannerPresets" class="muted">Загружаем конфигурацию…</div>
   </div>
   <div class="card">
     <h2>Журнал</h2>
@@ -14,9 +29,13 @@
 {% endblock %}
 {% block scripts %}
   <script>
+    const scanForm = document.getElementById('scannerForm');
     const scanButton = document.getElementById('scanButton');
     const scanStatus = document.getElementById('scanStatus');
     const scanLog = document.getElementById('scanLog');
+    const startUrlInput = document.getElementById('startUrl');
+    const siteTagInput = document.getElementById('siteTag');
+    const presetsBox = document.getElementById('scannerPresets');
 
     async function refreshAvailability() {
       const resp = await fetch('/api/actions');
@@ -32,10 +51,26 @@
     async function runScan() {
       scanButton.disabled = true;
       scanStatus.textContent = 'Сканирование…';
-      scanStatus.className = 'badge status-running';
-      scanLog.textContent = '';
+        scanStatus.className = 'badge status-running';
+        scanLog.textContent = '';
       try {
-        const resp = await fetch('/api/actions/run-scanner', { method: 'POST' });
+        const body = {
+          startUrl: startUrlInput.value.trim(),
+          siteTag: siteTagInput.value.trim(),
+        };
+        const resp = await fetch('/api/actions/run-scanner', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!resp.ok) {
+          const problem = await resp.json().catch(() => ({}));
+          const reason = problem.error || `HTTP ${resp.status}`;
+          scanStatus.textContent = `Ошибка · ${reason}`;
+          scanStatus.className = 'badge status-fail';
+          scanLog.textContent = '';
+          return;
+        }
         const data = await resp.json();
         if (data.output) {
           scanLog.textContent = data.output;
@@ -62,7 +97,51 @@
       }
     }
 
-    scanButton.addEventListener('click', runScan);
+    function renderPresets(info) {
+      if (!info || !info.siteController || !info.siteController.length) {
+        presetsBox.textContent = 'Не найдены site_controller.json или search.json. Добавьте конфигурацию в каталог config.';
+        return;
+      }
+      const chunks = [];
+      chunks.push('<strong>site_controller.json</strong>:');
+      chunks.push('<ul class="clean">');
+      for (const item of info.siteController) {
+        chunks.push(`<li><code>${item.host}</code> → ${item.script || '—'}, таймаут ${item.timeout}s</li>`);
+      }
+      chunks.push('</ul>');
+      if (info.search && info.search.length) {
+        chunks.push('<div style="margin-top:12px;"><strong>search.json</strong>:</div>');
+        chunks.push('<ul class="clean">');
+        for (const item of info.search) {
+          chunks.push(`<li><code>${item.host}</code> → ${item.parser}, таймаут ${item.timeout}s</li>`);
+        }
+        chunks.push('</ul>');
+      }
+      presetsBox.innerHTML = chunks.join('');
+    }
+
+    async function loadSettings() {
+      try {
+        const resp = await fetch('/api/settings');
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+        const data = await resp.json();
+        renderPresets(data);
+      } catch (err) {
+        presetsBox.textContent = `Не удалось загрузить конфигурацию: ${err}`;
+      }
+    }
+
+    scanForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (!startUrlInput.value.trim()) {
+        startUrlInput.focus();
+        return;
+      }
+      runScan();
+    });
     refreshAvailability();
+    loadSettings();
   </script>
 {% endblock %}

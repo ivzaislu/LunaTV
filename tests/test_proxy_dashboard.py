@@ -65,7 +65,7 @@ class ProxyDashboardTests(unittest.TestCase):
         self.assertEqual(payload["items"], [{"slug": "music", "name": "Music", "url": "http://example/music"}])
 
     def test_navigation_pages_render(self):
-        for url in ("/", "/playlists", "/channels", "/scanner"):
+        for url in ("/", "/playlists", "/channels", "/player", "/scanner", "/settings"):
             resp = self.client.get(url)
             self.assertEqual(resp.status_code, 200, msg=f"{url} should render")
 
@@ -90,6 +90,7 @@ class ProxyDashboardTests(unittest.TestCase):
             stdout=mock.ANY,
             stderr=mock.ANY,
             text=True,
+            env=None,
         )
 
     def test_run_action_unknown(self):
@@ -97,6 +98,47 @@ class ProxyDashboardTests(unittest.TestCase):
         self.assertEqual(resp.status_code, 404)
         payload = resp.get_json()
         self.assertFalse(payload["ok"])
+
+    def test_run_scanner_requires_start_url(self):
+        resp = self.client.post("/api/actions/run-scanner", json={})
+        self.assertEqual(resp.status_code, 400)
+        payload = resp.get_json()
+        self.assertFalse(payload["ok"])
+
+    def test_run_scanner_appends_args(self):
+        fake_proc = mock.Mock()
+        fake_proc.communicate.return_value = ("ok", None)
+        fake_proc.poll.return_value = 0
+        with mock.patch.object(proxy_server.subprocess, "Popen", return_value=fake_proc) as popen_mock:
+            resp = self.client.post(
+                "/api/actions/run-scanner",
+                json={"startUrl": "https://example.org/page", "siteTag": "demo"},
+            )
+        self.assertEqual(resp.status_code, 200)
+        payload = resp.get_json()
+        self.assertTrue(payload["ok"])
+        expected_cmd = list(proxy_server.ACTION_CATALOG["run-scanner"]["command"]) + [
+            "--start-url",
+            "https://example.org/page",
+            "--site-tag",
+            "demo",
+        ]
+        popen_mock.assert_called_once_with(
+            expected_cmd,
+            cwd=proxy_server.BASE_DIR,
+            stdout=mock.ANY,
+            stderr=mock.ANY,
+            text=True,
+            env=None,
+        )
+
+    def test_settings_api_structure(self):
+        resp = self.client.get("/api/settings")
+        self.assertEqual(resp.status_code, 200)
+        payload = resp.get_json()
+        self.assertIn("paths", payload)
+        self.assertIn("proxy", payload)
+        self.assertIn("scanner", payload)
 
 
 if __name__ == "__main__":  # pragma: no cover
