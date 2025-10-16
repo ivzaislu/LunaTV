@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "start:prod": "NODE_ENV=production node server.js",
-    "test": "node extractor/run-fixture-tests.js && node extractor/smotru-m3u-one-stealth.js --selftest",
+    "test": "node extractor/run-fixture-tests.js && node extractor/smotru-m3u-one-stealth.js --selftest && node --test tests/js/cdnsearch.test.js",
     "test:extractors": "node extractor/run-fixture-tests.js"
   },
   "dependencies": {
