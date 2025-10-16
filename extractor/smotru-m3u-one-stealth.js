@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import axios from "axios";
 import * as cheerio from "cheerio";
+import { chromium } from "playwright";
 
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
@@ -97,7 +98,7 @@ export function extractM3U8Candidates(html, baseUrl) {
   return Array.from(urls);
 }
 
-async function fetchHtml(url, timeoutMs) {
+async function fetchHtmlWithHttp(url, timeoutMs) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -118,18 +119,96 @@ async function fetchHtml(url, timeoutMs) {
   }
 }
 
+async function fetchHtmlWithPlaywright(url, timeoutMs) {
+  const browser = await chromium.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-dev-shm-usage"],
+  });
+  let context;
+  try {
+    context = await browser.newContext({
+      userAgent: USER_AGENT,
+      ignoreHTTPSErrors: true,
+      viewport: { width: 1280, height: 720 },
+    });
+
+    await context.route("**/*", (route) => {
+      const type = route.request().resourceType();
+      if (["image", "font", "media", "stylesheet"].includes(type)) {
+        route.abort();
+      } else {
+        route.continue();
+      }
+    });
+
+    const page = await context.newPage();
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: timeoutMs });
+    await page.waitForTimeout(750);
+    const html = await page.content();
+    await page.close();
+    return html;
+  } finally {
+    if (context) {
+      try {
+        await context.close();
+      } catch (err) {
+        // ignore context closing errors
+      }
+    }
+    try {
+      await browser.close();
+    } catch (err) {
+      // ignore browser closing errors
+    }
+  }
+}
+
+async function fetchHtml(url, timeoutMs, { httpOnly = false } = {}) {
+  const attempts = [];
+  if (!httpOnly) {
+    attempts.push(fetchHtmlWithPlaywright);
+  }
+  attempts.push(fetchHtmlWithHttp);
+
+  let lastError;
+  for (const attempt of attempts) {
+    try {
+      return await attempt(url, timeoutMs);
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError || new Error("Не удалось загрузить страницу");
+}
+
+function parseCliArgs(argv) {
+  const flags = new Set();
+  const positional = [];
+  for (const arg of argv) {
+    if (typeof arg === "string" && arg.startsWith("--")) {
+      flags.add(arg);
+    } else {
+      positional.push(arg);
+    }
+  }
+  return { flags, positional };
+}
+
 async function run() {
-  const [, , pageUrl, timeoutArg] = process.argv;
+  const { flags, positional } = parseCliArgs(process.argv.slice(2));
+  const [pageUrl, timeoutArg] = positional;
   if (!pageUrl) {
     console.error("Usage: node smotru-m3u-one-stealth.js <url> [timeoutSeconds]");
+    console.error("       node smotru-m3u-one-stealth.js --http-only <url> [timeoutSeconds]");
     process.exit(1);
   }
 
   const timeoutSec = Number.parseInt(timeoutArg, 10);
   const timeoutMs = Number.isFinite(timeoutSec) && timeoutSec > 0 ? timeoutSec * 1000 : 10000;
+  const httpOnly = flags.has("--http-only") || process.env.EXTRACTOR_HTTP_ONLY === "1";
 
   try {
-    const html = await fetchHtml(pageUrl, timeoutMs);
+    const html = await fetchHtml(pageUrl, timeoutMs, { httpOnly });
     const candidates = extractM3U8Candidates(html, pageUrl);
     if (!candidates.length) {
       console.error("[extractor] Потоки не найдены");
