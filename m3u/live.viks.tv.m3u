@@ -1,0 +1,172 @@
+#EXTM3U
+#EXTINF:-1 tvg-name="Sony Sci-Fi" group-title="OnlineTV",Sony Sci-Fi
+http://127.0.0.1:5000/stream/sony-sci-fi-viks
+
+#EXTINF:-1 tvg-name="Ералаш" group-title="OnlineTV",Ералаш
+http://127.0.0.1:5000/stream/eralash-viks
+
+#EXTINF:-1 tvg-name="Мужское Кино" group-title="OnlineTV",Мужское Кино
+http://127.0.0.1:5000/stream/muzhskoe-kino-viks
+
+#EXTINF:-1 tvg-name="Страшное HD" group-title="OnlineTV",Страшное HD
+http://127.0.0.1:5000/stream/strashnoe-hd-viks
+
+#EXTINF:-1 tvg-name="Мосфильм «Золотая Коллекция»" group-title="OnlineTV",Мосфильм «Золотая Коллекция»
+http://127.0.0.1:5000/stream/mosfil-m-viks
+
+#EXTINF:-1 tvg-name="Hollywood HD" group-title="OnlineTV",Hollywood HD
+http://127.0.0.1:5000/stream/hollywood-viks
+
+#EXTINF:-1 tvg-name="Наше крутое HD" group-title="OnlineTV",Наше крутое HD
+http://127.0.0.1:5000/stream/nash-detektiv-viks
+
+#EXTINF:-1 tvg-name=".red" group-title="OnlineTV",.red
+http://127.0.0.1:5000/stream/red-viks
+
+#EXTINF:-1 tvg-name="Пятый Канал" group-title="OnlineTV",Пятый Канал
+http://127.0.0.1:5000/stream/piatyi-viks
+
+#EXTINF:-1 tvg-name="Amedia Hit" group-title="OnlineTV",Amedia Hit
+http://127.0.0.1:5000/stream/amedia-hit-viks
+
+#EXTINF:-1 tvg-name="Стс" group-title="OnlineTV",Стс
+http://127.0.0.1:5000/stream/sts-viks
+
+#EXTINF:-1 tvg-name="Дорама" group-title="OnlineTV",Дорама
+http://127.0.0.1:5000/stream/dorama-viks
+
+#EXTINF:-1 tvg-name="Еврокино" group-title="OnlineTV",Еврокино
+http://127.0.0.1:5000/stream/evrokino-viks
+
+#EXTINF:-1 tvg-name="Ностальгия" group-title="OnlineTV",Ностальгия
+http://127.0.0.1:5000/stream/nostal-giia-viks
+
+#EXTINF:-1 tvg-name="Романтичное HD" group-title="OnlineTV",Романтичное HD
+http://127.0.0.1:5000/stream/romantichnoe-hd-viks
+
+#EXTINF:-1 tvg-name="Душевное" group-title="OnlineTV",Душевное
+http://127.0.0.1:5000/stream/dushevnoe-viks
+
+#EXTINF:-1 tvg-name="Домашний" group-title="OnlineTV",Домашний
+http://127.0.0.1:5000/stream/domashnii-viks
+
+#EXTINF:-1 tvg-name="Bollywood HD" group-title="OnlineTV",Bollywood HD
+http://127.0.0.1:5000/stream/bollywood-viks
+
+#EXTINF:-1 tvg-name="Мир Сериала" group-title="OnlineTV",Мир Сериала
+http://127.0.0.1:5000/stream/mir-seriala-viks
+
+#EXTINF:-1 tvg-name="Русский Иллюзион" group-title="OnlineTV",Русский Иллюзион
+http://127.0.0.1:5000/stream/russkii-illiuzion-viks
+
+#EXTINF:-1 tvg-name="Amedia 2" group-title="OnlineTV",Amedia 2
+http://127.0.0.1:5000/stream/a2-viks
+
+#EXTINF:-1 tvg-name="Amedia 1" group-title="OnlineTV",Amedia 1
+http://127.0.0.1:5000/stream/a1-viks
+
+#EXTINF:-1 tvg-name="Tv Xxi" group-title="OnlineTV",Tv Xxi
+http://127.0.0.1:5000/stream/tv-xxi-viks
+
+#EXTINF:-1 tvg-name="Индийское Кино" group-title="OnlineTV",Индийское Кино
+http://127.0.0.1:5000/stream/indiiskoe-kino-viks
+
+#EXTINF:-1 tvg-name="Sony Sci-Fi" group-title="OnlineTV",Sony Sci-Fi
+http://127.0.0.1:5000/stream/sony-sci-fi-viks
+
+#EXTINF:-1 tvg-name="Ералаш" group-title="OnlineTV",Ералаш
+http://127.0.0.1:5000/stream/eralash-viks
+
+#EXTINF:-1 tvg-name="Мужское Кино" group-title="OnlineTV",Мужское Кино
+http://127.0.0.1:5000/stream/muzhskoe-kino-viks
+
+#EXTINF:-1 tvg-name="Страшное HD" group-title="OnlineTV",Страшное HD
+http://127.0.0.1:5000/stream/strashnoe-hd-viks
+
+#EXTINF:-1 tvg-name="Мосфильм «Золотая Коллекция»" group-title="OnlineTV",Мосфильм «Золотая Коллекция»
+http://127.0.0.1:5000/stream/mosfil-m-viks
+
+#EXTINF:-1 tvg-name="Hollywood HD" group-title="OnlineTV",Hollywood HD
+http://127.0.0.1:5000/stream/hollywood-viks
+
+#EXTINF:-1 tvg-name="Наше крутое HD" group-title="OnlineTV",Наше крутое HD
+http://127.0.0.1:5000/stream/nash-detektiv-viks
+
+#EXTINF:-1 tvg-name=".red" group-title="OnlineTV",.red
+http://127.0.0.1:5000/stream/red-viks
+
+#EXTINF:-1 tvg-name="Пятый Канал" group-title="OnlineTV",Пятый Канал
+http://127.0.0.1:5000/stream/piatyi-viks
+
+#EXTINF:-1 tvg-name="Amedia Hit" group-title="OnlineTV",Amedia Hit
+http://127.0.0.1:5000/stream/amedia-hit-viks
+
+#EXTINF:-1 tvg-name="Стс" group-title="OnlineTV",Стс
+http://127.0.0.1:5000/stream/sts-viks
+
+#EXTINF:-1 tvg-name="Дорама" group-title="OnlineTV",Дорама
+http://127.0.0.1:5000/stream/dorama-viks
+
+#EXTINF:-1 tvg-name="Еврокино" group-title="OnlineTV",Еврокино
+http://127.0.0.1:5000/stream/evrokino-viks
+
+#EXTINF:-1 tvg-name="Ностальгия" group-title="OnlineTV",Ностальгия
+http://127.0.0.1:5000/stream/nostal-giia-viks
+
+#EXTINF:-1 tvg-name="Романтичное HD" group-title="OnlineTV",Романтичное HD
+http://127.0.0.1:5000/stream/romantichnoe-hd-viks
+
+#EXTINF:-1 tvg-name="Душевное" group-title="OnlineTV",Душевное
+http://127.0.0.1:5000/stream/dushevnoe-viks
+
+#EXTINF:-1 tvg-name="Домашний" group-title="OnlineTV",Домашний
+http://127.0.0.1:5000/stream/domashnii-viks
+
+#EXTINF:-1 tvg-name="Bollywood HD" group-title="OnlineTV",Bollywood HD
+http://127.0.0.1:5000/stream/bollywood-viks
+
+#EXTINF:-1 tvg-name="Мир Сериала" group-title="OnlineTV",Мир Сериала
+http://127.0.0.1:5000/stream/mir-seriala-viks
+
+#EXTINF:-1 tvg-name="Русский Иллюзион" group-title="OnlineTV",Русский Иллюзион
+http://127.0.0.1:5000/stream/russkii-illiuzion-viks
+
+#EXTINF:-1 tvg-name="Amedia 2" group-title="OnlineTV",Amedia 2
+http://127.0.0.1:5000/stream/a2-viks
+
+#EXTINF:-1 tvg-name="Amedia 1" group-title="OnlineTV",Amedia 1
+http://127.0.0.1:5000/stream/a1-viks
+
+#EXTINF:-1 tvg-name="Tv Xxi" group-title="OnlineTV",Tv Xxi
+http://127.0.0.1:5000/stream/tv-xxi-viks
+
+#EXTINF:-1 tvg-name="Индийское Кино" group-title="OnlineTV",Индийское Кино
+http://127.0.0.1:5000/stream/indiiskoe-kino-viks
+
+#EXTINF:-1 tvg-name="Культура" group-title="OnlineTV",Культура
+http://127.0.0.1:5000/stream/kul-tura-viks
+
+#EXTINF:-1 tvg-name="Русский Экстрим" group-title="OnlineTV",Русский Экстрим
+http://127.0.0.1:5000/stream/russkii-ekstrim-viks
+
+#EXTINF:-1 tvg-name="Сарафан" group-title="OnlineTV",Сарафан
+http://127.0.0.1:5000/stream/sarafan-viks
+
+#EXTINF:-1 tvg-name="Киносемья" group-title="OnlineTV",Киносемья
+http://127.0.0.1:5000/stream/kinosemya-viks
+
+#EXTINF:-1 tvg-name="Amedia Premium" group-title="OnlineTV",Amedia Premium
+http://127.0.0.1:5000/stream/amedia-premium-hd-viks
+
+#EXTINF:-1 tvg-name="Киносерия" group-title="OnlineTV",Киносерия
+http://127.0.0.1:5000/stream/kinoseriya-viks
+
+#EXTINF:-1 tvg-name="Родное кино" group-title="OnlineTV",Родное кино
+http://127.0.0.1:5000/stream/rodnoe-kino-viks
+
+#EXTINF:-1 tvg-name="КиноУжас" group-title="OnlineTV",КиноУжас
+http://127.0.0.1:5000/stream/kinouzhas-viks
+
+#EXTINF:-1 tvg-name="Кинохит" group-title="OnlineTV",Кинохит
+http://127.0.0.1:5000/stream/kinohit-viks
+
