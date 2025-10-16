@@ -4,7 +4,8 @@ from flask import (
     abort,
     jsonify,
     redirect,
-    render_template_string,
+    render_template,
+    request,
     send_file,
 )
 from urllib.parse import urlparse
@@ -69,6 +70,12 @@ def _script_path(name: str) -> str:
 
 
 ACTION_CATALOG: dict[str, dict] = {
+    "run-scanner": {
+        "label": "Полный скан каналов",
+        "description": "Запускает scaner.py с контроллером сайтов",
+        "command": [PYTHON_BIN, _script_path("scaner.py")],
+        "timeout": int(os.environ.get("ACTION_TIMEOUT_SCANNER", "900")),
+    },
     "update-playlists": {
         "label": "Обновить плейлисты",
         "description": "Запускает update_playlist.py, пересобирая M3U-файлы из channels.json",
@@ -149,175 +156,15 @@ def _load_channels_safe() -> dict:
         return {}
 
 
-DASHBOARD_TEMPLATE = """<!doctype html>
-<html lang=\"ru\">
-  <head>
-    <meta charset=\"utf-8\">
-    <title>LunaTV · Панель управления</title>
-    <style>
-      :root { color-scheme: dark light; }
-      body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; background: #0f172a; color: #e2e8f0; }
-      header { padding: 24px; background: linear-gradient(135deg, #1e293b, #0f172a); box-shadow: 0 4px 18px rgba(15,23,42,0.4); }
-      h1 { margin: 0 0 8px 0; font-size: 2.1rem; }
-      main { padding: 24px; display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
-      section { background: rgba(15,23,42,0.85); border-radius: 18px; padding: 20px; box-shadow: 0 8px 24px rgba(15,23,42,0.55); border: 1px solid rgba(148, 163, 184, 0.12); backdrop-filter: blur(6px); }
-      section h2 { margin-top: 0; font-size: 1.3rem; }
-      ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
-      li { padding: 12px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.14); background: rgba(30,41,59,0.65); display: flex; flex-direction: column; gap: 8px; }
-      button { align-self: flex-start; padding: 8px 16px; border-radius: 999px; border: none; background: #38bdf8; color: #0f172a; font-weight: 600; cursor: pointer; box-shadow: 0 6px 18px rgba(56,189,248,0.4); transition: transform 0.2s ease, box-shadow 0.2s ease; }
-      button:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(56,189,248,0.55); }
-      button[disabled] { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
-      .badge { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(148, 163, 184, 0.7); }
-      .output { white-space: pre-wrap; font-family: 'Fira Code', 'SFMono-Regular', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; background: rgba(15,23,42,0.85); padding: 16px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.12); max-height: 320px; overflow: auto; }
-      .status-ok { color: #34d399; }
-      .status-fail { color: #f87171; }
-      .status-running { color: #fbbf24; }
-      a { color: #38bdf8; text-decoration: none; }
-      a:hover { text-decoration: underline; }
-    </style>
-  </head>
-  <body>
-    <header>
-      <h1>📺 LunaTV</h1>
-      <div class=\"badge\">Панель управления · http://{{ host }}:{{ port }}</div>
-    </header>
-    <main>
-      <section>
-        <h2>Быстрые действия</h2>
-        <ul id=\"actions\"></ul>
-      </section>
-      <section>
-        <h2>Плейлисты</h2>
-        <ul id=\"playlists\"><li>Загрузка…</li></ul>
-      </section>
-      <section>
-        <h2>Каналы</h2>
-        <ul id=\"channels\"><li>Загрузка…</li></ul>
-      </section>
-      <section style=\"grid-column: 1 / -1;\">
-        <h2>Вывод последней команды</h2>
-        <div id=\"statusLine\" class=\"badge\">Нет запущенных задач</div>
-        <pre id=\"commandOutput\" class=\"output\">—</pre>
-      </section>
-    </main>
-
-    <script>
-      const actionListEl = document.getElementById('actions');
-      const playlistEl = document.getElementById('playlists');
-      const channelEl = document.getElementById('channels');
-      const statusEl = document.getElementById('statusLine');
-      const outputEl = document.getElementById('commandOutput');
-
-      async function loadMeta() {
-        const [actionsResp, playlistsResp, channelsResp] = await Promise.all([
-          fetch('/api/actions'),
-          fetch('/api/playlists'),
-          fetch('/api/channels'),
-        ]);
-        const actions = await actionsResp.json();
-        const playlists = await playlistsResp.json();
-        const channels = await channelsResp.json();
-
-        renderActions(actions.items || []);
-        renderPlaylists(playlists.items || []);
-        renderChannels(channels.items || []);
-      }
-
-      function renderActions(items) {
-        if (!items.length) {
-          actionListEl.innerHTML = '<li>Действия не настроены</li>';
-          return;
-        }
-        actionListEl.innerHTML = '';
-        for (const item of items) {
-          const li = document.createElement('li');
-          const title = document.createElement('div');
-          title.innerHTML = `<strong>${item.label}</strong>`;
-          const desc = document.createElement('div');
-          desc.textContent = item.description;
-          const btn = document.createElement('button');
-          btn.textContent = 'Запустить';
-          btn.disabled = !item.available;
-          btn.addEventListener('click', () => runAction(item.id, btn));
-          if (!item.available) {
-            const hint = document.createElement('div');
-            hint.className = 'badge status-fail';
-            hint.textContent = 'Недоступно на текущей конфигурации';
-            li.appendChild(hint);
-          }
-          li.appendChild(title);
-          li.appendChild(desc);
-          li.appendChild(btn);
-          actionListEl.appendChild(li);
-        }
-      }
-
-      function renderPlaylists(items) {
-        if (!items.length) {
-          playlistEl.innerHTML = '<li>Пока нет файлов .m3u</li>';
-          return;
-        }
-        playlistEl.innerHTML = '';
-        for (const name of items) {
-          const li = document.createElement('li');
-          const link = document.createElement('a');
-          link.href = `/playlist/${encodeURIComponent(name)}`;
-          link.textContent = name;
-          li.appendChild(link);
-          playlistEl.appendChild(li);
-        }
-      }
-
-      function renderChannels(items) {
-        if (!items.length) {
-          channelEl.innerHTML = '<li>channels.json не найден или пуст</li>';
-          return;
-        }
-        channelEl.innerHTML = '';
-        for (const channel of items) {
-          const li = document.createElement('li');
-          li.innerHTML = `<strong>${channel.slug}</strong>${channel.name ? ' — ' + channel.name : ''}`;
-          channelEl.appendChild(li);
-        }
-      }
-
-      async function runAction(id, btn) {
-        btn.disabled = true;
-        statusEl.textContent = 'Выполняется…';
-        statusEl.className = 'badge status-running';
-        outputEl.textContent = '';
-        try {
-          const resp = await fetch(`/api/actions/${encodeURIComponent(id)}`, { method: 'POST' });
-          const data = await resp.json();
-          if (data.output) {
-            outputEl.textContent = data.output;
-          } else if (data.error) {
-            outputEl.textContent = data.error;
-          } else {
-            outputEl.textContent = JSON.stringify(data, null, 2);
-          }
-          if (data.ok) {
-            statusEl.textContent = `Успешно · ${(data.duration || 0).toFixed(1)}s`;
-            statusEl.className = 'badge status-ok';
-          } else {
-            const reason = data.error || `Код ${data.returncode}`;
-            statusEl.textContent = `Ошибка · ${reason}`;
-            statusEl.className = 'badge status-fail';
-          }
-        } catch (err) {
-          statusEl.textContent = `Ошибка запроса: ${err}`;
-          statusEl.className = 'badge status-fail';
-          outputEl.textContent = '';
-        } finally {
-          btn.disabled = false;
-          loadMeta();
-        }
-      }
-
-      loadMeta();
-    </script>
-  </body>
-</html>"""
+def _render(page: str, **ctx):
+    """Рисует HTML-страницу панели с общим контекстом."""
+    payload = {
+        "host": PROXY_HOST,
+        "port": PROXY_PORT,
+        "year": datetime.utcnow().year,
+    }
+    payload.update(ctx)
+    return render_template(page, **payload)
 
 def _proc_comm(pid: int) -> str:
     return _read_file(f"/proc/{pid}/comm").strip()
@@ -747,22 +594,22 @@ def is_m3u8_alive(url, referer=None):
 @app.route("/")
 def dashboard():
     """Главная страница с панелью управления."""
-    return render_template_string(
-        DASHBOARD_TEMPLATE,
-        host=PROXY_HOST,
-        port=PROXY_PORT,
-    )
+    return _render("dashboard.html", active_page="dashboard")
 
 
 @app.route("/playlists")
-def list_playlists_page():
-    files = _list_playlists()
-    if not files:
-        return "<h2>Плейлисты</h2><p>Каталог пуст.</p>"
-    items = "".join(
-        f"<li><a href='/playlist/{f}'>{f}</a></li>" for f in files
-    )
-    return f"<h2>Плейлисты</h2><ul>{items}</ul>"
+def playlists_page():
+    return _render("playlists.html", active_page="playlists")
+
+
+@app.route("/channels")
+def channels_page():
+    return _render("channels.html", active_page="channels")
+
+
+@app.route("/scanner")
+def scanner_page():
+    return _render("scanner.html", active_page="scanner")
 
 
 @app.route("/api/actions", methods=["GET"])
@@ -787,12 +634,20 @@ def api_playlists():
 
 @app.route("/api/channels", methods=["GET"])
 def api_channels():
+    include_source = request.args.get("withSource")
     items = []
     for slug, meta in _load_channels_safe().items():
         name = ""
+        url = ""
         if isinstance(meta, dict):
             name = meta.get("title") or meta.get("name") or ""
-        items.append({"slug": slug, "name": name})
+            url = meta.get("url") or meta.get("page") or meta.get("source") or ""
+        elif isinstance(meta, str):
+            url = meta
+        entry = {"slug": slug, "name": name}
+        if include_source:
+            entry["url"] = url
+        items.append(entry)
     items.sort(key=lambda x: x["slug"])
     return jsonify({"items": items})
 

@@ -54,6 +54,21 @@ class ProxyDashboardTests(unittest.TestCase):
         first = payload["items"][0]
         self.assertIn("slug", first)
 
+    def test_api_channels_with_source(self):
+        data = {
+            "music": {"name": "Music", "url": "http://example/music"},
+        }
+        with open(proxy_server.CHANNELS_FILE, "w", encoding="utf-8") as fh:
+            json.dump(data, fh)
+        resp = self.client.get("/api/channels?withSource=1")
+        payload = resp.get_json()
+        self.assertEqual(payload["items"], [{"slug": "music", "name": "Music", "url": "http://example/music"}])
+
+    def test_navigation_pages_render(self):
+        for url in ("/", "/playlists", "/channels", "/scanner"):
+            resp = self.client.get(url)
+            self.assertEqual(resp.status_code, 200, msg=f"{url} should render")
+
     def test_run_action_invokes_subprocess(self):
         dummy_action = {
             "label": "Dummy",
