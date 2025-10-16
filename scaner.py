@@ -63,7 +63,12 @@ VALIDATION_TIMEOUT = 12
 NODE_BIN = "node"  # при необходимости абсолютный путь
 
 CLEAN_TMP_AFTER_JS = True
-TMP_PATTERNS = ("/tmp/puppeteer_*", "/tmp/.org.chromium.*", "/dev/shm/.org.chromium.*")
+TMP_PATTERNS = (
+    "/tmp/playwright*",
+    "/tmp/.org.chromium.*",
+    "/dev/shm/.org.chromium.*",
+    "/tmp/ms-playwright*",
+)
 
 BASE_HEADERS = {
     "User-Agent": USER_AGENT,
@@ -317,7 +322,7 @@ def _proc_age_sec(pid: int) -> float:
 def kill_orphan_chrome(max_age_sec: int = ORPHAN_CHROME_MAX_AGE_SEC) -> int:
     victims = 0
     name_mark = ("chrome", "chromium", "chromium-browser")
-    puppet_mark = ("puppeteer", "/tmp/puppeteer_", ".org.chromium", "--remote-debugging", "--headless")
+    automation_mark = ("playwright", "/tmp/playwright", "ms-playwright", ".org.chromium", "--remote-debugging", "--headless")
 
     for pid in list(_list_pids()):
         try:
@@ -328,7 +333,7 @@ def kill_orphan_chrome(max_age_sec: int = ORPHAN_CHROME_MAX_AGE_SEC) -> int:
 
             if not any(m in comm or m in cmd for m in name_mark):
                 continue
-            if not any(m in cmd for m in puppet_mark):
+            if not any(m in cmd for m in automation_mark):
                 continue
 
             if _proc_age_sec(pid) > max_age_sec:
