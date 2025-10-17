@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <title>Cinema Online — Прямой эфир</title>
+    <script type="application/json" data-role="player-config">
+      {
+        "title": "Cinema HD",
+        "streams": [
+          { "quality": "auto", "src": "//edge.cinema.example/live/cinema_hd/index.m3u8" },
+          { "quality": "720p", "src": "https://edge.cinema.example/live/cinema_hd/720p.m3u8" }
+        ],
+        "backup": "https://backup.cinema.example/live/cinema_hd_backup.m3u8"
+      }
+    </script>
+  </head>
+  <body>
+    <div
+      id="player"
+      data-player-config='{"poster":"https://cdn.cinema.example/posters/cinema.png","sources":[{"label":"SD","url":"https://edge.cinema.example/live/cinema_sd.m3u8"}]}'
+    ></div>
+    <script>
+      window.__PLAYER_CONFIG__ = {
+        primary: "https://edge.cinema.example/live/cinema_hd/master.m3u8",
+        mirrors: [
+          "https://mirror-1.cinema.example/live/cinema_hd/index.m3u8",
+          "https://mirror-2.cinema.example/live/cinema_hd/index.m3u8"
+        ],
+        playback: {
+          drm: null,
+          hls: {
+            url: "https://cdn-alt.cinema.example/hls/cinema_hd/playlist.m3u8?token=secure"
+          }
+        }
+      };
+    </script>
+  </body>
+</html>

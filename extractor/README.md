@@ -1,8 +1,12 @@
 # Extractor scripts
 
 В каталоге `extractor/` располагаются JS-скрипты, которые запускаются из Python-утилит
-(`update_playlist.py`, `scaner.py`) для извлечения ссылок на потоки. Добавлен базовый
-экстрактор `smotru-m3u-one-stealth.js`, который:
+(`update_playlist.py`, `scaner.py`) для извлечения ссылок на потоки. Добавлены экстракторы:
+
+- `smotru-m3u-one-stealth.js` — универсальный Playwright/HTTP-адаптер, умеющий
+  вытаскивать `.m3u8` ссылки из DOM и скриптов Смотру.
+- `cinema-hls-extractor.js` — модуль для HLS-плейеров с JSON-конфигами (данные в
+  `data-player-config`, `application/json` и глобальном `playerConfig`).
 
 - скачивает HTML целевой страницы с использованием axios;
 - ищет `.m3u8` ссылки через парсинг DOM (`cheerio`) и регулярные выражения;
@@ -33,4 +37,16 @@ Docker-контейнера либо добавьте временное иск�
 2. Обновите `config/site_controller.json`, чтобы сопоставить домену нужный скрипт.
 3. При необходимости добавьте дополнительный самотест и не забудьте указать тайм-аут.
 4. Добавьте HTML-фикстуры в каталог `extractor/fixtures/` и включите их в `run-fixture-tests.js`,
-   чтобы гарантировать регрессионные тесты без доступа к целевым сайтам.
+   чтобы гарантировать регрессионные тесты без доступа к целевым сайтам. В пример можно
+   посмотреть `cinema-hls-player.html` (конфигурация в JSON и inline-скриптах).
+
+Пример фрагмента `config/site_controller.json` для нового скрипта:
+
+```json
+{
+  "cinema.example": {
+    "script": "extractor/cinema-hls-extractor.js",
+    "timeout": 20000
+  }
+}
+```

@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { extractM3U8Candidates } from "./smotru-m3u-one-stealth.js";
+import { extractCinemaCandidates } from "./cinema-hls-extractor.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,6 +13,7 @@ const __dirname = path.dirname(__filename);
 const fixtures = [
   {
     name: "smotru-basic",
+    extractor: extractM3U8Candidates,
     file: "fixtures/smotru-basic.html",
     baseUrl: "https://smotru.example.com/watch/123",
     expected: [
@@ -22,11 +24,28 @@ const fixtures = [
   },
   {
     name: "smotru-inline-script",
+    extractor: extractM3U8Candidates,
     file: "fixtures/smotru-inline-script.html",
     baseUrl: "https://smotru.example.com/embed/456",
     expected: [
       "https://edge.example.org/channel/playlist.m3u8?token=xyz",
       "https://edge.example.org/channel/low/index.m3u8",
+    ],
+  },
+  {
+    name: "cinema-hls-player",
+    extractor: extractCinemaCandidates,
+    file: "fixtures/cinema-hls-player.html",
+    baseUrl: "https://cinema.example/watch",
+    expected: [
+      "https://backup.cinema.example/live/cinema_hd_backup.m3u8",
+      "https://cdn-alt.cinema.example/hls/cinema_hd/playlist.m3u8?token=secure",
+      "https://edge.cinema.example/live/cinema_hd/index.m3u8",
+      "https://edge.cinema.example/live/cinema_hd/master.m3u8",
+      "https://edge.cinema.example/live/cinema_hd/720p.m3u8",
+      "https://edge.cinema.example/live/cinema_sd.m3u8",
+      "https://mirror-1.cinema.example/live/cinema_hd/index.m3u8",
+      "https://mirror-2.cinema.example/live/cinema_hd/index.m3u8",
     ],
   },
 ];
@@ -36,7 +55,8 @@ async function run() {
   for (const fixture of fixtures) {
     const htmlPath = path.join(__dirname, fixture.file);
     const html = await readFile(htmlPath, "utf8");
-    const result = extractM3U8Candidates(html, fixture.baseUrl).sort();
+    const extractor = fixture.extractor ?? extractM3U8Candidates;
+    const result = extractor(html, fixture.baseUrl).sort();
     const expected = [...fixture.expected].sort();
     try {
       assert.deepEqual(result, expected);
