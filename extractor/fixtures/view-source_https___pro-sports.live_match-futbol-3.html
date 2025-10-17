@@ -113,7 +113,8 @@ margin: 0 15px 5px 15px !important;
   <script type="text/javascript">
 window.addEvent('load', function() {
 				new JCaption('img.caption');
-			});// ************************************************************
+			});
+// ************************************************************
 // Variables initialization before DOM is ready.
 // ************************************************************
 var pis_joomla_base_path = "http://pro-sports.live/";
@@ -649,8 +650,11 @@ function pis_getInternetExplorerVersion() // Returns the version of Internet Exp
 				<a href="/khl.html" class="popimageslider-item-link" target="_parent" title="КХЛ">					<img id="popimageslider-item-image-28-2136500146" class="popimageslider-item-image" src="/images/khllogo1.png" alt="КХЛ" />
 				</a>				<div id="popimageslider-item-title-28-2136500146" class="popimageslider-item-title">КХЛ</div>			</div>
     const inlineScriptState = "{\"streams\":[{\"url\":\"https:\/\/edge-alt.pro-sports.example/live/match-futbol-3_alt.m3u8\"}]}";
+    const tokenApiResponse = "{\n  \"access_token\": \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.fake.payload.signature\",\n  \"client_id\": \"907f9ff6-321a-45a3-a244-7b5848ef835c\",\n  \"streams\": [{\n    \"url\": \"https:\/\/secure-token.pro-sports.example/live/match-futbol-3_token.m3u8?token=secure-example\"\n  }]\n}";
     window.__PS_INLINE_RAW__ = inlineScriptState;
+    window.__PS_TOKEN_PAYLOAD__ = tokenApiResponse;
     window._psInlineStreams = inlineScriptState;
+    window._psTokenState = tokenApiResponse;
 						<div class="popimageslider-item">
 				<a href="/setanta-sports-2.html" class="popimageslider-item-link" target="_parent" title="Setanta Sports 2">					<img id="popimageslider-item-image-29-2136500146" class="popimageslider-item-image" src="/images/setanta2logo.png" alt="Setanta Sports 2" />
 				</a>				<div id="popimageslider-item-title-29-2136500146" class="popimageslider-item-title">Setanta Sports 2</div>			</div>

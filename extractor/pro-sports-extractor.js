@@ -123,12 +123,22 @@ function extractCandidateStrings(scriptText) {
 }
 
 function normalizeJsEscapes(value) {
-  if (!value) return value;
-  return value
-    .replace(/\\"/g, '"')
-    .replace(/\\'/g, "'")
-    .replace(/\\`/g, "`")
-    .replace(/\\\//g, "/");
+  if (value == null) return "";
+  const asString = String(value);
+
+  try {
+    return JSON.parse(`"${asString}"`);
+  } catch {
+    try {
+      return JSON.parse(`"${asString.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`);
+    } catch {
+      return asString
+        .replace(/\\"/g, '"')
+        .replace(/\\'/g, "'")
+        .replace(/\\`/g, "`")
+        .replace(/\\\//g, "/");
+    }
+  }
 }
 
 function decodeLayers(initial, pushString) {
@@ -220,10 +230,12 @@ export function extractProSportsCandidates(html, baseUrl) {
     const [, content = ""] = script.match(/<script[^>]*>([\s\S]*?)<\/script>/i) || [];
     for (const token of extractCandidateStrings(content || "")) {
       const normalizedToken = normalizeJsEscapes(token);
+      const heuristicTarget = normalizedToken || token || "";
       if (
-        normalizedToken.length >= 40 ||
-        /m3u8|https?:/i.test(normalizedToken) ||
-        /%7B|%22/.test(normalizedToken)
+        heuristicTarget.length >= 40 ||
+        /m3u8|https?:/i.test(heuristicTarget) ||
+        /%7B|%22/.test(heuristicTarget) ||
+        /streams|token/i.test(heuristicTarget)
       ) {
         processString(normalizedToken);
       }
@@ -279,6 +291,7 @@ async function runCli() {
       "https://play-cdn.pro-sports.example/edge/match-futbol-3/master.m3u8",
       "https://play1.pro-sports.example/linear/match-futbol-3/playlist.m3u8",
       "https://play2.pro-sports.example/live/match-futbol-3_sd.m3u8",
+      "https://secure-token.pro-sports.example/live/match-futbol-3_token.m3u8?token=secure-example",
     ].sort();
     const actual = extractProSportsCandidates(html, "https://pro-sports.live/match-futbol-3.html").sort();
     if (JSON.stringify(actual) !== JSON.stringify(expected)) {

@@ -61,6 +61,7 @@ const fixtures = [
       "https://play-cdn.pro-sports.example/edge/match-futbol-3/master.m3u8",
       "https://play1.pro-sports.example/linear/match-futbol-3/playlist.m3u8",
       "https://play2.pro-sports.example/live/match-futbol-3_sd.m3u8",
+      "https://secure-token.pro-sports.example/live/match-futbol-3_token.m3u8?token=secure-example",
     ],
   },
 ];
