@@ -39,7 +39,7 @@ os.makedirs(ERROR_DIR, exist_ok=True)
 
 # JS-экстрактор (Node)
 NODE_BIN = os.environ.get("NODE_BIN", "node")
-_JS_DEF = os.environ.get("JS_EXTRACTOR", "smotru-m3u-one-stealth.js")
+_JS_DEF = os.environ.get("JS_EXTRACTOR", "universal-playwright-extractor.js")
 JS_TIMEOUT_SEC = int(os.environ.get("JS_TIMEOUT_SEC", "10"))
 
 # Контроллер сайтов и каналы
@@ -47,10 +47,15 @@ SITE_CONTROLLER_PATH = os.path.join(CONFIG_DIR, os.environ.get("SITE_CONTROLLER_
 CHANNELS_PATH        = os.path.join(CONFIG_DIR, "channels.json")
 M3U8_CACHE_PATH      = os.path.join(CONFIG_DIR, "m3u8_cache.json")
 
-# Очистка мусора Puppeteer/Chromium
+# Очистка мусора Playwright/Chromium
 ORPHAN_CHROME_MAX_AGE_SEC = 180
 CLEAN_TMP_AFTER_JS = True
-TMP_PATTERNS = ("/tmp/puppeteer_*", "/tmp/.org.chromium.*", "/dev/shm/.org.chromium.*")
+TMP_PATTERNS = (
+    "/tmp/playwright*",
+    "/tmp/.org.chromium.*",
+    "/dev/shm/.org.chromium.*",
+    "/tmp/ms-playwright*",
+)
 
 # ------------------ УТИЛИТЫ ОС/ПРОЦЕССЫ ------------------
 
@@ -132,7 +137,7 @@ def _proc_age_sec(pid: int) -> float:
 def kill_orphan_chrome(max_age_sec: int = ORPHAN_CHROME_MAX_AGE_SEC) -> int:
     victims = 0
     name_mark = ("chrome", "chromium", "chromium-browser")
-    puppet_mark = ("puppeteer", "/tmp/puppeteer_", ".org.chromium", "--remote-debugging", "--headless")
+    automation_mark = ("playwright", "/tmp/playwright", "ms-playwright", ".org.chromium", "--remote-debugging", "--headless")
     for pid in list(_list_pids() or []):
         try:
             if _proc_ppid(pid) != 1:
@@ -141,9 +146,10 @@ def kill_orphan_chrome(max_age_sec: int = ORPHAN_CHROME_MAX_AGE_SEC) -> int:
             cmd = _proc_cmdline(pid).lower()
             if not any(m in comm or m in cmd for m in name_mark):
                 continue
-            if not any(m in cmd for m in puppet_mark):
+            if not any(m in cmd for m in automation_mark):
                 continue
-            if _proc_age_sec(pid) > max_age_sec:
+            age = _proc_age_sec(pid)
+            if max_age_sec > 0 and age < max_age_sec:
                 continue
             try:
                 os.kill(pid, signal.SIGKILL)
