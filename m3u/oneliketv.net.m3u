@@ -1,0 +1,130 @@
+#EXTM3U
+#EXTINF:-1 tvg-name="Нст" group-title="OnlineTV",Нст
+http://127.0.0.1:6060/stream/nst-oneliketv
+
+#EXTINF:-1 tvg-name="viju TV1000" group-title="OnlineTV",viju TV1000
+http://127.0.0.1:6060/stream/tv-1000-oneliketv
+
+#EXTINF:-1 tvg-name="Amedia Hit" group-title="OnlineTV",Amedia Hit
+http://127.0.0.1:6060/stream/amedia-hit-oneliketv
+
+#EXTINF:-1 tvg-name="viju TV1000 Русское кино" group-title="OnlineTV",viju TV1000 Русское кино
+http://127.0.0.1:6060/stream/tv-1000-russkoe-kino-oneliketv
+
+#EXTINF:-1 tvg-name="Tv Xxi" group-title="OnlineTV",Tv Xxi
+http://127.0.0.1:6060/stream/tv-xxi-tv-21-vek-oneliketv
+
+#EXTINF:-1 tvg-name="viju Tv1000 Action" group-title="OnlineTV",viju Tv1000 Action
+http://127.0.0.1:6060/stream/tv1000-action-oneliketv
+
+#EXTINF:-1 tvg-name="Остросюжетное Hd" group-title="OnlineTV",Остросюжетное Hd
+http://127.0.0.1:6060/stream/ostrosiuzhetnoe-hd-oneliketv
+
+#EXTINF:-1 tvg-name="Страшное HD" group-title="OnlineTV",Страшное HD
+http://127.0.0.1:6060/stream/strashnoe-hd-oneliketv
+
+#EXTINF:-1 tvg-name="Наше Крутое HD" group-title="OnlineTV",Наше Крутое HD
+http://127.0.0.1:6060/stream/nashe-krutoe-oneliketv
+
+#EXTINF:-1 tvg-name="ТВ3" group-title="OnlineTV",ТВ3
+http://127.0.0.1:6060/stream/tv3-oneliketv
+
+#EXTINF:-1 tvg-name="Премиальное HD" group-title="OnlineTV",Премиальное HD
+http://127.0.0.1:6060/stream/premial-noe-hd-oneliketv
+
+#EXTINF:-1 tvg-name="Русская Комедия" group-title="OnlineTV",Русская Комедия
+http://127.0.0.1:6060/stream/russkaia-komediia-oneliketv
+
+#EXTINF:-1 tvg-name="Sony Sci-Fi" group-title="OnlineTV",Sony Sci-Fi
+http://127.0.0.1:6060/stream/sony-sci-fi-oneliketv
+
+#EXTINF:-1 tvg-name="Пятый Канал" group-title="OnlineTV",Пятый Канал
+http://127.0.0.1:6060/stream/piatyi-kanal-oneliketv
+
+#EXTINF:-1 tvg-name="Amedia 1" group-title="OnlineTV",Amedia 1
+http://127.0.0.1:6060/stream/a1-oneliketv
+
+#EXTINF:-1 tvg-name="Amedia 2" group-title="OnlineTV",Amedia 2
+http://127.0.0.1:6060/stream/a2-oneliketv
+
+#EXTINF:-1 tvg-name="Amedia Premium" group-title="OnlineTV",Amedia Premium
+http://127.0.0.1:6060/stream/amedia-premium-hd-oneliketv
+
+#EXTINF:-1 tvg-name="Русский Иллюзион" group-title="OnlineTV",Русский Иллюзион
+http://127.0.0.1:6060/stream/russkii-illiuzion-oneliketv
+
+#EXTINF:-1 tvg-name="Дом Кино" group-title="OnlineTV",Дом Кино
+http://127.0.0.1:6060/stream/dom-kino-oneliketv
+
+#EXTINF:-1 tvg-name="Русский Бестселлер" group-title="OnlineTV",Русский Бестселлер
+http://127.0.0.1:6060/stream/russkii-bestseller-oneliketv
+
+#EXTINF:-1 tvg-name="Русский Роман" group-title="OnlineTV",Русский Роман
+http://127.0.0.1:6060/stream/russkii-roman-oneliketv
+
+#EXTINF:-1 tvg-name="Русский Детектив" group-title="OnlineTV",Русский Детектив
+http://127.0.0.1:6060/stream/russkii-detektiv-oneliketv
+
+#EXTINF:-1 tvg-name="Кино ТВ" group-title="OnlineTV",Кино ТВ
+http://127.0.0.1:6060/stream/kino-tv-oneliketv
+
+#EXTINF:-1 tvg-name="Еврокино" group-title="OnlineTV",Еврокино
+http://127.0.0.1:6060/stream/evrokino-oneliketv
+
+#EXTINF:-1 tvg-name="Индийское Кино" group-title="OnlineTV",Индийское Кино
+http://127.0.0.1:6060/stream/indiiskoe-kino-oneliketv
+
+#EXTINF:-1 tvg-name="Hollywood" group-title="OnlineTV",Hollywood
+http://127.0.0.1:6060/stream/hollywood-oneliketv
+
+#EXTINF:-1 tvg-name="Кинопремьера" group-title="OnlineTV",Кинопремьера
+http://127.0.0.1:6060/stream/kinoprem-era-oneliketv
+
+#EXTINF:-1 tvg-name="FX" group-title="OnlineTV",FX
+http://127.0.0.1:6060/stream/fox-oneliketv
+
+#EXTINF:-1 tvg-name=".red" group-title="OnlineTV",.red
+http://127.0.0.1:6060/stream/set-oneliketv
+
+#EXTINF:-1 tvg-name="Душевное" group-title="OnlineTV",Душевное
+http://127.0.0.1:6060/stream/nash-kinoroman-oneliketv
+
+#EXTINF:-1 tvg-name="Мир Сериала" group-title="OnlineTV",Мир Сериала
+http://127.0.0.1:6060/stream/mir-seriala-oneliketv
+
+#EXTINF:-1 tvg-name="FX Life" group-title="OnlineTV",FX Life
+http://127.0.0.1:6060/stream/fox-life-oneliketv
+
+#EXTINF:-1 tvg-name="Наше Новое Кино" group-title="OnlineTV",Наше Новое Кино
+http://127.0.0.1:6060/stream/nashe-novoe-kino-oneliketv
+
+#EXTINF:-1 tvg-name="Дорама" group-title="OnlineTV",Дорама
+http://127.0.0.1:6060/stream/dorama-oneliketv
+
+#EXTINF:-1 tvg-name=".black" group-title="OnlineTV",.black
+http://127.0.0.1:6060/stream/sony-turbo-oneliketv
+
+#EXTINF:-1 tvg-name="Драйв Тв" group-title="OnlineTV",Драйв Тв
+http://127.0.0.1:6060/stream/draiv-tv-oneliketv
+
+#EXTINF:-1 tvg-name="Конный Мир" group-title="OnlineTV",Конный Мир
+http://127.0.0.1:6060/stream/konnyi-mir-oneliketv
+
+#EXTINF:-1 tvg-name="Авто 24" group-title="OnlineTV",Авто 24
+http://127.0.0.1:6060/stream/avto-24-oneliketv
+
+#EXTINF:-1 tvg-name="Охота И Рыбалка" group-title="OnlineTV",Охота И Рыбалка
+http://127.0.0.1:6060/stream/okhota-i-rybalka-oneliketv
+
+#EXTINF:-1 tvg-name="Казспорт" group-title="OnlineTV",Казспорт
+http://127.0.0.1:6060/stream/kazsport-oneliketv
+
+#EXTINF:-1 tvg-name="Беларусь 5" group-title="OnlineTV",Беларусь 5
+http://127.0.0.1:6060/stream/belarus-5-oneliketv
+
+#EXTINF:-1 tvg-name="Охотник И Рыболов" group-title="OnlineTV",Охотник И Рыболов
+http://127.0.0.1:6060/stream/okhotnik-i-rybolov-oneliketv
+
+#EXTINF:-1 tvg-name="KHL Prime" group-title="OnlineTV",KHL Prime
+http://127.0.0.1:6060/stream/khl_hd-oneliketv
+
