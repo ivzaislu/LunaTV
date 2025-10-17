@@ -111,7 +111,7 @@ function collectFromJson(value, pushString) {
 
 function extractCandidateStrings(scriptText) {
   const results = new Set();
-  const quotePattern = /(["'`])([^"'`]*?)\1/g;
+  const quotePattern = /(["'`])((?:\\.|(?!\1)[\s\S])+?)\1/g;
   let match;
   while ((match = quotePattern.exec(scriptText)) !== null) {
     const raw = match[2];
@@ -120,6 +120,15 @@ function extractCandidateStrings(scriptText) {
     results.add(raw);
   }
   return results;
+}
+
+function normalizeJsEscapes(value) {
+  if (!value) return value;
+  return value
+    .replace(/\\"/g, '"')
+    .replace(/\\'/g, "'")
+    .replace(/\\`/g, "`")
+    .replace(/\\\//g, "/");
 }
 
 function decodeLayers(initial, pushString) {
@@ -210,8 +219,13 @@ export function extractProSportsCandidates(html, baseUrl) {
   for (const script of scripts) {
     const [, content = ""] = script.match(/<script[^>]*>([\s\S]*?)<\/script>/i) || [];
     for (const token of extractCandidateStrings(content || "")) {
-      if (token.length >= 40 || /m3u8|https?:/i.test(token) || /%7B|%22/.test(token)) {
-        processString(token);
+      const normalizedToken = normalizeJsEscapes(token);
+      if (
+        normalizedToken.length >= 40 ||
+        /m3u8|https?:/i.test(normalizedToken) ||
+        /%7B|%22/.test(normalizedToken)
+      ) {
+        processString(normalizedToken);
       }
     }
 
@@ -260,6 +274,7 @@ async function runCli() {
     const html = await readFile(fixturePath, "utf8");
     const expected = [
       "https://backup1.pro-sports.example/hls/match-futbol-3_backup.m3u8",
+      "https://edge-alt.pro-sports.example/live/match-futbol-3_alt.m3u8",
       "https://mirror-cdn.pro-sports.example/edge/match-futbol-3/index.m3u8",
       "https://play-cdn.pro-sports.example/edge/match-futbol-3/master.m3u8",
       "https://play1.pro-sports.example/linear/match-futbol-3/playlist.m3u8",
