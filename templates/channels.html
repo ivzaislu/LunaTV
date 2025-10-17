@@ -1,0 +1,771 @@
+{% extends "base.html" %}
+{% block title %}Каналы · LunaTV{% endblock %}
+{% block head %}
+  <style>
+    .channel-editor-grid {
+      display: grid;
+      grid-template-columns: minmax(260px, 320px) minmax(420px, 1fr) minmax(220px, 280px);
+      gap: 20px;
+      align-items: flex-start;
+    }
+    @media (max-width: 1100px) {
+      .channel-editor-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .channel-editor-card {
+      background: rgba(15, 23, 42, 0.88);
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.55);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 0;
+    }
+    .channel-editor-card h2 {
+      margin: 0;
+    }
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .editor-search {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .editor-search input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(15, 23, 42, 0.6);
+      color: #e2e8f0;
+      font: inherit;
+    }
+    .editor-search input:focus {
+      outline: 2px solid rgba(56, 189, 248, 0.35);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+    .group-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .group-tab {
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      background: rgba(15, 23, 42, 0.5);
+      color: #cbd5f5;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s ease, border 0.2s ease, color 0.2s ease;
+    }
+    .group-tab:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.3);
+      color: #e0f2fe;
+    }
+    .group-tab.active {
+      background: rgba(56, 189, 248, 0.22);
+      border-color: rgba(56, 189, 248, 0.55);
+      color: #0f172a;
+      box-shadow: 0 6px 18px rgba(56, 189, 248, 0.35);
+    }
+    .channel-list {
+      display: grid;
+      gap: 10px;
+      max-height: 560px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+    .channel-row {
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      padding: 12px 14px;
+      text-align: left;
+      display: grid;
+      gap: 6px;
+      cursor: pointer;
+      transition: transform 0.16s ease, border 0.16s ease, background 0.16s ease;
+    }
+    .channel-row:hover {
+      transform: translateY(-1px);
+      border-color: rgba(56, 189, 248, 0.4);
+      background: rgba(56, 189, 248, 0.08);
+    }
+    .channel-row.active {
+      border-color: rgba(56, 189, 248, 0.75);
+      background: rgba(56, 189, 248, 0.18);
+      box-shadow: 0 12px 30px rgba(56, 189, 248, 0.3);
+    }
+    .channel-row-title {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .channel-row-meta {
+      font-size: 0.8rem;
+      color: rgba(148, 163, 184, 0.75);
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .channel-badge {
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.18);
+      color: #0f172a;
+    }
+    .channel-badge.favorite {
+      background: rgba(251, 191, 36, 0.25);
+      color: #fbbf24;
+    }
+    .channel-badge.epg {
+      background: rgba(129, 140, 248, 0.25);
+      color: #ede9fe;
+    }
+    .editor-status {
+      font-size: 0.9rem;
+      margin-top: -6px;
+    }
+    .editor-status.ok {
+      color: #34d399;
+    }
+    .editor-status.error {
+      color: #f87171;
+    }
+    .editor-form-card form {
+      display: grid;
+      gap: 18px;
+    }
+    .editor-form-card form.form-disabled {
+      opacity: 0.55;
+    }
+    .editor-form-card fieldset {
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 14px;
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.65);
+    }
+    .editor-form-card fieldset legend {
+      padding: 0 10px;
+      font-weight: 600;
+      color: rgba(226, 232, 240, 0.85);
+    }
+    .editor-form-card label {
+      display: grid;
+      gap: 6px;
+      font-weight: 600;
+    }
+    .editor-form-card input,
+    .editor-form-card textarea {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(15, 23, 42, 0.55);
+      color: #e2e8f0;
+      font: inherit;
+    }
+    .editor-form-card textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+    .editor-form-card input:focus,
+    .editor-form-card textarea:focus {
+      outline: 2px solid rgba(56, 189, 248, 0.35);
+      border-color: rgba(56, 189, 248, 0.45);
+    }
+    .field-hint {
+      font-size: 0.78rem;
+      font-weight: 400;
+      color: rgba(148, 163, 184, 0.75);
+    }
+    .checkbox-field {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+    }
+    .checkbox-field span {
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: rgba(148, 163, 184, 0.75);
+    }
+    .editor-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    button.secondary {
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      background: rgba(15, 23, 42, 0.4);
+      color: #cbd5f5;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, border 0.2s ease;
+    }
+    button.secondary:hover:not(:disabled) {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.25);
+    }
+    button.danger {
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      background: rgba(248, 113, 113, 0.12);
+      color: #fecaca;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, border 0.2s ease;
+    }
+    button.danger:hover:not(:disabled) {
+      background: rgba(248, 113, 113, 0.22);
+      border-color: rgba(248, 113, 113, 0.5);
+    }
+    button.danger:disabled,
+    button.secondary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .editor-chip {
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      font-size: 0.82rem;
+      color: rgba(148, 163, 184, 0.75);
+    }
+    .editor-help {
+      display: grid;
+      gap: 14px;
+    }
+    .editor-help-block {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      padding: 14px 16px;
+      display: grid;
+      gap: 6px;
+    }
+    .editor-help-block h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+    .editor-help-block p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: rgba(148, 163, 184, 0.78);
+    }
+    .channel-editor-card.empty {
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+  </style>
+{% endblock %}
+{% block content %}
+  <div class="channel-editor-grid">
+    <section class="channel-editor-card">
+      <div class="editor-header">
+        <div>
+          <h2>Редактор каналов</h2>
+          <p class="muted">Записи читаются и сохраняются в <code>config/channels.json</code>.</p>
+        </div>
+        <button type="button" class="primary" id="createChannel">Добавить канал</button>
+      </div>
+      <div class="editor-search">
+        <input type="search" id="channelSearch" placeholder="Поиск по названию, slug или URL" aria-label="Поиск каналов">
+        <div class="group-tabs" id="groupTabs"></div>
+      </div>
+      <div class="channel-list" id="channelList">
+        <div class="muted">Загрузка…</div>
+      </div>
+    </section>
+    <section class="channel-editor-card editor-form-card">
+      <div class="editor-header">
+        <div>
+          <h2 id="formHeading">Выберите канал</h2>
+          <p class="muted" id="formSubtitle">Щёлкните слева по записи или создайте новую.</p>
+        </div>
+        <span class="editor-chip" id="currentSlug">—</span>
+      </div>
+      <div id="editorStatus" class="editor-status muted">Ожидание выбора канала.</div>
+      <form id="channelForm" autocomplete="off">
+        <fieldset>
+          <legend>Идентификаторы</legend>
+          <label>
+            Slug
+            <span class="field-hint">Используется в URL и плейлистах. Допустимы латинские буквы, цифры и дефисы.</span>
+            <input name="slug" required pattern="[A-Za-z0-9._-]+" autocomplete="off">
+          </label>
+          <label>
+            Название
+            <span class="field-hint">Показывается в плеере, списках и m3u-файлах.</span>
+            <input name="name" required autocomplete="off">
+          </label>
+          <label>
+            Группа
+            <span class="field-hint">Используется для группировки каналов. Можно выбрать из списка или ввести новую.</span>
+            <input name="group" list="groupDatalist" autocomplete="off">
+            <datalist id="groupDatalist"></datalist>
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend>Источники</legend>
+          <label>
+            URL источника
+            <span class="field-hint">Ссылка на страницу или API, откуда берётся поток.</span>
+            <input name="url" required type="url" placeholder="https://example.com/stream" autocomplete="off">
+          </label>
+          <label>
+            Логотип
+            <span class="field-hint">Необязательно. Ссылка на изображение для интерфейса и плеера.</span>
+            <input name="logo" type="url" placeholder="https://example.com/logo.png" autocomplete="off">
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend>Оформление и расписание</legend>
+          <label>
+            Описание
+            <span class="field-hint">Краткая справка о канале. Показывается в плеере и настройках.</span>
+            <textarea name="description" rows="3"></textarea>
+          </label>
+          <label>
+            EPG ID
+            <span class="field-hint">Идентификатор канала в источнике EPG (например, <code>firstchannel.ru</code>).</span>
+            <input name="epgId" autocomplete="off">
+          </label>
+          <label class="checkbox-field">
+            <input type="checkbox" name="favorite">
+            Избранный канал
+            <span>Помечает канал в плеере, чтобы он был доступен в отдельной вкладке.</span>
+          </label>
+        </fieldset>
+        <div class="editor-actions">
+          <button type="submit" class="primary" id="saveChannel">Сохранить</button>
+          <button type="button" class="secondary" id="resetChannel">Сбросить</button>
+          <button type="button" class="danger" id="deleteChannel">Удалить</button>
+        </div>
+      </form>
+    </section>
+    <aside class="channel-editor-card">
+      <h2>Подсказки</h2>
+      <div class="editor-help">
+        <div class="editor-help-block">
+          <h3>Переименование</h3>
+          <p>Чтобы изменить slug, укажите новое значение и сохраните форму. Все ссылки /stream/&lt;slug&gt; будут обновлены автоматически.</p>
+        </div>
+        <div class="editor-help-block">
+          <h3>Группы</h3>
+          <p>Группы помогают упорядочить плейлисты и плеер. При вводе нового названия группа создаётся автоматически.</p>
+        </div>
+        <div class="editor-help-block">
+          <h3>Привязка EPG</h3>
+          <p>EPG ID используется для сопоставления с программой передач. Укажите идентификатор из вашего источника телегида.</p>
+        </div>
+        <div class="editor-help-block">
+          <h3>Безопасность</h3>
+          <p>Все изменения сразу попадают в <code>config/channels.json</code>. Перед крупными правками сделайте резервную копию файла.</p>
+        </div>
+      </div>
+    </aside>
+  </div>
+{% endblock %}
+{% block scripts %}
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const state = {
+        channels: [],
+        search: '',
+        group: '',
+        mode: 'idle',
+        originalSlug: null,
+      };
+
+      const channelListEl = document.getElementById('channelList');
+      const groupTabsEl = document.getElementById('groupTabs');
+      const datalistEl = document.getElementById('groupDatalist');
+      const searchInput = document.getElementById('channelSearch');
+      const createBtn = document.getElementById('createChannel');
+      const form = document.getElementById('channelForm');
+      const formHeading = document.getElementById('formHeading');
+      const formSubtitle = document.getElementById('formSubtitle');
+      const currentSlug = document.getElementById('currentSlug');
+      const statusEl = document.getElementById('editorStatus');
+      const saveBtn = document.getElementById('saveChannel');
+      const resetBtn = document.getElementById('resetChannel');
+      const deleteBtn = document.getElementById('deleteChannel');
+
+      const slugField = form.querySelector('input[name="slug"]');
+      const nameField = form.querySelector('input[name="name"]');
+      const groupField = form.querySelector('input[name="group"]');
+      const urlField = form.querySelector('input[name="url"]');
+      const logoField = form.querySelector('input[name="logo"]');
+      const descriptionField = form.querySelector('textarea[name="description"]');
+      const epgField = form.querySelector('input[name="epgId"]');
+      const favoriteField = form.querySelector('input[name="favorite"]');
+
+      const formFields = [
+        slugField,
+        nameField,
+        groupField,
+        urlField,
+        logoField,
+        descriptionField,
+        epgField,
+        favoriteField,
+      ];
+
+      function setFormMode(mode) {
+        state.mode = mode;
+        const disabled = mode === 'idle';
+        for (const field of formFields) {
+          field.disabled = disabled;
+        }
+        saveBtn.disabled = disabled;
+        resetBtn.disabled = disabled;
+        deleteBtn.disabled = mode !== 'edit';
+        form.classList.toggle('form-disabled', disabled);
+      }
+
+      function showStatus(message, tone = 'muted') {
+        statusEl.textContent = message;
+        statusEl.className = 'editor-status ' + (tone === 'ok' ? 'ok' : tone === 'error' ? 'error' : 'muted');
+      }
+
+      function summariseGroup(key) {
+        return key ? key : 'Без группы';
+      }
+
+      function collectGroups() {
+        const counter = new Map();
+        for (const channel of state.channels) {
+          const key = channel.group || '';
+          counter.set(key, (counter.get(key) || 0) + 1);
+        }
+        const items = Array.from(counter.entries()).map(([key, count]) => ({
+          key,
+          label: summariseGroup(key),
+          count,
+        }));
+        items.sort((a, b) => a.label.localeCompare(b.label, 'ru'));
+        return items;
+      }
+
+      function updateGroupTabs() {
+        const groups = collectGroups();
+        groupTabsEl.innerHTML = '';
+        const allBtn = document.createElement('button');
+        allBtn.type = 'button';
+        allBtn.className = 'group-tab' + (state.group === '' ? ' active' : '');
+        allBtn.textContent = `Все (${state.channels.length})`;
+        allBtn.addEventListener('click', () => {
+          state.group = '';
+          updateGroupTabs();
+          renderChannelList();
+        });
+        groupTabsEl.appendChild(allBtn);
+        for (const entry of groups) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'group-tab' + (state.group === entry.key ? ' active' : '');
+          btn.textContent = `${entry.label} (${entry.count})`;
+          btn.addEventListener('click', () => {
+            state.group = entry.key;
+            updateGroupTabs();
+            renderChannelList();
+          });
+          groupTabsEl.appendChild(btn);
+        }
+
+        datalistEl.innerHTML = '';
+        for (const entry of groups) {
+          if (!entry.key) {
+            continue;
+          }
+          const option = document.createElement('option');
+          option.value = entry.key;
+          datalistEl.appendChild(option);
+        }
+      }
+
+      function renderChannelList() {
+        const term = state.search.toLowerCase();
+        const filtered = state.channels.filter((item) => {
+          if (state.group && item.group !== state.group) {
+            return false;
+          }
+          if (!term) {
+            return true;
+          }
+          return (
+            item.name.toLowerCase().includes(term) ||
+            item.slug.toLowerCase().includes(term) ||
+            (item.url || '').toLowerCase().includes(term)
+          );
+        });
+
+        channelListEl.innerHTML = '';
+        if (!filtered.length) {
+          const empty = document.createElement('div');
+          empty.className = 'muted';
+          empty.textContent = state.channels.length ? 'Нет каналов по выбранным условиям.' : 'Файл channels.json не найден или пуст.';
+          channelListEl.appendChild(empty);
+          return;
+        }
+
+        for (const item of filtered) {
+          const row = document.createElement('button');
+          row.type = 'button';
+          row.className = 'channel-row' + (state.originalSlug === item.slug && state.mode !== 'create' ? ' active' : '');
+          const title = document.createElement('div');
+          title.className = 'channel-row-title';
+          title.textContent = item.name || item.slug;
+          if (item.favorite) {
+            const fav = document.createElement('span');
+            fav.className = 'channel-badge favorite';
+            fav.textContent = 'Избранное';
+            title.appendChild(fav);
+          }
+          row.appendChild(title);
+
+          const meta = document.createElement('div');
+          meta.className = 'channel-row-meta';
+          meta.innerHTML = `Группа: ${item.group ? item.group : 'Без группы'} · Slug: ${item.slug}`;
+          row.appendChild(meta);
+
+          if (item.epgId) {
+            const epg = document.createElement('span');
+            epg.className = 'channel-badge epg';
+            epg.textContent = `EPG: ${item.epgId}`;
+            row.appendChild(epg);
+          }
+
+          row.addEventListener('click', () => {
+            selectChannel(item.slug);
+          });
+          channelListEl.appendChild(row);
+        }
+      }
+
+      function fillForm(data) {
+        slugField.value = data.slug || '';
+        nameField.value = data.name || '';
+        groupField.value = data.group || '';
+        urlField.value = data.url || '';
+        logoField.value = data.logo || '';
+        descriptionField.value = data.description || '';
+        epgField.value = data.epgId || '';
+        favoriteField.checked = Boolean(data.favorite);
+      }
+
+      function readForm() {
+        return {
+          slug: slugField.value.trim(),
+          name: nameField.value.trim(),
+          group: groupField.value.trim(),
+          url: urlField.value.trim(),
+          logo: logoField.value.trim(),
+          description: descriptionField.value.trim(),
+          epgId: epgField.value.trim(),
+          favorite: favoriteField.checked,
+        };
+      }
+
+      function suggestSlug() {
+        const base = 'new-channel';
+        const existing = new Set(state.channels.map((item) => item.slug));
+        let suffix = 1;
+        while (existing.has(`${base}-${suffix}`)) {
+          suffix += 1;
+        }
+        return `${base}-${suffix}`;
+      }
+
+      async function loadChannels(preselectSlug = null) {
+        try {
+          const resp = await fetch('/api/channels?withSource=1');
+          if (!resp.ok) {
+            throw new Error(`HTTP ${resp.status}`);
+          }
+          const payload = await resp.json();
+          const items = Array.isArray(payload.items) ? payload.items : [];
+          state.channels = items.map((item) => ({
+            ...item,
+            name: item.name || item.slug,
+            group: item.group || '',
+            url: item.url || '',
+            description: item.description || '',
+            logo: item.logo || '',
+            epgId: item.epgId || '',
+            favorite: Boolean(item.favorite),
+          }));
+          updateGroupTabs();
+          renderChannelList();
+          if (preselectSlug) {
+            selectChannel(preselectSlug);
+          } else if (state.mode !== 'create' && state.channels.length) {
+            selectChannel(state.channels[0].slug);
+          } else if (!state.channels.length) {
+            setFormMode('idle');
+            formHeading.textContent = 'Нет каналов';
+            formSubtitle.textContent = 'Добавьте первый канал, чтобы начать работу.';
+            currentSlug.textContent = '—';
+            showStatus('Список пуст. Нажмите «Добавить канал».');
+          }
+        } catch (err) {
+          channelListEl.innerHTML = '';
+          const fail = document.createElement('div');
+          fail.className = 'muted';
+          fail.textContent = `Не удалось загрузить каналы: ${err}`;
+          channelListEl.appendChild(fail);
+          showStatus('Не удалось загрузить список каналов.', 'error');
+          setFormMode('idle');
+        }
+      }
+
+      function selectChannel(slug) {
+        const channel = state.channels.find((item) => item.slug === slug);
+        if (!channel) {
+          return;
+        }
+        state.originalSlug = slug;
+        setFormMode('edit');
+        fillForm(channel);
+        formHeading.textContent = 'Редактирование канала';
+        formSubtitle.textContent = 'Измените параметры и сохраните форму.';
+        currentSlug.textContent = slug;
+        showStatus('Изменения ещё не сохранены.');
+        renderChannelList();
+      }
+
+      function startCreateFlow() {
+        form.reset();
+        state.originalSlug = null;
+        setFormMode('create');
+        slugField.value = suggestSlug();
+        nameField.value = '';
+        groupField.value = state.group || '';
+        urlField.value = '';
+        logoField.value = '';
+        descriptionField.value = '';
+        epgField.value = '';
+        favoriteField.checked = false;
+        formHeading.textContent = 'Новый канал';
+        formSubtitle.textContent = 'Заполните обязательные поля и нажмите «Сохранить». Все данные сохранятся в channels.json.';
+        currentSlug.textContent = slugField.value;
+        showStatus('Новый канал ещё не сохранён.');
+        nameField.focus();
+        renderChannelList();
+      }
+
+      async function handleSave(event) {
+        event.preventDefault();
+        if (state.mode === 'idle') {
+          return;
+        }
+        const payload = readForm();
+        if (!payload.slug || !payload.name || !payload.url) {
+          showStatus('Заполните обязательные поля: slug, название и URL.', 'error');
+          return;
+        }
+        saveBtn.disabled = true;
+        showStatus('Сохраняем изменения…');
+        try {
+          const targetSlug = state.originalSlug || payload.slug;
+          const endpoint = state.mode === 'create'
+            ? '/api/channels'
+            : `/api/channels/${encodeURIComponent(targetSlug)}`;
+          const method = state.mode === 'create' ? 'POST' : 'PUT';
+          const resp = await fetch(endpoint, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          const data = await resp.json();
+          if (!resp.ok || !data.ok) {
+            throw new Error(data.error || `HTTP ${resp.status}`);
+          }
+          const newSlug = (data.item && data.item.slug) || payload.slug;
+          showStatus('Сохранено.', 'ok');
+          await loadChannels(newSlug);
+        } catch (err) {
+          console.error(err);
+          showStatus(`Не удалось сохранить: ${err.message}`, 'error');
+        } finally {
+          saveBtn.disabled = false;
+        }
+      }
+
+      async function handleDelete() {
+        if (state.mode !== 'edit' || !state.originalSlug) {
+          return;
+        }
+        if (!window.confirm('Удалить канал безвозвратно?')) {
+          return;
+        }
+        deleteBtn.disabled = true;
+        showStatus('Удаляем канал…');
+        try {
+          const resp = await fetch(`/api/channels/${encodeURIComponent(state.originalSlug)}`, {
+            method: 'DELETE',
+          });
+          const data = await resp.json();
+          if (!resp.ok || !data.ok) {
+            throw new Error(data.error || `HTTP ${resp.status}`);
+          }
+          showStatus('Канал удалён.', 'ok');
+          state.originalSlug = null;
+          await loadChannels();
+          setFormMode('idle');
+          formHeading.textContent = 'Выберите канал';
+          formSubtitle.textContent = 'Записи слева можно редактировать или удалять.';
+          currentSlug.textContent = '—';
+        } catch (err) {
+          console.error(err);
+          showStatus(`Ошибка удаления: ${err.message}`, 'error');
+        } finally {
+          deleteBtn.disabled = false;
+        }
+      }
+
+      searchInput.addEventListener('input', () => {
+        state.search = searchInput.value.trim();
+        renderChannelList();
+      });
+
+      form.addEventListener('submit', handleSave);
+      resetBtn.addEventListener('click', () => {
+        if (state.mode === 'create') {
+          startCreateFlow();
+        } else if (state.mode === 'edit' && state.originalSlug) {
+          selectChannel(state.originalSlug);
+        }
+      });
+      deleteBtn.addEventListener('click', handleDelete);
+      createBtn.addEventListener('click', () => {
+        startCreateFlow();
+      });
+
+      setFormMode('idle');
+      loadChannels();
+    });
+  </script>
+{% endblock %}

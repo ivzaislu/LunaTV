@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+{% block title %}Настройки · LunaTV{% endblock %}
+{% block content %}
+  <form id="settingsForm" class="settings-form">
+    <div id="settingsBlocks" class="settings-blocks">
+      <div class="card">
+        <h2>Загрузка настроек…</h2>
+        <p class="muted">Получаем актуальные параметры.</p>
+      </div>
+    </div>
+    <div class="card" id="settingsActions">
+      <h2>Сохранение</h2>
+      <p class="muted">После изменения значений нажмите кнопку, чтобы сохранить настройки. Для сетевых параметров может потребоваться перезапуск службы.</p>
+      <button type="submit" class="primary" id="saveSettings">Сохранить изменения</button>
+      <div id="settingsMessage" class="muted" role="status"></div>
+    </div>
+  </form>
+
+  <div class="card" style="margin-top: 24px;">
+    <h2>Site controller</h2>
+    <div id="settingsController" class="muted">Загрузка…</div>
+  </div>
+  <div class="card" style="margin-top: 24px;">
+    <h2>Search JSON</h2>
+    <div id="settingsSearch" class="muted">Загрузка…</div>
+  </div>
+{% endblock %}
+{% block scripts %}
+  <script>
+    const form = document.getElementById('settingsForm');
+    const blocksContainer = document.getElementById('settingsBlocks');
+    const saveButton = document.getElementById('saveSettings');
+    const messageBox = document.getElementById('settingsMessage');
+    const controllerBox = document.getElementById('settingsController');
+    const searchBox = document.getElementById('settingsSearch');
+
+    let currentGroups = [];
+
+    function setMessage(text, isError = false) {
+      if (!messageBox) {
+        return;
+      }
+      messageBox.textContent = text || '';
+      if (text) {
+        messageBox.classList.toggle('status-error', Boolean(isError));
+      } else {
+        messageBox.classList.remove('status-error');
+      }
+    }
+
+    function renderController(items) {
+      if (!items || !items.length) {
+        controllerBox.textContent = 'Не найден файл site_controller.json или он пуст.';
+        return;
+      }
+      const list = ['<ul class="clean">'];
+      for (const item of items) {
+        list.push(`<li><code>${item.host}</code> → ${item.script || '—'}, таймаут ${item.timeout}s</li>`);
+      }
+      list.push('</ul>');
+      controllerBox.innerHTML = list.join('');
+    }
+
+    function renderSearch(items) {
+      if (!items || !items.length) {
+        searchBox.textContent = 'search.json отсутствует или не содержит записей.';
+        return;
+      }
+      const list = ['<ul class="clean">'];
+      for (const item of items) {
+        list.push(`<li><code>${item.host}</code> → ${item.parser}, таймаут ${item.timeout}s</li>`);
+      }
+      list.push('</ul>');
+      searchBox.innerHTML = list.join('');
+    }
+
+    function buildField(field) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'field-row';
+      wrapper.dataset.settingKey = field.key;
+      wrapper.dataset.type = field.type || 'text';
+
+      const hint = document.createElement('div');
+      hint.className = 'field-hint muted';
+      hint.textContent = field.description || '';
+
+      if (field.type === 'boolean') {
+        const inputId = `setting-${field.key}`;
+        const label = document.createElement('label');
+        label.className = 'field-toggle';
+        label.setAttribute('for', inputId);
+
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = inputId;
+        input.checked = Boolean(field.value);
+        input.dataset.type = 'boolean';
+
+        const text = document.createElement('span');
+        text.textContent = field.label || field.key;
+
+        label.appendChild(input);
+        label.appendChild(text);
+
+        wrapper.appendChild(label);
+        if (field.description) {
+          wrapper.appendChild(hint);
+        }
+        return wrapper;
+      }
+
+      const inputId = `setting-${field.key}`;
+      const label = document.createElement('label');
+      label.className = 'field-label';
+      label.setAttribute('for', inputId);
+      label.textContent = field.label || field.key;
+
+      const control = document.createElement('div');
+      control.className = 'field-control';
+
+      const input = document.createElement('input');
+      input.id = inputId;
+      input.dataset.type = field.type || 'text';
+      if (field.type === 'number') {
+        input.type = 'number';
+        if (field.value !== undefined && field.value !== null && field.value !== '') {
+          input.value = String(field.value);
+        }
+      } else {
+        input.type = 'text';
+        input.value = field.value !== undefined && field.value !== null ? String(field.value) : '';
+      }
+      if (field.attrs && typeof field.attrs === 'object') {
+        Object.entries(field.attrs).forEach(([attr, val]) => {
+          input.setAttribute(attr, val);
+        });
+      }
+
+      control.appendChild(input);
+
+      if (field.unit) {
+        const unit = document.createElement('span');
+        unit.className = 'field-unit';
+        unit.textContent = field.unit;
+        control.appendChild(unit);
+      }
+
+      wrapper.appendChild(label);
+      wrapper.appendChild(control);
+      if (field.description) {
+        wrapper.appendChild(hint);
+      }
+
+      return wrapper;
+    }
+
+    function renderGroups(payload) {
+      currentGroups = Array.isArray(payload) ? payload : [];
+      blocksContainer.innerHTML = '';
+      if (!currentGroups.length) {
+        const emptyCard = document.createElement('div');
+        emptyCard.className = 'card';
+        emptyCard.innerHTML = '<h2>Настройки недоступны</h2><p class="muted">Не удалось получить список параметров. Проверьте config/settings.json.</p>';
+        blocksContainer.appendChild(emptyCard);
+        return;
+      }
+
+      for (const group of currentGroups) {
+        const card = document.createElement('div');
+        card.className = 'card settings-block';
+
+        const title = document.createElement('h2');
+        title.textContent = group.title || group.id || 'Раздел';
+        card.appendChild(title);
+
+        if (group.description) {
+          const desc = document.createElement('p');
+          desc.className = 'muted';
+          desc.textContent = group.description;
+          card.appendChild(desc);
+        }
+
+        const fieldsWrap = document.createElement('div');
+        fieldsWrap.className = 'field-grid';
+        for (const field of group.fields || []) {
+          fieldsWrap.appendChild(buildField(field));
+        }
+        card.appendChild(fieldsWrap);
+
+        blocksContainer.appendChild(card);
+      }
+    }
+
+    async function loadSettings() {
+      try {
+        const resp = await fetch('/api/settings');
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+        const payload = await resp.json();
+        renderGroups(payload.groups);
+        renderController(payload.siteController);
+        renderSearch(payload.search);
+      } catch (err) {
+        renderGroups([]);
+        controllerBox.textContent = `Не удалось загрузить настройки: ${err}`;
+        searchBox.textContent = `Не удалось загрузить настройки: ${err}`;
+      }
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      setMessage('Сохраняем…');
+      if (saveButton) {
+        saveButton.disabled = true;
+      }
+      try {
+        const values = {};
+        blocksContainer.querySelectorAll('[data-setting-key]').forEach((node) => {
+          const key = node.dataset.settingKey;
+          const type = node.dataset.type || 'text';
+          let value;
+          if (type === 'boolean') {
+            const input = node.querySelector('input[type="checkbox"]');
+            value = input ? input.checked : false;
+          } else {
+            const input = node.querySelector('input');
+            if (!input) {
+              return;
+            }
+            if (type === 'number') {
+              const trimmed = input.value.trim();
+              value = trimmed === '' ? '' : Number(trimmed);
+            } else {
+              value = input.value.trim();
+            }
+          }
+          values[key] = value;
+        });
+
+        const resp = await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ values }),
+        });
+        if (!resp.ok) {
+          const errPayload = await resp.json().catch(() => ({}));
+          throw new Error(errPayload.error || `HTTP ${resp.status}`);
+        }
+        setMessage('Настройки сохранены.');
+        await loadSettings();
+      } catch (err) {
+        setMessage(`Не удалось сохранить настройки: ${err}`, true);
+      } finally {
+        if (saveButton) {
+          saveButton.disabled = false;
+        }
+      }
+    });
+
+    loadSettings();
+  </script>
+{% endblock %}
