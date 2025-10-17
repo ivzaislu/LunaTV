@@ -39,7 +39,7 @@ os.makedirs(ERROR_DIR, exist_ok=True)
 
 # JS-экстрактор (Node)
 NODE_BIN = os.environ.get("NODE_BIN", "node")
-_JS_DEF = os.environ.get("JS_EXTRACTOR", "smotru-m3u-one-stealth.js")
+_JS_DEF = os.environ.get("JS_EXTRACTOR", "universal-playwright-extractor.js")
 JS_TIMEOUT_SEC = int(os.environ.get("JS_TIMEOUT_SEC", "10"))
 
 # Контроллер сайтов и каналы

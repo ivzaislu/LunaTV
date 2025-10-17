@@ -1,5 +1,87 @@
 {% extends "base.html" %}
 {% block title %}Настройки · LunaTV{% endblock %}
+{% block head %}
+  {{ super() }}
+  <style>
+    .site-controller-editor {
+      display: grid;
+      gap: 18px;
+    }
+    .controller-row {
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      background: rgba(15, 23, 42, 0.45);
+      padding: 18px 20px;
+      display: grid;
+      gap: 16px;
+    }
+    .controller-row.is-default {
+      border-color: rgba(56, 189, 248, 0.45);
+      box-shadow: 0 14px 34px rgba(56, 189, 248, 0.18);
+    }
+    .controller-field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .controller-field label {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .controller-field input,
+    .controller-field select,
+    .controller-field textarea {
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      background: rgba(15, 23, 42, 0.6);
+      color: #e2e8f0;
+      padding: 10px 12px;
+      font: inherit;
+    }
+    .controller-field textarea {
+      resize: vertical;
+      min-height: 64px;
+    }
+    .controller-grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .controller-field-wide {
+      grid-column: 1 / -1;
+    }
+    .controller-row-actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+    .controller-remove {
+      background: none;
+      border: none;
+      color: #f87171;
+      font: inherit;
+      cursor: pointer;
+      padding: 6px 0;
+      text-decoration: underline;
+    }
+    .site-controller-actions {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+    .site-controller-actions .secondary {
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      color: #cbd5f5;
+    }
+    @media (max-width: 720px) {
+      .controller-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+{% endblock %}
 {% block content %}
   <form id="settingsForm" class="settings-form">
     <div id="settingsBlocks" class="settings-blocks">
@@ -17,8 +99,17 @@
   </form>
 
   <div class="card" style="margin-top: 24px;">
-    <h2>Site controller</h2>
-    <div id="settingsController" class="muted">Загрузка…</div>
+    <h2>Сайты и экстракторы</h2>
+    <p class="muted">Правила сопоставляют домены и маски сайтов с конкретными JS-экстракторами. Запись по умолчанию применяется,
+      если домен не найден в списке.</p>
+    <div id="siteControllerEditor" class="site-controller-editor">
+      <div class="muted">Загрузка правил…</div>
+    </div>
+    <div class="site-controller-actions">
+      <button type="button" class="secondary" id="addSiteController">Добавить сайт</button>
+      <button type="button" class="primary" id="saveSiteController">Сохранить правила</button>
+    </div>
+    <div id="siteControllerMessage" class="muted" role="status"></div>
   </div>
   <div class="card" style="margin-top: 24px;">
     <h2>Search JSON</h2>
@@ -31,10 +122,19 @@
     const blocksContainer = document.getElementById('settingsBlocks');
     const saveButton = document.getElementById('saveSettings');
     const messageBox = document.getElementById('settingsMessage');
-    const controllerBox = document.getElementById('settingsController');
     const searchBox = document.getElementById('settingsSearch');
+    const controllerEditor = document.getElementById('siteControllerEditor');
+    const addControllerBtn = document.getElementById('addSiteController');
+    const saveControllerBtn = document.getElementById('saveSiteController');
+    const controllerMessage = document.getElementById('siteControllerMessage');
 
     let currentGroups = [];
+    const siteControllerState = {
+      entries: [],
+      available: [],
+      defaultScript: '',
+      defaultTimeout: 10,
+    };
 
     function setMessage(text, isError = false) {
       if (!messageBox) {
@@ -48,17 +148,389 @@
       }
     }
 
-    function renderController(items) {
-      if (!items || !items.length) {
-        controllerBox.textContent = 'Не найден файл site_controller.json или он пуст.';
+    function setControllerStatus(text, isError = false) {
+      if (!controllerMessage) {
         return;
       }
-      const list = ['<ul class="clean">'];
-      for (const item of items) {
-        list.push(`<li><code>${item.host}</code> → ${item.script || '—'}, таймаут ${item.timeout}s</li>`);
+      controllerMessage.textContent = text || '';
+      controllerMessage.classList.toggle('status-error', Boolean(text) && isError);
+    }
+
+    function ensureDefaultEntry() {
+      if (siteControllerState.entries.some((item) => item.isDefault)) {
+        return;
       }
-      list.push('</ul>');
-      controllerBox.innerHTML = list.join('');
+      siteControllerState.entries.push({
+        id: 'default',
+        host: 'default',
+        script: siteControllerState.defaultScript || siteControllerState.available[0] || '',
+        timeoutSec: siteControllerState.defaultTimeout,
+        description: '',
+        isDefault: true,
+      });
+    }
+
+    function getSortedSiteEntries() {
+      ensureDefaultEntry();
+      const copy = siteControllerState.entries.slice();
+      copy.sort((a, b) => {
+        if (a.isDefault) return -1;
+        if (b.isDefault) return 1;
+        const left = (a.host || '').toLowerCase();
+        const right = (b.host || '').toLowerCase();
+        if (!left && right) return 1;
+        if (!right && left) return -1;
+        return left.localeCompare(right, 'ru');
+      });
+      return copy;
+    }
+
+    function buildHint(text) {
+      const hint = document.createElement('div');
+      hint.className = 'field-hint muted';
+      hint.textContent = text;
+      return hint;
+    }
+
+    function buildSiteControllerRow(entry) {
+      const row = document.createElement('div');
+      row.className = 'controller-row';
+      row.dataset.id = entry.id;
+      if (entry.isDefault) {
+        row.classList.add('is-default');
+      }
+
+      const hostField = document.createElement('div');
+      hostField.className = 'controller-field';
+      const hostLabel = document.createElement('label');
+      hostLabel.textContent = entry.isDefault ? 'Правило по умолчанию' : 'Домен или маска сайта';
+      hostField.appendChild(hostLabel);
+      const hostInput = document.createElement('input');
+      hostInput.type = 'text';
+      hostInput.placeholder = entry.isDefault ? 'default' : 'пример: kino.example или *.video.example';
+      hostInput.value = entry.host || '';
+      hostInput.dataset.field = 'host';
+      hostInput.disabled = entry.isDefault;
+      hostField.appendChild(hostInput);
+      hostField.appendChild(
+        buildHint(
+          entry.isDefault
+            ? 'Используется, если домен не найден в списке. Экстрактор из этой записи станет значением по умолчанию.'
+            : 'Введите домен или шаблон (например, example.com или *.example.com), для которого будет применяться выбранный экстрактор.',
+        ),
+      );
+
+      const grid = document.createElement('div');
+      grid.className = 'controller-grid';
+
+      const extractorField = document.createElement('div');
+      extractorField.className = 'controller-field';
+      const extractorLabel = document.createElement('label');
+      extractorLabel.textContent = 'Экстрактор';
+      extractorField.appendChild(extractorLabel);
+      const extractorSelect = document.createElement('select');
+      extractorSelect.dataset.field = 'script';
+      const options = siteControllerState.available.slice();
+      if (entry.script && !options.includes(entry.script)) {
+        options.push(entry.script);
+      }
+      if (!options.length) {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'Нет доступных скриптов';
+        extractorSelect.appendChild(opt);
+      } else {
+        for (const name of options) {
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          if (name === entry.script) {
+            opt.selected = true;
+          }
+          extractorSelect.appendChild(opt);
+        }
+      }
+      extractorField.appendChild(extractorSelect);
+      extractorField.appendChild(
+        buildHint('Выберите JS-экстрактор из каталога extractor/. Он будет запущен для указанных доменов.'),
+      );
+
+      const timeoutField = document.createElement('div');
+      timeoutField.className = 'controller-field';
+      const timeoutLabel = document.createElement('label');
+      timeoutLabel.textContent = 'Тайм-аут, сек.';
+      timeoutField.appendChild(timeoutLabel);
+      const timeoutInput = document.createElement('input');
+      timeoutInput.type = 'number';
+      timeoutInput.min = '1';
+      timeoutInput.step = '1';
+      timeoutInput.dataset.field = 'timeout';
+      timeoutInput.value = Number.isFinite(entry.timeoutSec) ? entry.timeoutSec : siteControllerState.defaultTimeout;
+      timeoutField.appendChild(timeoutInput);
+      timeoutField.appendChild(buildHint('Максимальное время ожидания Playwright перед завершением экстрактора.'));
+
+      const descriptionField = document.createElement('div');
+      descriptionField.className = 'controller-field controller-field-wide';
+      const descriptionLabel = document.createElement('label');
+      descriptionLabel.textContent = 'Описание';
+      descriptionField.appendChild(descriptionLabel);
+      const descriptionInput = document.createElement('textarea');
+      descriptionInput.rows = 2;
+      descriptionInput.dataset.field = 'description';
+      descriptionInput.placeholder = 'Например, «страницы кинотеатра» или «резервный источник»';
+      descriptionInput.value = entry.description || '';
+      descriptionField.appendChild(descriptionInput);
+      descriptionField.appendChild(buildHint('Краткое пояснение для команды. Необязательное поле.'));
+
+      grid.appendChild(extractorField);
+      grid.appendChild(timeoutField);
+      grid.appendChild(descriptionField);
+
+      row.appendChild(hostField);
+      row.appendChild(grid);
+
+      if (!entry.isDefault) {
+        const actions = document.createElement('div');
+        actions.className = 'controller-row-actions';
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'controller-remove';
+        removeButton.dataset.action = 'remove';
+        removeButton.textContent = 'Удалить правило';
+        actions.appendChild(removeButton);
+        row.appendChild(actions);
+      }
+
+      return row;
+    }
+
+    function renderSiteControllerEditor() {
+      if (!controllerEditor) {
+        return;
+      }
+      const sorted = getSortedSiteEntries();
+      if (!sorted.length) {
+        controllerEditor.innerHTML = '<div class="muted">Правила не найдены. Добавьте сайт, чтобы выбрать экстрактор.</div>';
+        return;
+      }
+      controllerEditor.innerHTML = '';
+      for (const entry of sorted) {
+        controllerEditor.appendChild(buildSiteControllerRow(entry));
+      }
+    }
+
+    function makeEntryId(prefix = 'entry') {
+      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+      }
+      return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function findEntryById(id) {
+      return siteControllerState.entries.find((item) => item.id === id);
+    }
+
+    function setEntryValue(entry, field, value) {
+      if (!entry) {
+        return;
+      }
+      if (field === 'timeout') {
+        const num = Number.parseInt(value, 10);
+        entry.timeoutSec = Number.isFinite(num) && num > 0 ? num : siteControllerState.defaultTimeout;
+      } else if (field === 'description') {
+        entry.description = value || '';
+      } else if (field === 'script') {
+        entry.script = value || '';
+      } else if (field === 'host') {
+        entry.host = value || '';
+      }
+    }
+
+    function collectSiteControllerPayload() {
+      ensureDefaultEntry();
+      const result = {
+        default: null,
+        entries: [],
+      };
+      const errors = [];
+      const defaultEntry = siteControllerState.entries.find((item) => item.isDefault);
+      if (!defaultEntry || !defaultEntry.script) {
+        errors.push('Укажите экстрактор для записи по умолчанию.');
+      } else {
+        result.default = {
+          host: 'default',
+          script: defaultEntry.script,
+          timeoutSec: defaultEntry.timeoutSec || siteControllerState.defaultTimeout,
+          description: defaultEntry.description || '',
+        };
+      }
+
+      const seenHosts = new Set();
+      for (const entry of siteControllerState.entries) {
+        if (entry.isDefault) {
+          continue;
+        }
+        const host = (entry.host || '').trim();
+        if (!host) {
+          errors.push('Для каждого правила укажите домен или маску сайта.');
+          continue;
+        }
+        if (seenHosts.has(host)) {
+          errors.push(`Домен ${host} указан несколько раз.`);
+          continue;
+        }
+        seenHosts.add(host);
+        const script = (entry.script || '').trim();
+        if (!script) {
+          errors.push(`Не выбран экстрактор для ${host}.`);
+          continue;
+        }
+        const timeout = Number.isFinite(entry.timeoutSec) && entry.timeoutSec > 0 ? entry.timeoutSec : siteControllerState.defaultTimeout;
+        result.entries.push({
+          host,
+          script,
+          timeoutSec: timeout,
+          description: entry.description || '',
+        });
+      }
+
+      return { payload: result, errors };
+    }
+
+    async function loadSiteController() {
+      if (!controllerEditor) {
+        return;
+      }
+      controllerEditor.innerHTML = '<div class="muted">Загружаем правила…</div>';
+      try {
+        const resp = await fetch('/api/site-controller');
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+        const data = await resp.json();
+        siteControllerState.available = Array.isArray(data.availableExtractors) ? data.availableExtractors : [];
+        siteControllerState.defaultScript = data.defaultScript || siteControllerState.available[0] || '';
+        const timeout = Number.parseInt(data.defaultTimeout, 10);
+        siteControllerState.defaultTimeout = Number.isFinite(timeout) && timeout > 0 ? timeout : 10;
+        siteControllerState.entries = Array.isArray(data.entries)
+          ? data.entries.map((item, idx) => ({
+              id: item.id || (item.isDefault ? 'default' : makeEntryId(`entry-${idx}`)),
+              host: item.host || (item.isDefault ? 'default' : ''),
+              script: item.script || siteControllerState.defaultScript,
+              timeoutSec: Number.isFinite(item.timeoutSec) ? item.timeoutSec : Number.parseInt(item.timeoutSec, 10),
+              description: item.description || '',
+              isDefault: Boolean(item.isDefault || item.host === 'default'),
+            }))
+          : [];
+        for (const entry of siteControllerState.entries) {
+          if (!entry.id) {
+            entry.id = makeEntryId('entry');
+          }
+          if (!Number.isFinite(entry.timeoutSec) || entry.timeoutSec <= 0) {
+            entry.timeoutSec = siteControllerState.defaultTimeout;
+          }
+        }
+        ensureDefaultEntry();
+        const defaultEntry = siteControllerState.entries.find((item) => item.isDefault);
+        if (defaultEntry) {
+          if (defaultEntry.script) {
+            siteControllerState.defaultScript = defaultEntry.script;
+          }
+          if (Number.isFinite(defaultEntry.timeoutSec) && defaultEntry.timeoutSec > 0) {
+            siteControllerState.defaultTimeout = defaultEntry.timeoutSec;
+          }
+        }
+        renderSiteControllerEditor();
+        setControllerStatus('');
+      } catch (err) {
+        controllerEditor.innerHTML = `<div class="muted">Не удалось загрузить site_controller.json: ${err}</div>`;
+        setControllerStatus('Произошла ошибка при загрузке правил.', true);
+      }
+    }
+
+    async function saveSiteController() {
+      const { payload, errors } = collectSiteControllerPayload();
+      if (errors.length) {
+        setControllerStatus(errors[0], true);
+        return;
+      }
+      if (!payload.default) {
+        setControllerStatus('Не удалось сформировать запись по умолчанию.', true);
+        return;
+      }
+      setControllerStatus('Сохраняем правила…');
+      if (saveControllerBtn) {
+        saveControllerBtn.disabled = true;
+      }
+      try {
+        const resp = await fetch('/api/site-controller', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!resp.ok) {
+          const errPayload = await resp.json().catch(() => ({}));
+          throw new Error(errPayload.error || `HTTP ${resp.status}`);
+        }
+        const data = await resp.json();
+        siteControllerState.available = Array.isArray(data.availableExtractors) ? data.availableExtractors : siteControllerState.available;
+        siteControllerState.entries = Array.isArray(data.entries)
+          ? data.entries.map((item, idx) => ({
+              id: item.id || (item.isDefault ? 'default' : makeEntryId(`entry-${idx}`)),
+              host: item.host || (item.isDefault ? 'default' : ''),
+              script: item.script || siteControllerState.defaultScript,
+              timeoutSec: Number.isFinite(item.timeoutSec) ? item.timeoutSec : Number.parseInt(item.timeoutSec, 10),
+              description: item.description || '',
+              isDefault: Boolean(item.isDefault || item.host === 'default'),
+            }))
+          : [];
+        for (const entry of siteControllerState.entries) {
+          if (!entry.id) {
+            entry.id = makeEntryId('entry');
+          }
+          if (!Number.isFinite(entry.timeoutSec) || entry.timeoutSec <= 0) {
+            entry.timeoutSec = siteControllerState.defaultTimeout;
+          }
+        }
+        ensureDefaultEntry();
+        const defaultEntry = siteControllerState.entries.find((item) => item.isDefault);
+        if (defaultEntry) {
+          if (defaultEntry.script) {
+            siteControllerState.defaultScript = defaultEntry.script;
+          }
+          if (Number.isFinite(defaultEntry.timeoutSec) && defaultEntry.timeoutSec > 0) {
+            siteControllerState.defaultTimeout = defaultEntry.timeoutSec;
+          }
+        }
+        renderSiteControllerEditor();
+        setControllerStatus('Правила обновлены.');
+      } catch (err) {
+        setControllerStatus(`Не удалось сохранить правила: ${err}`, true);
+      } finally {
+        if (saveControllerBtn) {
+          saveControllerBtn.disabled = false;
+        }
+      }
+    }
+
+    function handleControllerInput(event) {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+      const field = target.dataset.field;
+      if (!field) {
+        return;
+      }
+      const row = target.closest('.controller-row');
+      if (!row) {
+        return;
+      }
+      const entry = findEntryById(row.dataset.id);
+      setEntryValue(entry, field, target.value);
+      if (field !== 'description') {
+        setControllerStatus('Изменения не сохранены. Нажмите «Сохранить правила».');
+      }
     }
 
     function renderSearch(items) {
@@ -199,13 +671,57 @@
         }
         const payload = await resp.json();
         renderGroups(payload.groups);
-        renderController(payload.siteController);
         renderSearch(payload.search);
       } catch (err) {
         renderGroups([]);
-        controllerBox.textContent = `Не удалось загрузить настройки: ${err}`;
-        searchBox.textContent = `Не удалось загрузить настройки: ${err}`;
+        setControllerStatus(`Не удалось загрузить настройки: ${err}`, true);
+        if (searchBox) {
+          searchBox.textContent = `Не удалось загрузить настройки: ${err}`;
+        }
       }
+    }
+
+    if (controllerEditor) {
+      controllerEditor.addEventListener('input', handleControllerInput);
+      controllerEditor.addEventListener('change', handleControllerInput);
+      controllerEditor.addEventListener('click', (event) => {
+        const target = event.target instanceof HTMLElement ? event.target.closest('[data-action="remove"]') : null;
+        if (!target) {
+          return;
+        }
+        event.preventDefault();
+        const row = target.closest('.controller-row');
+        if (!row) {
+          return;
+        }
+        const id = row.dataset.id;
+        siteControllerState.entries = siteControllerState.entries.filter((item) => item.id !== id);
+        renderSiteControllerEditor();
+        setControllerStatus('Правило удалено. Не забудьте сохранить изменения.');
+      });
+    }
+
+    if (addControllerBtn) {
+      addControllerBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        siteControllerState.entries.push({
+          id: makeEntryId('entry'),
+          host: '',
+          script: siteControllerState.available[0] || siteControllerState.defaultScript || '',
+          timeoutSec: siteControllerState.defaultTimeout,
+          description: '',
+          isDefault: false,
+        });
+        renderSiteControllerEditor();
+        setControllerStatus('Добавлено новое правило. Заполните поля и сохраните изменения.');
+      });
+    }
+
+    if (saveControllerBtn) {
+      saveControllerBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        saveSiteController();
+      });
     }
 
     form.addEventListener('submit', async (event) => {
@@ -259,5 +775,6 @@
     });
 
     loadSettings();
+    loadSiteController();
   </script>
 {% endblock %}

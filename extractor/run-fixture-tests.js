@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { extractM3U8Candidates } from "./smotru-m3u-one-stealth.js";
+import { extractM3U8Candidates } from "./universal-playwright-extractor.js";
 import { extractCinemaCandidates } from "./cinema-hls-extractor.js";
 
 const __filename = fileURLToPath(import.meta.url);

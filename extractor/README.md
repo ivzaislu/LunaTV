@@ -3,7 +3,7 @@
 В каталоге `extractor/` располагаются JS-скрипты, которые запускаются из Python-утилит
 (`update_playlist.py`, `scaner.py`) для извлечения ссылок на потоки. Добавлены экстракторы:
 
-- `smotru-m3u-one-stealth.js` — универсальный Playwright/HTTP-адаптер, умеющий
+- `universal-playwright-extractor.js` — универсальный Playwright/HTTP-адаптер, умеющий
   вытаскивать `.m3u8` ссылки из DOM и скриптов Смотру.
 - `cinema-hls-extractor.js` — модуль для HLS-плейеров с JSON-конфигами (данные в
   `data-player-config`, `application/json` и глобальном `playerConfig`).
@@ -11,7 +11,7 @@
 - скачивает HTML целевой страницы с использованием axios;
 - ищет `.m3u8` ссылки через парсинг DOM (`cheerio`) и регулярные выражения;
 - возвращает массив URL-адресов в формате JSON, совместимый с ожидаемым Python-кодом;
-- содержит встроенный самотест (`node extractor/smotru-m3u-one-stealth.js --selftest`);
+- содержит встроенный самотест (`node extractor/universal-playwright-extractor.js --selftest`);
 - покрыт офлайн-фикстурами в `extractor/run-fixture-tests.js`.
 
 По умолчанию скрипт использует [Playwright](https://playwright.dev/) для рендеринга

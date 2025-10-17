@@ -47,7 +47,7 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 
 # JS-экстрактор (Node) — дефолт на случай отсутствия site_controller.json
 NODE_BIN = os.environ.get("NODE_BIN", "node")  # укажи абсолютный путь, если нужно
-JS_EXTRACTOR_NAME = os.environ.get("JS_EXTRACTOR", "smotru-m3u-one-stealth.js")
+JS_EXTRACTOR_NAME = os.environ.get("JS_EXTRACTOR", "universal-playwright-extractor.js")
 JS_EXTRACTOR_PATH = os.path.join(EXTRACTOR_DIR, JS_EXTRACTOR_NAME)
 JS_TIMEOUT_SEC = int(os.environ.get("JS_TIMEOUT_SEC", "10"))
 
@@ -1056,6 +1056,25 @@ def _abs_in_extractor_dir(names_or_paths):
         out.append(os.path.abspath(p))
     return out
 
+
+def _list_available_extractors() -> list[str]:
+    if not os.path.isdir(EXTRACTOR_DIR):
+        return []
+    names = []
+    for entry in os.listdir(EXTRACTOR_DIR):
+        path = os.path.join(EXTRACTOR_DIR, entry)
+        if os.path.isfile(path) and entry.lower().endswith(".js"):
+            names.append(entry)
+    # сохраняем порядок, но убираем дубликаты
+    seen = set()
+    ordered: list[str] = []
+    for name in sorted(names):
+        if name in seen:
+            continue
+        seen.add(name)
+        ordered.append(name)
+    return ordered
+
 def _pick_host_conf(sc: dict, host: str) -> dict:
     """
     Выбор секции в site_controller.json по host:
@@ -1080,6 +1099,99 @@ def _pick_host_conf(sc: dict, host: str) -> dict:
             if fnmatch.fnmatch(host, key):
                 return val
     return sc.get("default") or {}
+
+
+def _normalize_site_controller_entry(entry: dict, *, allow_default: bool = False) -> tuple[str, dict[str, Any]]:
+    if not isinstance(entry, dict):
+        raise ValueError("Передайте объект с параметрами сайта")
+
+    host = _strip(entry.get("host") or ("default" if allow_default else ""))
+    if not host:
+        raise ValueError("Укажите домен или маску сайта")
+    if host == "default" and not allow_default:
+        raise ValueError("Ключ 'default' зарезервирован — используйте другой хост")
+
+    scripts = _to_list(entry.get("script") or entry.get("scripts") or entry.get("extractor"))
+    if not scripts:
+        scripts = _to_list(JS_EXTRACTOR_NAME)
+    script = _strip(scripts[0]) or JS_EXTRACTOR_NAME
+
+    try:
+        timeout = int(entry.get("timeout") or entry.get("timeoutSec") or entry.get("timeout_sec") or JS_TIMEOUT_SEC)
+    except Exception:
+        timeout = JS_TIMEOUT_SEC
+    timeout = max(1, timeout)
+
+    description = _strip(entry.get("description"))
+
+    data: dict[str, Any] = {"script": script, "timeout_sec": timeout}
+    if description:
+        data["description"] = description
+    return host, data
+
+
+def _serialize_site_controller_entries(sc: dict) -> list[dict[str, Any]]:
+    entries: list[dict[str, Any]] = []
+    default_conf = sc.get("default") if isinstance(sc.get("default"), dict) else {}
+    default_script = _to_list(default_conf.get("script")) or _to_list(JS_EXTRACTOR_NAME)
+    entries.append(
+        {
+            "id": "default",
+            "host": "default",
+            "script": default_script[0] if default_script else JS_EXTRACTOR_NAME,
+            "timeoutSec": int(default_conf.get("timeout_sec") or default_conf.get("timeout") or JS_TIMEOUT_SEC),
+            "description": _strip(default_conf.get("description")),
+            "isDefault": True,
+        }
+    )
+    for host, cfg in sorted(sc.items()):
+        if host == "default" or not isinstance(cfg, dict):
+            continue
+        scripts = _to_list(cfg.get("script"))
+        script = scripts[0] if scripts else JS_EXTRACTOR_NAME
+        entries.append(
+            {
+                "id": host,
+                "host": host,
+                "script": script,
+                "timeoutSec": int(cfg.get("timeout_sec") or cfg.get("timeout") or JS_TIMEOUT_SEC),
+                "description": _strip(cfg.get("description")),
+                "isDefault": False,
+            }
+        )
+    return entries
+
+
+def _save_site_controller_map(controller: dict) -> None:
+    _ensure_config_dir()
+    fd, tmp_path = tempfile.mkstemp(prefix="site_controller_", suffix=".json", dir=CONFIG_DIR)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(controller, fh, ensure_ascii=False, indent=2, sort_keys=True)
+            fh.write("\n")
+        os.replace(tmp_path, SITE_CONTROLLER_FILE)
+    except Exception:
+        try:
+            os.unlink(tmp_path)
+        except Exception:
+            pass
+        raise
+
+
+def _build_site_controller_map(entries: list[dict], default_entry: dict | None) -> dict:
+    controller: dict[str, Any] = {}
+    host, defaults = _normalize_site_controller_entry(default_entry or {}, allow_default=True)
+    controller[host] = defaults
+
+    seen: set[str] = set()
+    for entry in entries or []:
+        host, cfg = _normalize_site_controller_entry(entry, allow_default=False)
+        if host in seen:
+            raise ValueError(f"Домен '{host}' указан несколько раз")
+        seen.add(host)
+        controller[host] = cfg
+    return controller
+
 
 def resolve_extractors_and_timeout_for_url(referer_url: str):
     """
@@ -1487,6 +1599,41 @@ def api_settings_update():
     except ValueError as exc:
         return jsonify({"ok": False, "error": str(exc)}), 400
     return jsonify({"ok": True, "applied": applied, "groups": _describe_settings_groups()})
+
+
+@app.route("/api/site-controller", methods=["GET"])
+def api_site_controller_state():
+    data = _load_site_controller()
+    return jsonify(
+        {
+            "ok": True,
+            "entries": _serialize_site_controller_entries(data),
+            "availableExtractors": _list_available_extractors(),
+            "defaultScript": JS_EXTRACTOR_NAME,
+            "defaultTimeout": JS_TIMEOUT_SEC,
+        }
+    )
+
+
+@app.route("/api/site-controller", methods=["POST"])
+def api_site_controller_update():
+    payload = request.get_json(silent=True) or {}
+    try:
+        controller = _build_site_controller_map(payload.get("entries") or [], payload.get("default"))
+    except ValueError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 400
+    try:
+        _save_site_controller_map(controller)
+    except Exception as exc:  # noqa: BLE001
+        return jsonify({"ok": False, "error": f"Не удалось сохранить site_controller.json: {exc}"}), 500
+    return jsonify(
+        {
+            "ok": True,
+            "entries": _serialize_site_controller_entries(controller),
+            "availableExtractors": _list_available_extractors(),
+        }
+    )
+
 
 @app.route("/playlist/<filename>")
 def serve_playlist(filename):

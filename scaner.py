@@ -576,7 +576,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     for url in links:
         cfg = choose_site_cfg(controller, url)
-        script_name = cfg.get("script") or controller.get("default", {}).get("script") or "smotru-m3u-one-stealth.js"
+        script_name = cfg.get("script") or controller.get("default", {}).get("script") or "universal-playwright-extractor.js"
         timeout_sec = int(cfg.get("timeout_sec") or controller.get("default", {}).get("timeout_sec") or 10)
         script_path = _resolve_script_path(script_name)
 

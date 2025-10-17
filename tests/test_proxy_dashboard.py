@@ -80,6 +80,54 @@ class ProxyDashboardTests(unittest.TestCase):
             ],
         )
 
+    def test_site_controller_get_and_update(self):
+        resp = self.client.get("/api/site-controller")
+        self.assertEqual(resp.status_code, 200)
+        payload = resp.get_json()
+        self.assertIn("entries", payload)
+
+        request_payload = {
+            "default": {
+                "script": "universal-playwright-extractor.js",
+                "timeoutSec": 12,
+                "description": "Основной экстрактор",
+            },
+            "entries": [
+                {
+                    "host": "video.example",
+                    "script": "cinema-hls-extractor.js",
+                    "timeoutSec": 25,
+                    "description": "Кино-сайт",
+                }
+            ],
+        }
+        resp = self.client.post("/api/site-controller", json=request_payload)
+        self.assertEqual(resp.status_code, 200)
+        saved = resp.get_json()
+        self.assertTrue(saved["ok"])
+        self.assertTrue(os.path.exists(proxy_server.SITE_CONTROLLER_FILE))
+        with open(proxy_server.SITE_CONTROLLER_FILE, "r", encoding="utf-8") as fh:
+            stored = json.load(fh)
+        self.assertIn("default", stored)
+        self.assertEqual(stored["default"]["script"], "universal-playwright-extractor.js")
+        self.assertIn("video.example", stored)
+        self.assertEqual(stored["video.example"]["script"], "cinema-hls-extractor.js")
+        self.assertEqual(stored["video.example"]["timeout_sec"], 25)
+
+    def test_site_controller_validation(self):
+        resp = self.client.post(
+            "/api/site-controller",
+            json={
+                "default": {"script": "universal-playwright-extractor.js"},
+                "entries": [
+                    {"host": "", "script": "cinema-hls-extractor.js"},
+                ],
+            },
+        )
+        self.assertEqual(resp.status_code, 400)
+        payload = resp.get_json()
+        self.assertFalse(payload["ok"])
+
     def test_channel_editor_crud(self):
         payload = {
             "slug": "demo",
