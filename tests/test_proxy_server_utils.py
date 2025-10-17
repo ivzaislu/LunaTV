@@ -2,7 +2,7 @@ import json
 import os
 import tempfile
 import unittest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest import mock
 
 import proxy_server
@@ -59,8 +59,9 @@ class ProxyServerUtilsTests(unittest.TestCase):
 
     def test_cache_entry_is_fresh(self):
         proxy_server.CACHE_TTL_SEC = 60
-        fresh = {"timestamp": datetime.utcnow().isoformat()}
-        stale = {"timestamp": (datetime.utcnow() - timedelta(seconds=120)).isoformat()}
+        now = datetime.now(timezone.utc)
+        fresh = {"timestamp": now.isoformat()}
+        stale = {"timestamp": (now - timedelta(seconds=120)).isoformat()}
         self.assertTrue(proxy_server._cache_entry_is_fresh(fresh))
         self.assertFalse(proxy_server._cache_entry_is_fresh(stale))
 
