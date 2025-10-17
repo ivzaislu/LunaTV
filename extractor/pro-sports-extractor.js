@@ -1,4 +1,5 @@
 import axios from "axios";
+import cloudscraper from "cloudscraper";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -111,7 +112,7 @@ function collectFromJson(value, pushString) {
 
 function extractCandidateStrings(scriptText) {
   const results = new Set();
-  const quotePattern = /(["'`])([^"'`]*?)\1/g;
+  const quotePattern = /(["'`])((?:\\.|(?!\1)[\s\S])+?)\1/g;
   let match;
   while ((match = quotePattern.exec(scriptText)) !== null) {
     const raw = match[2];
@@ -120,6 +121,25 @@ function extractCandidateStrings(scriptText) {
     results.add(raw);
   }
   return results;
+}
+
+function normalizeJsEscapes(value) {
+  if (value == null) return "";
+  const asString = String(value);
+
+  try {
+    return JSON.parse(`"${asString}"`);
+  } catch {
+    try {
+      return JSON.parse(`"${asString.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`);
+    } catch {
+      return asString
+        .replace(/\\"/g, '"')
+        .replace(/\\'/g, "'")
+        .replace(/\\`/g, "`")
+        .replace(/\\\//g, "/");
+    }
+  }
 }
 
 function decodeLayers(initial, pushString) {
@@ -210,8 +230,15 @@ export function extractProSportsCandidates(html, baseUrl) {
   for (const script of scripts) {
     const [, content = ""] = script.match(/<script[^>]*>([\s\S]*?)<\/script>/i) || [];
     for (const token of extractCandidateStrings(content || "")) {
-      if (token.length >= 40 || /m3u8|https?:/i.test(token) || /%7B|%22/.test(token)) {
-        processString(token);
+      const normalizedToken = normalizeJsEscapes(token);
+      const heuristicTarget = normalizedToken || token || "";
+      if (
+        heuristicTarget.length >= 40 ||
+        /m3u8|https?:/i.test(heuristicTarget) ||
+        /%7B|%22/.test(heuristicTarget) ||
+        /streams|token/i.test(heuristicTarget)
+      ) {
+        processString(normalizedToken);
       }
     }
 
@@ -232,19 +259,86 @@ export function extractProSportsCandidates(html, baseUrl) {
 
 async function fetchHtml(target) {
   if (/^https?:/i.test(target)) {
-    const resp = await axios.get(target, {
-      responseType: "text",
-      timeout: 20000,
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      },
-    });
-    return typeof resp.data === "string" ? resp.data : String(resp.data ?? "");
+    const headers = {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      Referer: new URL(target).origin + "/",
+      "Accept-Language": "en-US,en;q=0.9,ru;q=0.8",
+    };
+
+    try {
+      const resp = await axios.get(target, {
+        responseType: "text",
+        timeout: 20000,
+        headers,
+        maxRedirects: 5,
+      });
+      if (typeof resp.data === "string" && !isCloudflareChallenge(resp)) {
+        return resp.data;
+      }
+      const fallbackHtml = await maybeCloudscrape(target, headers, {
+        response: resp,
+      });
+      if (fallbackHtml) return fallbackHtml;
+      if (typeof resp.data === "string") {
+        return resp.data;
+      }
+      return String(resp.data ?? "");
+    } catch (err) {
+      const html = await maybeCloudscrape(target, headers, err);
+      if (html) return html;
+      throw err;
+    }
   }
 
   const data = await readFile(target, "utf8");
   return data;
+}
+
+function isCloudflareChallenge(resp) {
+  const status = resp?.status;
+  if (status && status >= 200 && status < 300) {
+    const data = typeof resp.data === "string" ? resp.data : "";
+    if (data.includes("cf-mitigated") || data.includes("Just a moment")) {
+      return true;
+    }
+  }
+  if (status === 403 || status === 503) return true;
+  return false;
+}
+
+async function maybeCloudscrape(target, headers, originalError) {
+  const err = originalError || {};
+  const status = err?.response?.status;
+  const code = err?.code;
+  const isRedirectError = code === "ERR_FR_TOO_MANY_REDIRECTS";
+  const shouldRetry =
+    isRedirectError ||
+    status === 403 ||
+    status === 503 ||
+    /cloudflare|Just a moment/i.test(err?.response?.data ?? "");
+
+  if (!shouldRetry) return null;
+
+  try {
+    const body = await cloudscraper.get({
+      uri: target,
+      headers,
+      gzip: true,
+      timeout: 20000,
+      resolveWithFullResponse: false,
+    });
+    if (typeof body === "string" && body.trim()) {
+      return body;
+    }
+  } catch (cloudError) {
+    if (cloudError?.response?.body) {
+      return String(cloudError.response.body);
+    }
+    throw cloudError;
+  }
+
+  return null;
 }
 
 async function runCli() {
@@ -260,10 +354,12 @@ async function runCli() {
     const html = await readFile(fixturePath, "utf8");
     const expected = [
       "https://backup1.pro-sports.example/hls/match-futbol-3_backup.m3u8",
+      "https://edge-alt.pro-sports.example/live/match-futbol-3_alt.m3u8",
       "https://mirror-cdn.pro-sports.example/edge/match-futbol-3/index.m3u8",
       "https://play-cdn.pro-sports.example/edge/match-futbol-3/master.m3u8",
       "https://play1.pro-sports.example/linear/match-futbol-3/playlist.m3u8",
       "https://play2.pro-sports.example/live/match-futbol-3_sd.m3u8",
+      "https://secure-token.pro-sports.example/live/match-futbol-3_token.m3u8?token=secure-example",
     ].sort();
     const actual = extractProSportsCandidates(html, "https://pro-sports.live/match-futbol-3.html").sort();
     if (JSON.stringify(actual) !== JSON.stringify(expected)) {

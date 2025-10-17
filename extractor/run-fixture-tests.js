@@ -56,10 +56,12 @@ const fixtures = [
     baseUrl: "https://pro-sports.live/match-futbol-3.html",
     expected: [
       "https://backup1.pro-sports.example/hls/match-futbol-3_backup.m3u8",
+      "https://edge-alt.pro-sports.example/live/match-futbol-3_alt.m3u8",
       "https://mirror-cdn.pro-sports.example/edge/match-futbol-3/index.m3u8",
       "https://play-cdn.pro-sports.example/edge/match-futbol-3/master.m3u8",
       "https://play1.pro-sports.example/linear/match-futbol-3/playlist.m3u8",
       "https://play2.pro-sports.example/live/match-futbol-3_sd.m3u8",
+      "https://secure-token.pro-sports.example/live/match-futbol-3_token.m3u8?token=secure-example",
     ],
   },
 ];
