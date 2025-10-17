@@ -669,9 +669,34 @@ function pis_getInternetExplorerVersion() // Returns the version of Internet Exp
             </div>
 
     </div>
-<footer class="footer">
-  <div class="footer-inner">
-<div>© 2025, Pro-sports.live</div>
+<div id="movie_video"></div>
+<script>
+  (function () {
+    const encodedConfig = "eyJjaGFubmVsIjogIm1hdGNoLWZ1dGJvbC0zIiwgInN0cmVhbXMiOiBbeyJ0aXRsZSI6ICLQnNCw0YLRhyEg0KTRg9GC0LHQvtC7IDMgSEQiLCAicXVhbGl0eSI6ICIxMDgwIiwgInVybCI6ICJodHRwczovL3BsYXkxLnByby1zcG9ydHMuZXhhbXBsZS9saW5lYXIvbWF0Y2gtZnV0Ym9sLTMvcGxheWxpc3QubTN1OCJ9LCB7InRpdGxlIjogItCc0LDRgtGHISDQpNGD0YLQsdC+0LsgMyBTRCIsICJxdWFsaXR5IjogIjQ4MCIsICJ1cmwiOiAiaHR0cHM6Ly9wbGF5Mi5wcm8tc3BvcnRzLmV4YW1wbGUvbGl2ZS9tYXRjaC1mdXRib2wtM19zZC5tM3U4In0sIHsidGl0bGUiOiAi0JzQsNGC0YchINCk0YPRgtCx0L7QuyAzIEJBQ0tVUCIsICJxdWFsaXR5IjogIjcyMCIsICJ1cmwiOiAiaHR0cHM6Ly9iYWNrdXAxLnByby1zcG9ydHMuZXhhbXBsZS9obHMvbWF0Y2gtZnV0Ym9sLTNfYmFja3VwLm0zdTgifV0sICJ0b2tlbiI6ICJhYmMxMjMifQ==";
+    const encodedQualityMap = "%7B%22main%22%3A%20%22https%3A//play-cdn.pro-sports.example/edge/match-futbol-3/master.m3u8%22%2C%20%22mirror%22%3A%20%22https%3A//mirror-cdn.pro-sports.example/edge/match-futbol-3/index.m3u8%22%7D";
+
+    function safeDecodeURIComponent(value) {
+      let result = String(value || "");
+      for (let i = 0; i < 5; i += 1) {
+        try {
+          const next = decodeURIComponent(result);
+          if (next === result) break;
+          result = next;
+        } catch (err) {
+          break;
+        }
+      }
+      return result;
+    }
+
+    window.__PS_PRO_SPORTS__ = encodedConfig;
+    window.__PS_STREAM_STATE__ = encodedQualityMap;
+    window._psConfig = JSON.parse(safeDecodeURIComponent(atob(encodedConfig)));
+    window._psQualityMap = JSON.parse(safeDecodeURIComponent(encodedQualityMap));
+  })();
+</script>
+<script type="text/javascript" src="https://vak345.com/s.js?v=e30c923efe1b6bfe65f8518cc8fb4547" async></script>
+</body>
   </div>
 </footer>
 

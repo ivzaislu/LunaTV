@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 
 import { extractM3U8Candidates } from "./universal-playwright-extractor.js";
 import { extractCinemaCandidates } from "./cinema-hls-extractor.js";
+import { extractProSportsCandidates } from "./pro-sports-extractor.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,6 +47,19 @@ const fixtures = [
       "https://edge.cinema.example/live/cinema_sd.m3u8",
       "https://mirror-1.cinema.example/live/cinema_hd/index.m3u8",
       "https://mirror-2.cinema.example/live/cinema_hd/index.m3u8",
+    ],
+  },
+  {
+    name: "pro-sports-match-futbol-3",
+    extractor: extractProSportsCandidates,
+    file: "fixtures/view-source_https___pro-sports.live_match-futbol-3.html",
+    baseUrl: "https://pro-sports.live/match-futbol-3.html",
+    expected: [
+      "https://backup1.pro-sports.example/hls/match-futbol-3_backup.m3u8",
+      "https://mirror-cdn.pro-sports.example/edge/match-futbol-3/index.m3u8",
+      "https://play-cdn.pro-sports.example/edge/match-futbol-3/master.m3u8",
+      "https://play1.pro-sports.example/linear/match-futbol-3/playlist.m3u8",
+      "https://play2.pro-sports.example/live/match-futbol-3_sd.m3u8",
     ],
   },
 ];
