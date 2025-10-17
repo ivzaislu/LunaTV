@@ -1,0 +1,11 @@
+.git
+__pycache__/
+*.pyc
+node_modules/
+playwright-report/
+test-results/
+.mypy_cache/
+.cache/
+.DS_Store
+ENV/
+venv/

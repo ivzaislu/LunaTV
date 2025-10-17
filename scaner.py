@@ -15,6 +15,7 @@
   pip install requests beautifulsoup4 unidecode
 """
 
+import argparse
 import os
 import re
 import json
@@ -23,6 +24,7 @@ import glob
 import shutil
 import subprocess
 import signal
+import sys
 from typing import List, Dict, Optional, Tuple
 from collections import OrderedDict
 from datetime import datetime, timezone
@@ -63,7 +65,12 @@ VALIDATION_TIMEOUT = 12
 NODE_BIN = "node"  # при необходимости абсолютный путь
 
 CLEAN_TMP_AFTER_JS = True
-TMP_PATTERNS = ("/tmp/puppeteer_*", "/tmp/.org.chromium.*", "/dev/shm/.org.chromium.*")
+TMP_PATTERNS = (
+    "/tmp/playwright*",
+    "/tmp/.org.chromium.*",
+    "/dev/shm/.org.chromium.*",
+    "/tmp/ms-playwright*",
+)
 
 BASE_HEADERS = {
     "User-Agent": USER_AGENT,
@@ -317,7 +324,7 @@ def _proc_age_sec(pid: int) -> float:
 def kill_orphan_chrome(max_age_sec: int = ORPHAN_CHROME_MAX_AGE_SEC) -> int:
     victims = 0
     name_mark = ("chrome", "chromium", "chromium-browser")
-    puppet_mark = ("puppeteer", "/tmp/puppeteer_", ".org.chromium", "--remote-debugging", "--headless")
+    automation_mark = ("playwright", "/tmp/playwright", "ms-playwright", ".org.chromium", "--remote-debugging", "--headless")
 
     for pid in list(_list_pids()):
         try:
@@ -328,7 +335,7 @@ def kill_orphan_chrome(max_age_sec: int = ORPHAN_CHROME_MAX_AGE_SEC) -> int:
 
             if not any(m in comm or m in cmd for m in name_mark):
                 continue
-            if not any(m in cmd for m in puppet_mark):
+            if not any(m in cmd for m in automation_mark):
                 continue
 
             if _proc_age_sec(pid) > max_age_sec:
@@ -495,27 +502,45 @@ def validate_stream(stream_url: str, referer: Optional[str]) -> bool:
     except Exception:
         return False
 
-# ------------------ MAIN ------------------
+def _infer_site_tag(start_url: str) -> str:
+    d = urlparse(start_url).netloc.replace("www.", "").split(":")[0]
+    return slugify(d.split(".")[0])
 
-if __name__ == "__main__":
-    start_url = input("🔗 Введите стартовую страницу: ").strip()
-    site_tag = input("📛 Короткий тег сайта (например: smotru, viks, tivix): ").strip().lower()
+
+def main(argv: Optional[List[str]] = None) -> int:
+    """CLI-точка входа с поддержкой аргументов и non-interactive запуска."""
+
+    parser = argparse.ArgumentParser(description="Запуск сканера каналов LunaTV")
+    parser.add_argument("--start-url", dest="start_url", help="Стартовая страница сканирования")
+    parser.add_argument("--site-tag", dest="site_tag", help="Короткий тег площадки")
+    args = parser.parse_args(argv)
+
+    start_url = (args.start_url or os.environ.get("SCANNER_START_URL", "")).strip()
+    site_tag = (args.site_tag or os.environ.get("SCANNER_SITE_TAG", "")).strip().lower()
+
+    interactive = sys.stdin.isatty()
+
+    if not start_url and interactive:
+        start_url = input("🔗 Введите стартовую страницу: ").strip()
+
+    if not start_url:
+        print("⛔ Не задана стартовая страница. Используйте --start-url или переменную SCANNER_START_URL.")
+        return 2
+
+    if not site_tag and interactive:
+        site_tag = input("📛 Короткий тег сайта (например: smotru, viks, tivix): ").strip().lower()
+
     if not site_tag:
-        def get_site_tag(url: str) -> str:
-            d = urlparse(url).netloc.replace("www.", "").split(":")[0]
-            return slugify(d.split(".")[0])
-        site_tag = get_site_tag(start_url)
+        site_tag = _infer_site_tag(start_url)
 
-    # контролёр и карта search.json
     try:
         controller = load_controller(CONTROLLER_FILE)
     except Exception as e:
         print(f"⛔ Ошибка чтения контролёра: {e}")
-        exit(1)
+        return 1
 
     search_map = load_json_safe(SEARCH_JSON)
 
-    # 💾 Загрузка существующих JSON (накопительный режим) — ДО сборки ссылок
     channels_map: "OrderedDict[str, Dict[str, object]]" = load_json_ordered(CHANNELS_JSON)
     m3u8_cache: "OrderedDict[str, Dict[str, str]]" = load_json_ordered(M3U8_CACHE)
 
@@ -523,7 +548,6 @@ if __name__ == "__main__":
         normalize_url(v.get("url", "")) for v in channels_map.values() if isinstance(v, dict)
     }
 
-    # --- Сбор ссылок: search.json -> парсер JS, иначе обычный crawl_links
     host = urlparse(start_url).netloc.split(":")[0].lower()
     matched = None
     if isinstance(search_map, dict):
@@ -542,7 +566,6 @@ if __name__ == "__main__":
     else:
         links = crawl_links(start_url, controller)
 
-    # Фильтруем уже известные ссылки
     before = len(links)
     links = [u for u in links if normalize_url(u) not in known_urls_norm]
     skipped = before - len(links)
@@ -553,13 +576,12 @@ if __name__ == "__main__":
 
     for url in links:
         cfg = choose_site_cfg(controller, url)
-        script_name = cfg.get("script") or controller.get("default", {}).get("script") or "smotru-m3u-one-stealth.js"
+        script_name = cfg.get("script") or controller.get("default", {}).get("script") or "universal-playwright-extractor.js"
         timeout_sec = int(cfg.get("timeout_sec") or controller.get("default", {}).get("timeout_sec") or 10)
         script_path = _resolve_script_path(script_name)
 
         print(f"▶ [{cfg['_matched']}] JS={os.path.basename(script_path)} T={timeout_sec}s | {url}")
 
-        # красивое имя канала
         try:
             html = fetch_html(url)
             soup = BeautifulSoup(html, "html.parser")
@@ -568,10 +590,8 @@ if __name__ == "__main__":
         except Exception:
             name = "Без названия"
 
-        # извлечь потоки выбранным экстрактором
         streams = run_js_extractor(url, script_path, timeout_sec)
 
-        # валидация и запись
         valid = []
         for s in streams:
             ok = validate_stream(s, referer=url)
@@ -615,3 +635,8 @@ if __name__ == "__main__":
     print(f"📁 Каналы: {os.path.abspath(CHANNELS_JSON)}")
     print(f"📁 Плейлист: {os.path.abspath(M3U_FILENAME)}")
     print(f"📁 Кэш m3u8: {os.path.abspath(M3U8_CACHE)}")
+    return 0
+
+
+if __name__ == "__main__":  # pragma: no cover - прямой запуск
+    raise SystemExit(main())
