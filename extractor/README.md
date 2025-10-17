@@ -7,11 +7,16 @@
   вытаскивать `.m3u8` ссылки из DOM и скриптов Смотру.
 - `cinema-hls-extractor.js` — модуль для HLS-плейеров с JSON-конфигами (данные в
   `data-player-config`, `application/json` и глобальном `playerConfig`).
+- `pro-sports-extractor.js` — разбирает статичные и инлайн-конфиги сайта
+  pro-sports.live: ищет base64-строки, декодирует JSON и URL, собирает ссылки
+  `.m3u8` из конфигураций канала.
 
 - скачивает HTML целевой страницы с использованием axios;
 - ищет `.m3u8` ссылки через парсинг DOM (`cheerio`) и регулярные выражения;
 - возвращает массив URL-адресов в формате JSON, совместимый с ожидаемым Python-кодом;
-- содержит встроенный самотест (`node extractor/universal-playwright-extractor.js --selftest`);
+- содержит встроенные самотесты (`node extractor/universal-playwright-extractor.js --selftest`,
+  `node extractor/cinema-hls-extractor.js --selftest`,
+  `node extractor/pro-sports-extractor.js --selftest`);
 - покрыт офлайн-фикстурами в `extractor/run-fixture-tests.js`.
 
 По умолчанию скрипт использует [Playwright](https://playwright.dev/) для рендеринга
