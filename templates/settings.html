@@ -5,54 +5,59 @@
   <style>
     .site-controller-editor {
       display: grid;
-      gap: 18px;
+      gap: 12px;
     }
     .controller-row {
-      border-radius: 18px;
+      border-radius: 16px;
       border: 1px solid rgba(148, 163, 184, 0.14);
       background: rgba(15, 23, 42, 0.45);
-      padding: 18px 20px;
+      padding: 12px 16px;
       display: grid;
-      gap: 16px;
+      gap: 8px;
     }
     .controller-row.is-default {
       border-color: rgba(56, 189, 248, 0.45);
-      box-shadow: 0 14px 34px rgba(56, 189, 248, 0.18);
+      box-shadow: 0 12px 28px rgba(56, 189, 248, 0.18);
     }
-    .controller-field {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    .controller-inline {
+      display: grid;
+      grid-template-columns: minmax(170px, 1fr) minmax(170px, 1fr) minmax(60px, 90px);
+      gap: 10px;
+      align-items: end;
     }
-    .controller-field label {
-      font-weight: 600;
-      font-size: 0.9rem;
+    .controller-inline-field {
+      display: grid;
+      gap: 4px;
     }
-    .controller-field input,
-    .controller-field select,
-    .controller-field textarea {
-      border-radius: 12px;
+    .controller-inline-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: rgba(148, 163, 184, 0.82);
+    }
+    .controller-inline-field input,
+    .controller-inline-field select {
+      border-radius: 10px;
       border: 1px solid rgba(148, 163, 184, 0.22);
       background: rgba(15, 23, 42, 0.6);
       color: #e2e8f0;
-      padding: 10px 12px;
+      padding: 6px 8px;
       font: inherit;
+      min-height: 32px;
     }
-    .controller-field textarea {
-      resize: vertical;
-      min-height: 64px;
+    .controller-inline-field select {
+      padding-right: 32px;
     }
-    .controller-grid {
-      display: grid;
-      gap: 14px;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    }
-    .controller-field-wide {
-      grid-column: 1 / -1;
+    .controller-inline-field input:focus,
+    .controller-inline-field select:focus {
+      outline: 2px solid rgba(56, 189, 248, 0.35);
+      border-color: rgba(56, 189, 248, 0.45);
     }
     .controller-row-actions {
       display: flex;
+      align-items: center;
       justify-content: flex-end;
+      margin-top: 4px;
     }
     .controller-remove {
       background: none;
@@ -61,13 +66,17 @@
       font: inherit;
       cursor: pointer;
       padding: 6px 0;
+      text-decoration: none;
+    }
+    .controller-remove:hover,
+    .controller-remove:focus {
       text-decoration: underline;
     }
     .site-controller-actions {
-      margin-top: 18px;
+      margin-top: 16px;
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 10px;
       justify-content: flex-end;
     }
     .site-controller-actions .secondary {
@@ -75,9 +84,17 @@
       border: 1px solid rgba(148, 163, 184, 0.3);
       color: #cbd5f5;
     }
+    @media (max-width: 900px) {
+      .controller-inline {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
     @media (max-width: 720px) {
-      .controller-grid {
+      .controller-inline {
         grid-template-columns: 1fr;
+      }
+      .controller-row-actions {
+        justify-content: flex-start;
       }
     }
   </style>
@@ -165,7 +182,6 @@
         host: 'default',
         script: siteControllerState.defaultScript || siteControllerState.available[0] || '',
         timeoutSec: siteControllerState.defaultTimeout,
-        description: '',
         isDefault: true,
       });
     }
@@ -185,11 +201,15 @@
       return copy;
     }
 
-    function buildHint(text) {
-      const hint = document.createElement('div');
-      hint.className = 'field-hint muted';
-      hint.textContent = text;
-      return hint;
+    function buildInlineField(labelText, control) {
+      const wrapper = document.createElement('label');
+      wrapper.className = 'controller-inline-field';
+      const label = document.createElement('span');
+      label.className = 'controller-inline-label';
+      label.textContent = labelText;
+      wrapper.appendChild(label);
+      wrapper.appendChild(control);
+      return wrapper;
     }
 
     function buildSiteControllerRow(entry) {
@@ -200,34 +220,22 @@
         row.classList.add('is-default');
       }
 
-      const hostField = document.createElement('div');
-      hostField.className = 'controller-field';
-      const hostLabel = document.createElement('label');
-      hostLabel.textContent = entry.isDefault ? 'Правило по умолчанию' : 'Домен или маска сайта';
-      hostField.appendChild(hostLabel);
+      const inline = document.createElement('div');
+      inline.className = 'controller-inline';
+
       const hostInput = document.createElement('input');
       hostInput.type = 'text';
-      hostInput.placeholder = entry.isDefault ? 'default' : 'пример: kino.example или *.video.example';
+      hostInput.placeholder = entry.isDefault ? 'default' : 'example.com или *.example.com';
       hostInput.value = entry.host || '';
       hostInput.dataset.field = 'host';
       hostInput.disabled = entry.isDefault;
-      hostField.appendChild(hostInput);
-      hostField.appendChild(
-        buildHint(
-          entry.isDefault
-            ? 'Используется, если домен не найден в списке. Экстрактор из этой записи станет значением по умолчанию.'
-            : 'Введите домен или шаблон (например, example.com или *.example.com), для которого будет применяться выбранный экстрактор.',
-        ),
+      hostInput.title = entry.isDefault
+        ? 'Используется, если домен не найден в списке. Экстрактор из этой записи станет значением по умолчанию.'
+        : 'Введите домен или шаблон (например, example.com или *.example.com), для которого будет применяться выбранный экстрактор.';
+      inline.appendChild(
+        buildInlineField(entry.isDefault ? 'Правило по умолчанию' : 'Сайт', hostInput),
       );
 
-      const grid = document.createElement('div');
-      grid.className = 'controller-grid';
-
-      const extractorField = document.createElement('div');
-      extractorField.className = 'controller-field';
-      const extractorLabel = document.createElement('label');
-      extractorLabel.textContent = 'Экстрактор';
-      extractorField.appendChild(extractorLabel);
       const extractorSelect = document.createElement('select');
       extractorSelect.dataset.field = 'script';
       const options = siteControllerState.available.slice();
@@ -250,44 +258,19 @@
           extractorSelect.appendChild(opt);
         }
       }
-      extractorField.appendChild(extractorSelect);
-      extractorField.appendChild(
-        buildHint('Выберите JS-экстрактор из каталога extractor/. Он будет запущен для указанных доменов.'),
-      );
+      extractorSelect.title = 'Выберите JS-экстрактор из каталога extractor/. Он будет запущен для указанных доменов.';
+      inline.appendChild(buildInlineField('Экстрактор', extractorSelect));
 
-      const timeoutField = document.createElement('div');
-      timeoutField.className = 'controller-field';
-      const timeoutLabel = document.createElement('label');
-      timeoutLabel.textContent = 'Тайм-аут, сек.';
-      timeoutField.appendChild(timeoutLabel);
       const timeoutInput = document.createElement('input');
       timeoutInput.type = 'number';
       timeoutInput.min = '1';
       timeoutInput.step = '1';
       timeoutInput.dataset.field = 'timeout';
       timeoutInput.value = Number.isFinite(entry.timeoutSec) ? entry.timeoutSec : siteControllerState.defaultTimeout;
-      timeoutField.appendChild(timeoutInput);
-      timeoutField.appendChild(buildHint('Максимальное время ожидания Playwright перед завершением экстрактора.'));
+      timeoutInput.title = 'Максимальное время ожидания Playwright перед завершением экстрактора (в секундах).';
+      inline.appendChild(buildInlineField('Тайм-аут, сек.', timeoutInput));
 
-      const descriptionField = document.createElement('div');
-      descriptionField.className = 'controller-field controller-field-wide';
-      const descriptionLabel = document.createElement('label');
-      descriptionLabel.textContent = 'Описание';
-      descriptionField.appendChild(descriptionLabel);
-      const descriptionInput = document.createElement('textarea');
-      descriptionInput.rows = 2;
-      descriptionInput.dataset.field = 'description';
-      descriptionInput.placeholder = 'Например, «страницы кинотеатра» или «резервный источник»';
-      descriptionInput.value = entry.description || '';
-      descriptionField.appendChild(descriptionInput);
-      descriptionField.appendChild(buildHint('Краткое пояснение для команды. Необязательное поле.'));
-
-      grid.appendChild(extractorField);
-      grid.appendChild(timeoutField);
-      grid.appendChild(descriptionField);
-
-      row.appendChild(hostField);
-      row.appendChild(grid);
+      row.appendChild(inline);
 
       if (!entry.isDefault) {
         const actions = document.createElement('div');
@@ -337,8 +320,6 @@
       if (field === 'timeout') {
         const num = Number.parseInt(value, 10);
         entry.timeoutSec = Number.isFinite(num) && num > 0 ? num : siteControllerState.defaultTimeout;
-      } else if (field === 'description') {
-        entry.description = value || '';
       } else if (field === 'script') {
         entry.script = value || '';
       } else if (field === 'host') {
@@ -361,7 +342,6 @@
           host: 'default',
           script: defaultEntry.script,
           timeoutSec: defaultEntry.timeoutSec || siteControllerState.defaultTimeout,
-          description: defaultEntry.description || '',
         };
       }
 
@@ -390,7 +370,6 @@
           host,
           script,
           timeoutSec: timeout,
-          description: entry.description || '',
         });
       }
 
@@ -418,7 +397,6 @@
               host: item.host || (item.isDefault ? 'default' : ''),
               script: item.script || siteControllerState.defaultScript,
               timeoutSec: Number.isFinite(item.timeoutSec) ? item.timeoutSec : Number.parseInt(item.timeoutSec, 10),
-              description: item.description || '',
               isDefault: Boolean(item.isDefault || item.host === 'default'),
             }))
           : [];
@@ -480,7 +458,6 @@
               host: item.host || (item.isDefault ? 'default' : ''),
               script: item.script || siteControllerState.defaultScript,
               timeoutSec: Number.isFinite(item.timeoutSec) ? item.timeoutSec : Number.parseInt(item.timeoutSec, 10),
-              description: item.description || '',
               isDefault: Boolean(item.isDefault || item.host === 'default'),
             }))
           : [];
@@ -528,9 +505,7 @@
       }
       const entry = findEntryById(row.dataset.id);
       setEntryValue(entry, field, target.value);
-      if (field !== 'description') {
-        setControllerStatus('Изменения не сохранены. Нажмите «Сохранить правила».');
-      }
+      setControllerStatus('Изменения не сохранены. Нажмите «Сохранить правила».');
     }
 
     function renderSearch(items) {
@@ -709,7 +684,6 @@
           host: '',
           script: siteControllerState.available[0] || siteControllerState.defaultScript || '',
           timeoutSec: siteControllerState.defaultTimeout,
-          description: '',
           isDefault: false,
         });
         renderSiteControllerEditor();

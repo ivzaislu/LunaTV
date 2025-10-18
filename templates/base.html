@@ -198,22 +198,24 @@
       }
       .settings-form {
         display: grid;
-        gap: 24px;
+        gap: 20px;
       }
       .settings-blocks {
         display: grid;
-        gap: 24px;
+        gap: 20px;
       }
       .settings-block h2 {
-        margin-bottom: 4px;
+        margin-bottom: 2px;
       }
       .field-grid {
         display: grid;
-        gap: 18px;
+        gap: 14px;
       }
       .field-row {
         display: grid;
-        gap: 6px;
+        grid-template-columns: minmax(180px, 240px) 1fr;
+        align-items: center;
+        gap: 4px 16px;
       }
       .field-label {
         font-weight: 600;
@@ -221,12 +223,12 @@
       .field-control {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
       }
       .field-control input[type="text"],
       .field-control input[type="number"] {
         width: 100%;
-        padding: 10px 12px;
+        padding: 8px 11px;
         border-radius: 10px;
         border: 1px solid rgba(148, 163, 184, 0.25);
         background: rgba(15, 23, 42, 0.6);
@@ -237,6 +239,25 @@
       .field-control input[type="number"]:focus {
         outline: 2px solid rgba(56, 189, 248, 0.35);
         border-color: rgba(56, 189, 248, 0.45);
+      }
+      .field-row .field-label {
+        margin: 0;
+      }
+      .field-row .field-control {
+        grid-column: 2;
+      }
+      .field-row .field-hint {
+        grid-column: 1 / -1;
+        margin: 0;
+        font-size: 0.85rem;
+        color: rgba(148, 163, 184, 0.78);
+      }
+      .field-row[data-type="boolean"] {
+        grid-template-columns: 1fr;
+        align-items: center;
+      }
+      .field-row[data-type="boolean"] .field-hint {
+        margin-left: 30px;
       }
       .field-unit {
         font-size: 0.85rem;
