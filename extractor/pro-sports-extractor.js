@@ -1,4 +1,5 @@
 import axios from "axios";
+import cloudscraper from "cloudscraper";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -258,19 +259,86 @@ export function extractProSportsCandidates(html, baseUrl) {
 
 async function fetchHtml(target) {
   if (/^https?:/i.test(target)) {
-    const resp = await axios.get(target, {
-      responseType: "text",
-      timeout: 20000,
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      },
-    });
-    return typeof resp.data === "string" ? resp.data : String(resp.data ?? "");
+    const headers = {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      Referer: new URL(target).origin + "/",
+      "Accept-Language": "en-US,en;q=0.9,ru;q=0.8",
+    };
+
+    try {
+      const resp = await axios.get(target, {
+        responseType: "text",
+        timeout: 20000,
+        headers,
+        maxRedirects: 5,
+      });
+      if (typeof resp.data === "string" && !isCloudflareChallenge(resp)) {
+        return resp.data;
+      }
+      const fallbackHtml = await maybeCloudscrape(target, headers, {
+        response: resp,
+      });
+      if (fallbackHtml) return fallbackHtml;
+      if (typeof resp.data === "string") {
+        return resp.data;
+      }
+      return String(resp.data ?? "");
+    } catch (err) {
+      const html = await maybeCloudscrape(target, headers, err);
+      if (html) return html;
+      throw err;
+    }
   }
 
   const data = await readFile(target, "utf8");
   return data;
+}
+
+function isCloudflareChallenge(resp) {
+  const status = resp?.status;
+  if (status && status >= 200 && status < 300) {
+    const data = typeof resp.data === "string" ? resp.data : "";
+    if (data.includes("cf-mitigated") || data.includes("Just a moment")) {
+      return true;
+    }
+  }
+  if (status === 403 || status === 503) return true;
+  return false;
+}
+
+async function maybeCloudscrape(target, headers, originalError) {
+  const err = originalError || {};
+  const status = err?.response?.status;
+  const code = err?.code;
+  const isRedirectError = code === "ERR_FR_TOO_MANY_REDIRECTS";
+  const shouldRetry =
+    isRedirectError ||
+    status === 403 ||
+    status === 503 ||
+    /cloudflare|Just a moment/i.test(err?.response?.data ?? "");
+
+  if (!shouldRetry) return null;
+
+  try {
+    const body = await cloudscraper.get({
+      uri: target,
+      headers,
+      gzip: true,
+      timeout: 20000,
+      resolveWithFullResponse: false,
+    });
+    if (typeof body === "string" && body.trim()) {
+      return body;
+    }
+  } catch (cloudError) {
+    if (cloudError?.response?.body) {
+      return String(cloudError.response.body);
+    }
+    throw cloudError;
+  }
+
+  return null;
 }
 
 async function runCli() {
