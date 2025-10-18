@@ -9,7 +9,7 @@ from flask import (
     send_file,
 )
 from urllib.parse import urlparse
-from datetime import datetime
+from datetime import datetime, timezone
 import re
 import json
 import os
@@ -1374,7 +1374,11 @@ def _cache_entry_is_fresh(entry: dict) -> bool:
         when = datetime.fromisoformat(ts)
     except Exception:
         return False
-    age = (datetime.utcnow() - when).total_seconds()
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=timezone.utc)
+    else:
+        when = when.astimezone(timezone.utc)
+    age = (datetime.now(timezone.utc) - when).total_seconds()
     return age <= CACHE_TTL_SEC
 
 def is_m3u8_alive(url, referer=None):
@@ -1694,7 +1698,7 @@ def proxy(channel_slug):
         # Сохраняем в кэш
         cache[channel_slug] = {
             "url": stream_url,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
         save_cache(cache)
         return redirect(stream_url, code=302)
