@@ -1429,7 +1429,7 @@ def channels_page():
 
 @app.route("/player")
 def player_page():
-    return _render("player.html", active_page="player")
+    return render_template("player.html", host=PROXY_HOST, port=PROXY_PORT)
 
 
 @app.route("/scanner")
