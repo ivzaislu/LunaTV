@@ -182,10 +182,17 @@ class ProxyDashboardTests(unittest.TestCase):
             stored = json.load(fh)
         self.assertEqual(stored, {})
 
-    def test_navigation_pages_render(self):
-        for url in ("/", "/playlists", "/channels", "/player", "/scanner", "/settings"):
+    def test_root_returns_backend_health(self):
+        resp = self.client.get("/")
+        self.assertEqual(resp.status_code, 200)
+        payload = resp.get_json()
+        self.assertTrue(payload["ok"])
+        self.assertEqual(payload["service"], "LunaTV backend")
+
+    def test_frontend_pages_removed(self):
+        for url in ("/playlists", "/channels", "/player", "/scanner", "/settings"):
             resp = self.client.get(url)
-            self.assertEqual(resp.status_code, 200, msg=f"{url} should render")
+            self.assertEqual(resp.status_code, 404, msg=f"{url} should be removed")
 
     def test_run_action_invokes_subprocess(self):
         dummy_action = {

@@ -248,10 +248,18 @@ export function extractProSportsCandidates(html, baseUrl) {
     }
   }
 
-  // fallback: search entire HTML for direct links
+  // fallback: search the entire HTML, including malformed pages where
+  // JavaScript assignments appear outside <script> tags.
   const direct = html.match(M3U8_REGEX);
   if (direct) {
     for (const url of direct) pushUrl(url);
+  }
+
+  for (const token of extractCandidateStrings(html)) {
+    const normalizedToken = normalizeJsEscapes(token);
+    if (/m3u8|https?:|%7B|%22|streams|token/i.test(normalizedToken || token || "")) {
+      processString(normalizedToken);
+    }
   }
 
   return Array.from(found).sort();
