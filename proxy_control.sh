@@ -45,27 +45,46 @@ deps_install(){
   have_cmd npm  || { echo "❌ npm не найден."; exit 1; }
 
   echo "Node: $(node -v)"
+  echo "npm:  $(npm -v)"
   mkdir -p "$TARGET_DIR"; cd "$TARGET_DIR"
-  [[ -f package.json ]] && cp -f package.json "package.json.bak.$(date +%s)"
-  rm -rf node_modules package-lock.json
 
-  local NAME; NAME="$(basename "$TARGET_DIR" | tr -cd '[:alnum:]._-' || echo app)"
-  cat > package.json <<JSON
+  if [[ ! -f package.json ]]; then
+    local NAME; NAME="$(basename "$TARGET_DIR" | tr -cd '[:alnum:]._-' || echo app)"
+    cat > package.json <<JSON
 {
   "name": "${NAME}",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "dependencies": {
+    "playwright": "${PLAYWRIGHT_VER}",
     "playwright-core": "${PLAYWRIGHT_VER}"
   }
 }
 JSON
+  fi
+
   echo "📦 Устанавливаю зависимости..."
-  npm i --no-audit --no-fund >/dev/null
-  [[ ${#EXTRAS[@]} -gt 0 ]] && npm i --no-audit --no-fund "${EXTRAS[@]}" >/dev/null
+  if [[ -f package-lock.json ]]; then
+    npm ci --no-audit --no-fund
+  else
+    npm install --no-audit --no-fund
+  fi
+  [[ ${#EXTRAS[@]} -gt 0 ]] && npm install --no-audit --no-fund "${EXTRAS[@]}"
+
+  echo "🧩 Устанавливаю системные библиотеки Chromium (Ubuntu/Debian)..."
+  if [[ $EUID -eq 0 ]]; then
+    npx playwright-core install-deps chromium
+  else
+    echo "⚠️  Не root: пропускаю install-deps. Если Chromium не стартует, выполни:"
+    echo "    sudo npx playwright-core install-deps chromium"
+  fi
+
   echo "🌐 Загружаю браузер Chromium через Playwright..."
-  npx playwright@"${PLAYWRIGHT_VER}" install chromium >/dev/null
+  echo "   Если интернет медленный, это может занять несколько минут; прогресс загрузки будет показан ниже."
+  PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT="${PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT:-120000}" \
+    npx playwright-core install chromium
+
   echo "🔎 Проверяю импорт..."
   node --input-type=module -e "import('playwright-core').then(()=>console.log('  playwright-core OK')).catch(e=>{console.error(e);process.exit(1)})"
   echo "✅ Готово."; npm ls playwright-core || true
