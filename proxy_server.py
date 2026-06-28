@@ -4,7 +4,6 @@ from flask import (
     abort,
     jsonify,
     redirect,
-    render_template,
     request,
     send_file,
 )
@@ -855,15 +854,6 @@ def _serialize_channel(slug: str, meta: Any, include_source: bool = False) -> di
     return entry
 
 
-def _render(page: str, **ctx):
-    """Рисует HTML-страницу панели с общим контекстом."""
-    payload = {
-        "host": PROXY_HOST,
-        "port": PROXY_PORT,
-        "year": datetime.utcnow().year,
-    }
-    payload.update(ctx)
-    return render_template(page, **payload)
 
 def _proc_comm(pid: int) -> str:
     return _read_file(f"/proc/{pid}/comm").strip()
@@ -1412,34 +1402,14 @@ def is_m3u8_alive(url, referer=None):
 # ------------------ HTTP-РОУТЫ ------------------
 
 @app.route("/")
-def dashboard():
-    """Главная страница с панелью управления."""
-    return _render("dashboard.html", active_page="dashboard")
+def healthcheck():
+    """Backend-only service entry point."""
+    return jsonify({"ok": True, "service": "LunaTV backend", "version": "1.0.0"})
 
 
-@app.route("/playlists")
-def playlists_page():
-    return _render("playlists.html", active_page="playlists")
-
-
-@app.route("/channels")
-def channels_page():
-    return _render("channels.html", active_page="channels")
-
-
-@app.route("/player")
-def player_page():
-    return render_template("player.html", host=PROXY_HOST, port=PROXY_PORT)
-
-
-@app.route("/scanner")
-def scanner_page():
-    return _render("scanner.html", active_page="scanner")
-
-
-@app.route("/settings")
-def settings_page():
-    return _render("settings.html", active_page="settings")
+@app.route("/api/health", methods=["GET"])
+def api_healthcheck():
+    return jsonify({"ok": True, "service": "LunaTV backend"})
 
 
 @app.route("/api/actions", methods=["GET"])
