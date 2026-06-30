@@ -5,20 +5,22 @@ IFS=$'\n\t'
 # =======================
 #  Глобальные настройки
 # =======================
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 PLAYWRIGHT_VER="${PLAYWRIGHT_VER:-1.55.0}"
+PYTHON_BIN="${PYTHON_BIN:-$(command -v python3 || true)}"
 
 # Proxy (systemd)
 SERVICE_NAME="${SERVICE_NAME:-proxy_server}"
 SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
-SCRIPT_PATH="${SCRIPT_PATH:-/root/Luna-tv_0.1.3ver/proxy_server.py}"
-WORK_DIR="${WORK_DIR:-/root/Luna-tv_0.1.3ver/}"
+SCRIPT_PATH="${SCRIPT_PATH:-${SCRIPT_DIR}/proxy_server.py}"
+WORK_DIR="${WORK_DIR:-${SCRIPT_DIR}}"
 SERVICE_USER="${SERVICE_USER:-root}"
 
 # One-shot скрипты
-PLAYLIST_SCRIPT_PATH="${PLAYLIST_SCRIPT_PATH:-/root/Luna-tv_0.1.3ver/update_playlist.py}"
-PLAYLIST_WORK_DIR="${PLAYLIST_WORK_DIR:-/root/Luna-tv_0.1.3ver/}"
-SCANNER_SCRIPT_PATH="${SCANNER_SCRIPT_PATH:-/root/Luna-tv_0.1.3ver/scaner.py}"
-SCANNER_WORK_DIR="${SCANNER_WORK_DIR:-/root/Luna-tv_0.1.3ver/}"
+PLAYLIST_SCRIPT_PATH="${PLAYLIST_SCRIPT_PATH:-${SCRIPT_DIR}/update_playlist.py}"
+PLAYLIST_WORK_DIR="${PLAYLIST_WORK_DIR:-${SCRIPT_DIR}}"
+SCANNER_SCRIPT_PATH="${SCANNER_SCRIPT_PATH:-${SCRIPT_DIR}/scaner.py}"
+SCANNER_WORK_DIR="${SCANNER_WORK_DIR:-${SCRIPT_DIR}}"
 
 # =======================
 #  Утилиты
@@ -30,7 +32,15 @@ need_root(){
   fi
 }
 require_python(){
-  have_cmd python3 || { echo "❌ python3 не найден."; exit 1; }
+  [[ -n "${PYTHON_BIN:-}" && -x "$PYTHON_BIN" ]] || { echo "❌ python3 не найден."; exit 1; }
+}
+require_path(){
+  local kind="$1" path="$2"
+  [[ -e "$path" ]] || { echo "❌ ${kind} не найден: $path"; exit 1; }
+}
+require_dir(){
+  local path="$1"
+  [[ -d "$path" ]] || { echo "❌ Рабочий каталог не найден: $path"; exit 1; }
 }
 
 # =======================
@@ -45,27 +55,46 @@ deps_install(){
   have_cmd npm  || { echo "❌ npm не найден."; exit 1; }
 
   echo "Node: $(node -v)"
+  echo "npm:  $(npm -v)"
   mkdir -p "$TARGET_DIR"; cd "$TARGET_DIR"
-  [[ -f package.json ]] && cp -f package.json "package.json.bak.$(date +%s)"
-  rm -rf node_modules package-lock.json
 
-  local NAME; NAME="$(basename "$TARGET_DIR" | tr -cd '[:alnum:]._-' || echo app)"
-  cat > package.json <<JSON
+  if [[ ! -f package.json ]]; then
+    local NAME; NAME="$(basename "$TARGET_DIR" | tr -cd '[:alnum:]._-' || echo app)"
+    cat > package.json <<JSON
 {
   "name": "${NAME}",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "dependencies": {
+    "playwright": "${PLAYWRIGHT_VER}",
     "playwright-core": "${PLAYWRIGHT_VER}"
   }
 }
 JSON
+  fi
+
   echo "📦 Устанавливаю зависимости..."
-  npm i --no-audit --no-fund >/dev/null
-  [[ ${#EXTRAS[@]} -gt 0 ]] && npm i --no-audit --no-fund "${EXTRAS[@]}" >/dev/null
+  if [[ -f package-lock.json ]]; then
+    npm ci --no-audit --no-fund
+  else
+    npm install --no-audit --no-fund
+  fi
+  [[ ${#EXTRAS[@]} -gt 0 ]] && npm install --no-audit --no-fund "${EXTRAS[@]}"
+
+  echo "🧩 Устанавливаю системные библиотеки Chromium (Ubuntu/Debian)..."
+  if [[ $EUID -eq 0 ]]; then
+    npx playwright-core install-deps chromium
+  else
+    echo "⚠️  Не root: пропускаю install-deps. Если Chromium не стартует, выполни:"
+    echo "    sudo npx playwright-core install-deps chromium"
+  fi
+
   echo "🌐 Загружаю браузер Chromium через Playwright..."
-  npx playwright@"${PLAYWRIGHT_VER}" install chromium >/dev/null
+  echo "   Если интернет медленный, это может занять несколько минут; прогресс загрузки будет показан ниже."
+  PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT="${PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT:-120000}" \
+    npx playwright-core install chromium
+
   echo "🔎 Проверяю импорт..."
   node --input-type=module -e "import('playwright-core').then(()=>console.log('  playwright-core OK')).catch(e=>{console.error(e);process.exit(1)})"
   echo "✅ Готово."; npm ls playwright-core || true
@@ -79,25 +108,31 @@ svc_file(){ echo "/etc/systemd/system/${1}.service"; }
 proxy_install(){
   need_root proxy install
   have_cmd systemctl || { echo "❌ systemctl не найден."; exit 1; }
+  require_python
+  require_path "Файл proxy_server.py" "$SCRIPT_PATH"
+  require_dir "$WORK_DIR"
   cat > "$(svc_file "$SERVICE_NAME")" <<EOF
 [Unit]
 Description=${SERVICE_NAME}
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 ${SCRIPT_PATH}
+ExecStart=${PYTHON_BIN} ${SCRIPT_PATH}
 WorkingDirectory=${WORK_DIR}
 Restart=always
 User=${SERVICE_USER}
 Environment=PYTHONUNBUFFERED=1
+Environment=BASE_DIR=${WORK_DIR}
 
 [Install]
 WantedBy=multi-user.target
 EOF
   systemctl daemon-reload
+  systemctl reset-failed "$SERVICE_NAME" || true
   systemctl enable "$SERVICE_NAME"
-  systemctl start "$SERVICE_NAME"
+  systemctl restart "$SERVICE_NAME"
   echo "✅ Служба установлена и запущена."
+  systemctl status "$SERVICE_NAME" --no-pager || true
 }
 proxy_remove(){
   need_root proxy remove
@@ -136,8 +171,18 @@ proxy_menu(){
 # =======================
 #  one-shot: playlist / scanner
 # =======================
-playlist_run(){ require_python; ( cd "$PLAYLIST_WORK_DIR" && python3 "$PLAYLIST_SCRIPT_PATH" ); }
-scanner_run(){  require_python; ( cd "$SCANNER_WORK_DIR"  && python3 "$SCANNER_SCRIPT_PATH"  ); }
+playlist_run(){
+  require_python
+  require_path "Файл update_playlist.py" "$PLAYLIST_SCRIPT_PATH"
+  require_dir "$PLAYLIST_WORK_DIR"
+  ( cd "$PLAYLIST_WORK_DIR" && "$PYTHON_BIN" "$PLAYLIST_SCRIPT_PATH" )
+}
+scanner_run(){
+  require_python
+  require_path "Файл scaner.py" "$SCANNER_SCRIPT_PATH"
+  require_dir "$SCANNER_WORK_DIR"
+  ( cd "$SCANNER_WORK_DIR" && "$PYTHON_BIN" "$SCANNER_SCRIPT_PATH" )
+}
 
 playlist_menu(){
   echo "Обновление плейлиста (one-shot)"
