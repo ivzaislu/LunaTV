@@ -51,8 +51,8 @@
     ]
   },
   "ip.tivix.co": {
-    "script": "smotru-m3u-one-stealth.js",
-    "timeout_sec": 10,
+    "script": "universal-playwright-extractor.js",
+    "timeout_sec": 12,
     "url_allow_re": [
       "^https?://ip\\.tivix\\.co/\\d+-[a-z0-9-]+\\.html$"
     ],
@@ -61,7 +61,7 @@
     ]
   },
   "live.tivix.co": {
-    "script": "smotru-m3u-one-stealth.js",
+    "script": "universal-playwright-extractor.js",
     "timeout_sec": 12,
     "url_allow_re": [
       "^https?://live\\.tivix\\.co/\\d+-[a-z0-9-]+\\.html$"
@@ -136,8 +136,8 @@
     ]
   },
   "telik.live": {
-    "script": "cdnpotok.js",
-    "timeout_sec": 10,
+    "script": "universal-playwright-extractor.js",
+    "timeout_sec": 12,
     "url_allow_re": [
       "^https?://(?:www\\.)?telik\\.live/(?:[^\\s?#/]+/)*[^\\s?#/]+(?:\\.html?)?(?:[?#].*)?$"
     ],
