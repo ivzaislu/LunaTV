@@ -33,6 +33,7 @@ M3U_DIR       = os.path.abspath(os.environ.get("M3U_DIR",       os.path.join(BAS
 CONFIG_DIR    = os.path.abspath(os.environ.get("CONFIG_DIR",    os.path.join(BASE_DIR, "config")))
 ERROR_DIR     = os.path.abspath(os.environ.get("ERROR_DIR",     os.path.join(BASE_DIR, "error")))
 DEBUG_DIR     = os.path.abspath(os.environ.get("DEBUG_DIR",     os.path.join(BASE_DIR, "debug")))
+PROXY_PORT    = int(os.environ.get("PROXY_PORT", "6060"))
 
 os.makedirs(M3U_DIR, exist_ok=True)
 os.makedirs(ERROR_DIR, exist_ok=True)
@@ -233,7 +234,6 @@ def load_m3u8_cache(path: str = M3U8_CACHE_PATH) -> dict:
                 }
             elif isinstance(v, dict):
                 url = v.get("url") or v.get("m3u8") or v.get("link")
-                # преобразуем возможный checked_at(int) -> ISO8601
                 ts = v.get("timestamp")
                 if not ts:
                     ca = v.get("checked_at")
@@ -284,7 +284,6 @@ def validate_m3u8_url(m3u8_url: str, timeout: int = 8) -> bool:
             ct = (r.headers.get("Content-Type") or "").lower()
             if ("mpegurl" in ct) or ("vnd.apple.mpegurl" in ct) or ("octet-stream" in ct) or m3u8_url.lower().endswith(".m3u8"):
                 return True
-        # некоторые CDN не любят HEAD: проверим GET
         r = requests.get(m3u8_url, headers=headers, timeout=timeout, allow_redirects=True, stream=True)
         if 200 <= r.status_code < 300:
             ct = (r.headers.get("Content-Type") or "").lower()
@@ -297,7 +296,6 @@ def validate_m3u8_url(m3u8_url: str, timeout: int = 8) -> bool:
         return False
     except Exception:
         return False
-
 
 # ------------------ JS-ЭКСТРАКТОР ------------------
 
@@ -395,17 +393,14 @@ def get_live_stream_url(channel_url, slug=None, script_path=None, timeout_sec=No
          при успехе — обновить кэш;
       3) при неудаче — сохранить HTML в error/{slug}.html и вернуть None.
     """
-    # 1) кэш
     if slug:
         entry = cache_get(slug)
-        if entry and entry.get("m3u8"):
-            m3u8 = entry["m3u8"]
-            if validate_m3u8_url(m3u8):
-                # обновим отметку проверки
+        if entry:
+            m3u8 = entry.get("url") or entry.get("m3u8")
+            if m3u8 and validate_m3u8_url(m3u8):
                 cache_set(slug, m3u8, entry.get("source_url"))
                 return m3u8
 
-    # 2) JS
     if script_path is None or timeout_sec is None:
         site_script, site_timeout = pick_js_for_url(channel_url)
         script_path = script_path or site_script
@@ -425,7 +420,6 @@ def get_live_stream_url(channel_url, slug=None, script_path=None, timeout_sec=No
     except Exception as e:
         print(f"[!] Ошибка JS-экстрактора для {channel_url}: {e}")
 
-    # 3) дамп HTML для отладки
     if slug:
         try:
             headers = {"User-Agent": USER_AGENT, "Accept": "text/html,*/*"}
@@ -441,7 +435,7 @@ def get_live_stream_url(channel_url, slug=None, script_path=None, timeout_sec=No
 # ------------------ M3U УТИЛИТЫ ------------------
 
 STREAM_LINE_RE = re.compile(
-    r'^(?:https?://)?127\.0\.0\.1:5000/stream/([^\s/#?]+)\s*$',
+    r'^(?:https?://)?(?:127\.0\.0\.1|localhost):\d+/stream/([^\s/#?]+)\s*$',
     re.IGNORECASE
 )
 
@@ -576,18 +570,16 @@ def update_playlist():
         print(f"[!] Ошибка чтения channels.json: {e}")
         return
 
-    load_m3u8_cache()  # поднимем кэш
+    load_m3u8_cache()
 
     valid_slugs = set(channel_map.keys())
 
-    # domain -> list of (slug, name, url, script_path, timeout)
     by_domain = defaultdict(list)
     for slug, entry in channel_map.items():
         name = entry["name"]
         url = entry["url"]
         domain = _domain_from_url(url)
         script_path, timeout = pick_js_for_url(url)
-        # опциональный оверрайд из channels.json
         if "script" in entry:
             script_path = _resolve_script_path(entry["script"])
         if "timeout_sec" in entry:
@@ -634,7 +626,7 @@ def update_playlist():
                 stream = get_live_stream_url(url, slug=slug, script_path=script, timeout_sec=timeout)
                 if stream:
                     f.write(f'#EXTINF:-1 tvg-name="{name}" group-title="OnlineTV",{name}\n')
-                    f.write(f"http://127.0.0.1:5000/stream/{slug}\n\n")
+                    f.write(f"http://127.0.0.1:{PROXY_PORT}/stream/{slug}\n\n")
                     appended += 1
                     print("    ✓ Добавлено")
                 else:
@@ -642,13 +634,12 @@ def update_playlist():
         if appended:
             print(f"  ✔ В {os.path.basename(m3u_path)} добавлено записей: {appended}")
 
-    # финально — сохранить кэш, на случай если обновляли где-то ещё
     save_m3u8_cache()
 
 # ------------------ Точка входа ------------------
 
 if __name__ == "__main__":
     print("🔧 Обновление плейлистов на основе config/channels.json...")
-    SITE_CONTROLLER = load_site_controller()  # перезагрузка на случай правок
+    SITE_CONTROLLER = load_site_controller()
     update_playlist()
     print("✅ Готово.")
