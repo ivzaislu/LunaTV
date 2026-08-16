@@ -7,6 +7,19 @@ const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
   "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
+export function normalizeSourceUrl(rawUrl) {
+  try {
+    const url = new URL(rawUrl);
+    if (url.hostname.toLowerCase() === "ip.tivix.co") {
+      url.protocol = "https:";
+      url.hostname = "live.tivix.co";
+    }
+    return url.toString();
+  } catch {
+    return rawUrl;
+  }
+}
+
 function absoluteUrl(candidate, baseUrl) {
   if (!candidate) return null;
   const trimmed = candidate.trim();
@@ -206,10 +219,15 @@ async function run() {
   const timeoutSec = Number.parseInt(timeoutArg, 10);
   const timeoutMs = Number.isFinite(timeoutSec) && timeoutSec > 0 ? timeoutSec * 1000 : 10000;
   const httpOnly = flags.has("--http-only") || process.env.EXTRACTOR_HTTP_ONLY === "1";
+  const effectivePageUrl = normalizeSourceUrl(pageUrl);
+
+  if (effectivePageUrl !== pageUrl) {
+    console.error(`[extractor] Source URL migrated: ${pageUrl} -> ${effectivePageUrl}`);
+  }
 
   try {
-    const html = await fetchHtml(pageUrl, timeoutMs, { httpOnly });
-    const candidates = extractM3U8Candidates(html, pageUrl);
+    const html = await fetchHtml(effectivePageUrl, timeoutMs, { httpOnly });
+    const candidates = extractM3U8Candidates(html, effectivePageUrl);
     if (!candidates.length) {
       console.error("[extractor] Потоки не найдены");
     }
@@ -251,6 +269,17 @@ async function runSelfTest() {
   for (const url of result) {
     assert(expected.has(url), `Неожиданный URL в результатах: ${url}`);
   }
+
+  const migrated = normalizeSourceUrl("http://ip.tivix.co/035212-telekanal-dom-kino.html?x=1");
+  assert(
+    migrated === "https://live.tivix.co/035212-telekanal-dom-kino.html?x=1",
+    `Tivix migration mismatch: ${migrated}`,
+  );
+  assert(
+    normalizeSourceUrl("https://mediamaniya.ru/tv/nba-tv") === "https://mediamaniya.ru/tv/nba-tv",
+    "Unrelated source URL must not be changed",
+  );
+
   console.log("Self-test passed");
 }
 
