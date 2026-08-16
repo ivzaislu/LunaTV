@@ -48,13 +48,23 @@ jobs:
         continue-on-error: true
         run: python scripts/source_smoke.py --timeout 15
 
+      - name: Sample multiple channels on unresolved sources
+        if: github.ref == 'refs/heads/agent/fix-iptv-sources'
+        continue-on-error: true
+        run: >-
+          python scripts/source_smoke.py
+          --hosts smotru.tv mediamaniya.ru smotrettv.com oneliketv.net live.domatv.net
+          --timeout 12
+          --samples-per-host 3
+
       - name: Diagnose failed sources with universal extractor
         if: github.ref == 'refs/heads/agent/fix-iptv-sources'
         continue-on-error: true
         run: >-
           python scripts/source_smoke.py
-          --hosts smotru.tv mediamaniya.ru ip.tivix.co smotrettv.com telik.live oneliketv.net
+          --hosts smotru.tv mediamaniya.ru smotrettv.com oneliketv.net
           --timeout 12
+          --samples-per-host 2
           --extractor universal-playwright-extractor.js
 
       - name: Diagnose protected CDN sources with browser fallback
@@ -62,6 +72,7 @@ jobs:
         continue-on-error: true
         run: >-
           python scripts/source_smoke.py
-          --hosts smotru.tv telik.live oneliketv.net
+          --hosts smotru.tv oneliketv.net
           --timeout 15
+          --samples-per-host 2
           --extractor cdn-browser-extractor.js
