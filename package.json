@@ -2,10 +2,9 @@
   "name": "streams-proxy",
   "version": "1.0.0",
   "type": "module",
-  "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "start:prod": "NODE_ENV=production node server.js",
+    "start": "python proxy_server.py",
+    "start:prod": "python proxy_server.py",
     "test": "node extractor/run-fixture-tests.js && node extractor/universal-playwright-extractor.js --selftest && node extractor/cinema-hls-extractor.js --selftest && node extractor/pro-sports-extractor.js --selftest && node --test tests/js/cdnsearch.test.js",
     "test:extractors": "node extractor/run-fixture-tests.js"
   },
