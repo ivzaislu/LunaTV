@@ -160,6 +160,20 @@ export function extractM3U8Candidates(html, baseUrl) {
   return Array.from(urls);
 }
 
+function mergeCandidates(...groups) {
+  const out = [];
+  const seen = new Set();
+  for (const group of groups) {
+    for (const raw of group || []) {
+      const value = String(raw || "").replace(/&amp;/g, "&").trim();
+      if (!value || seen.has(value)) continue;
+      seen.add(value);
+      out.push(value);
+    }
+  }
+  return out;
+}
+
 async function fetchHtmlWithHttp(url, timeoutMs) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -175,7 +189,11 @@ async function fetchHtmlWithHttp(url, timeoutMs) {
       maxRedirects: 5,
       responseType: "text",
     });
-    return typeof response.data === "string" ? response.data : "";
+    return {
+      html: typeof response.data === "string" ? response.data : "",
+      networkCandidates: [],
+      finalUrl: response.request?.res?.responseUrl || url,
+    };
   } finally {
     clearTimeout(timer);
   }
@@ -185,7 +203,7 @@ async function fetchHtmlWithPlaywright(url, timeoutMs) {
   const executablePath = resolveChromiumExecutable();
   const launchOptions = {
     headless: true,
-    args: ["--no-sandbox", "--disable-dev-shm-usage"],
+    args: ["--no-sandbox", "--disable-dev-shm-usage", "--autoplay-policy=no-user-gesture-required"],
   };
   if (executablePath) {
     launchOptions.executablePath = executablePath;
@@ -199,21 +217,39 @@ async function fetchHtmlWithPlaywright(url, timeoutMs) {
       viewport: { width: 1280, height: 720 },
     });
 
+    const networkCandidates = new Set();
+    const rememberUrl = (candidate) => {
+      if (typeof candidate !== "string" || !candidate.toLowerCase().includes(".m3u8")) return;
+      const normalized = absoluteUrl(candidate.replace(/&amp;/g, "&"), url);
+      if (normalized) networkCandidates.add(normalized);
+    };
+
+    const page = await context.newPage();
+    page.on("request", (request) => rememberUrl(request.url()));
+    page.on("response", (response) => rememberUrl(response.url()));
+
     await context.route("**/*", (route) => {
-      const type = route.request().resourceType();
-      if (["image", "font", "media", "stylesheet"].includes(type)) {
+      const request = route.request();
+      const type = request.resourceType();
+      const requestUrl = request.url().toLowerCase();
+
+      if (requestUrl.includes(".m3u8")) {
+        route.continue();
+        return;
+      }
+      if (["image", "font", "stylesheet", "media"].includes(type)) {
         route.abort();
       } else {
         route.continue();
       }
     });
 
-    const page = await context.newPage();
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: timeoutMs });
-    await page.waitForTimeout(750);
+    await page.waitForTimeout(Math.min(2000, Math.max(750, Math.floor(timeoutMs / 5))));
     const html = await page.content();
+    const finalUrl = page.url();
     await page.close();
-    return html;
+    return { html, networkCandidates: Array.from(networkCandidates), finalUrl };
   } finally {
     if (context) {
       try {
@@ -282,8 +318,12 @@ async function run() {
   const httpOnly = flags.has("--http-only") || process.env.EXTRACTOR_HTTP_ONLY === "1";
 
   try {
-    const html = await fetchHtml(pageUrl, timeoutMs, { httpOnly });
-    const candidates = extractM3U8Candidates(html, pageUrl);
+    const loaded = await fetchHtml(pageUrl, timeoutMs, { httpOnly });
+    const baseUrl = loaded.finalUrl || pageUrl;
+    const candidates = mergeCandidates(
+      loaded.networkCandidates,
+      extractM3U8Candidates(loaded.html, baseUrl),
+    );
     if (!candidates.length) {
       console.error("[extractor] Потоки не найдены");
     }
@@ -325,6 +365,14 @@ async function runSelfTest() {
   for (const url of result) {
     assert(expected.has(url), `Неожиданный URL в результатах: ${url}`);
   }
+
+  const merged = mergeCandidates(
+    ["https://edge.example/live/main.m3u8?token=1"],
+    ["https://edge.example/live/main.m3u8?token=1", "https://edge.example/live/backup.m3u8&amp;x=1"],
+  );
+  assert(merged.length === 2, "Сетевые и HTML кандидаты должны объединяться без дублей");
+  assert(merged[1].includes("&x=1"), "HTML entity в m3u8 URL должна декодироваться");
+
   console.log("Self-test passed");
 }
 
