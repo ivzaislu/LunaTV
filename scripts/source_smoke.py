@@ -4,6 +4,10 @@
 Third-party sites can be temporarily blocked or unavailable, so this stays separate
 from unit tests. It can sample several configured channels per host, run the selected
 extractor, and verify that a returned HLS URL really serves an #EXTM3U playlist.
+
+A stream is considered compatible with LunaTV's current 302 redirect architecture
+only if it can be fetched without a source Referer. Referer-only streams are reported
+separately because the client will not inherit LunaTV's extraction headers.
 """
 from __future__ import annotations
 
@@ -139,12 +143,17 @@ def run_extractor(page_url: str, script_name: str, timeout_sec: int) -> tuple[li
     return [], (detail[-1][:240] if detail else f"exit {proc.returncode}")
 
 
-def probe_hls(url: str, referer: str, timeout_sec: int) -> tuple[bool, str]:
+def _probe_hls_once(
+    url: str,
+    timeout_sec: int,
+    referer: str | None = None,
+) -> tuple[bool, str]:
     headers = {
         "User-Agent": USER_AGENT,
         "Accept": "application/vnd.apple.mpegurl,application/x-mpegURL,*/*",
-        "Referer": referer,
     }
+    if referer:
+        headers["Referer"] = referer
     try:
         response = requests.get(
             url,
@@ -169,6 +178,17 @@ def probe_hls(url: str, referer: str, timeout_sec: int) -> tuple[bool, str]:
             response.close()
     except requests.RequestException as exc:
         return False, exc.__class__.__name__
+
+
+def probe_hls(url: str, referer: str, timeout_sec: int) -> tuple[bool, str, bool]:
+    direct_ok, direct_detail = _probe_hls_once(url, timeout_sec)
+    if direct_ok:
+        return True, f"direct {direct_detail}", True
+
+    referer_ok, referer_detail = _probe_hls_once(url, timeout_sec, referer=referer)
+    if referer_ok:
+        return True, f"referer-only {referer_detail}; direct={direct_detail}", False
+    return False, f"direct={direct_detail}; referer={referer_detail}", False
 
 
 def check_channel(
@@ -196,20 +216,29 @@ def check_channel(
         return False
 
     probe_detail = ""
+    referer_only_seen = False
     for stream in streams[:3]:
-        ok, probe_detail = probe_hls(stream, page_url, timeout_sec)
-        if ok:
+        ok, probe_detail, direct_ok = probe_hls(stream, page_url, timeout_sec)
+        if ok and direct_ok:
             stream_host = host_of(stream) or "unknown"
             print(
                 f"OK   {requested_host} [{slug}] via {script_name}: "
                 f"HLS host={stream_host}, {probe_detail}"
             )
             return True
+        if ok:
+            referer_only_seen = True
 
-    print(
-        f"FAIL {requested_host} [{slug}] via {script_name}: "
-        f"extracted {len(streams)} candidate(s), last probe={probe_detail}"
-    )
+    if referer_only_seen:
+        print(
+            f"WARN {requested_host} [{slug}] via {script_name}: "
+            f"HLS exists but needs Referer and is not 302-compatible; {probe_detail}"
+        )
+    else:
+        print(
+            f"FAIL {requested_host} [{slug}] via {script_name}: "
+            f"extracted {len(streams)} candidate(s), last probe={probe_detail}"
+        )
     return False
 
 
@@ -262,9 +291,9 @@ def main(argv: list[str] | None = None) -> int:
             failed_hosts += 1
 
     if failed_hosts:
-        print(f"\nHosts with no successful sampled channels: {failed_hosts}")
+        print(f"\nHosts with no 302-compatible sampled channels: {failed_hosts}")
         return 1
-    print("\nEvery requested host had at least one successful sampled channel")
+    print("\nEvery requested host had at least one 302-compatible sampled channel")
     return 0
 
 
