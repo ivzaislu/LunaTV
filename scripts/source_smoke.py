@@ -3,8 +3,8 @@
 
 This is intentionally separate from unit tests: third-party sites can be temporarily
 blocked or unavailable. The script checks one representative channel per requested
-host, runs the configured extractor, and verifies that the returned HLS URL serves
-an #EXTM3U playlist.
+host, runs the configured extractor (or an explicit override), and verifies that the
+returned HLS URL serves an #EXTM3U playlist.
 """
 from __future__ import annotations
 
@@ -176,6 +176,10 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Live smoke checks for LunaTV sources")
     parser.add_argument("--hosts", nargs="*", default=DEFAULT_HOSTS)
     parser.add_argument("--timeout", type=int, default=15)
+    parser.add_argument(
+        "--extractor",
+        help="Override configured extractor for diagnostics (for example universal-playwright-extractor.js)",
+    )
     args = parser.parse_args(argv)
 
     channels = load_json(CHANNELS_PATH)
@@ -192,7 +196,12 @@ def main(argv: list[str] | None = None) -> int:
         slug, entry = candidates[0]
         page_url = str(entry.get("url") or "")
         cfg = pick_controller(controller, requested_host)
-        script_name = str(entry.get("script") or cfg.get("script") or "universal-playwright-extractor.js")
+        script_name = str(
+            args.extractor
+            or entry.get("script")
+            or cfg.get("script")
+            or "universal-playwright-extractor.js"
+        )
         timeout_sec = int(entry.get("timeout_sec") or cfg.get("timeout_sec") or args.timeout)
         timeout_sec = max(1, min(timeout_sec, args.timeout))
 
