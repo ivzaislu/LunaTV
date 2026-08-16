@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Best-effort live smoke checks for configured IPTV sources.
 
-This is intentionally separate from unit tests: third-party sites can be temporarily
-blocked or unavailable. The script checks one representative channel per requested
-host, runs the configured extractor (or an explicit override), and verifies that the
-returned HLS URL serves an #EXTM3U playlist.
+Third-party sites can be temporarily blocked or unavailable, so this stays separate
+from unit tests. It can sample several configured channels per host, run the selected
+extractor, and verify that a returned HLS URL really serves an #EXTM3U playlist.
 """
 from __future__ import annotations
 
@@ -172,10 +171,58 @@ def probe_hls(url: str, referer: str, timeout_sec: int) -> tuple[bool, str]:
         return False, exc.__class__.__name__
 
 
+def check_channel(
+    requested_host: str,
+    slug: str,
+    entry: dict,
+    controller: dict,
+    extractor_override: str | None,
+    max_timeout: int,
+) -> bool:
+    page_url = str(entry.get("url") or "")
+    cfg = pick_controller(controller, requested_host)
+    script_name = str(
+        extractor_override
+        or entry.get("script")
+        or cfg.get("script")
+        or "universal-playwright-extractor.js"
+    )
+    timeout_sec = int(entry.get("timeout_sec") or cfg.get("timeout_sec") or max_timeout)
+    timeout_sec = max(1, min(timeout_sec, max_timeout))
+
+    streams, detail = run_extractor(page_url, script_name, timeout_sec)
+    if not streams:
+        print(f"FAIL {requested_host} [{slug}] via {script_name}: {detail}")
+        return False
+
+    probe_detail = ""
+    for stream in streams[:3]:
+        ok, probe_detail = probe_hls(stream, page_url, timeout_sec)
+        if ok:
+            stream_host = host_of(stream) or "unknown"
+            print(
+                f"OK   {requested_host} [{slug}] via {script_name}: "
+                f"HLS host={stream_host}, {probe_detail}"
+            )
+            return True
+
+    print(
+        f"FAIL {requested_host} [{slug}] via {script_name}: "
+        f"extracted {len(streams)} candidate(s), last probe={probe_detail}"
+    )
+    return False
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Live smoke checks for LunaTV sources")
     parser.add_argument("--hosts", nargs="*", default=DEFAULT_HOSTS)
     parser.add_argument("--timeout", type=int, default=15)
+    parser.add_argument(
+        "--samples-per-host",
+        type=int,
+        default=1,
+        help="How many configured channels to test for each host (default: 1)",
+    )
     parser.add_argument(
         "--extractor",
         help="Override configured extractor for diagnostics (for example universal-playwright-extractor.js)",
@@ -186,54 +233,38 @@ def main(argv: list[str] | None = None) -> int:
     controller = load_json(SITE_CONTROLLER_PATH)
     grouped = group_channels(channels)
 
-    failures = 0
+    failed_hosts = 0
     for requested_host in args.hosts:
         candidates = grouped.get(requested_host, [])
         if not candidates:
             print(f"SKIP {requested_host}: no configured channels")
             continue
 
-        slug, entry = candidates[0]
-        page_url = str(entry.get("url") or "")
-        cfg = pick_controller(controller, requested_host)
-        script_name = str(
-            args.extractor
-            or entry.get("script")
-            or cfg.get("script")
-            or "universal-playwright-extractor.js"
+        sample_count = max(1, args.samples_per_host)
+        sampled = candidates[:sample_count]
+        host_successes = 0
+        for slug, entry in sampled:
+            if check_channel(
+                requested_host,
+                slug,
+                entry,
+                controller,
+                args.extractor,
+                args.timeout,
+            ):
+                host_successes += 1
+
+        print(
+            f"SUMMARY {requested_host}: OK {host_successes}/{len(sampled)} "
+            f"sampled channel(s)"
         )
-        timeout_sec = int(entry.get("timeout_sec") or cfg.get("timeout_sec") or args.timeout)
-        timeout_sec = max(1, min(timeout_sec, args.timeout))
+        if host_successes == 0:
+            failed_hosts += 1
 
-        streams, detail = run_extractor(page_url, script_name, timeout_sec)
-        if not streams:
-            failures += 1
-            print(f"FAIL {requested_host} [{slug}] via {script_name}: {detail}")
-            continue
-
-        alive = False
-        probe_detail = ""
-        for stream in streams[:3]:
-            ok, probe_detail = probe_hls(stream, page_url, timeout_sec)
-            if ok:
-                alive = True
-                stream_host = host_of(stream) or "unknown"
-                print(
-                    f"OK   {requested_host} [{slug}] via {script_name}: "
-                    f"HLS host={stream_host}, {probe_detail}"
-                )
-                break
-        if not alive:
-            failures += 1
-            print(
-                f"FAIL {requested_host} [{slug}] via {script_name}: "
-                f"extracted {len(streams)} candidate(s), last probe={probe_detail}"
-            )
-
-    if failures:
-        print(f"\nLive smoke failures: {failures}")
+    if failed_hosts:
+        print(f"\nHosts with no successful sampled channels: {failed_hosts}")
         return 1
-    print("\nAll requested live source smoke checks passed")
+    print("\nEvery requested host had at least one successful sampled channel")
     return 0
 
 
