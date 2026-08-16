@@ -10,7 +10,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -37,4 +37,13 @@ jobs:
         run: python -m unittest discover
 
       - name: Python syntax check
-        run: python -m compileall update_playlist.py scaner.py proxy_server.py tests
+        run: python -m compileall update_playlist.py scaner.py proxy_server.py tests scripts
+
+      - name: Install Chromium for source smoke tests
+        if: github.ref == 'refs/heads/agent/fix-iptv-sources'
+        run: npx --yes playwright@1.55.0 install chromium
+
+      - name: Live source smoke tests
+        if: github.ref == 'refs/heads/agent/fix-iptv-sources'
+        continue-on-error: true
+        run: python scripts/source_smoke.py --timeout 15
