@@ -3,11 +3,19 @@
     "parser": "telik-search.js",
     "timeout_sec": 12
   },
-    "telik.live": {
+  "smotrettv.com": {
     "parser": "smotrettv-search.js",
     "timeout_sec": 12
   },
-    "ontivi.net": {
+  "smotrettv.net": {
+    "parser": "smotrettv-search.js",
+    "timeout_sec": 12
+  },
+  "live.tivix.co": {
+    "parser": "search-generic.js",
+    "timeout_sec": 12
+  },
+  "ontivi.net": {
     "parser": "telik-search.js",
     "timeout_sec": 12
   }
