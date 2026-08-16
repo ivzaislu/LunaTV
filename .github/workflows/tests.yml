@@ -56,3 +56,12 @@ jobs:
           --hosts smotru.tv mediamaniya.ru ip.tivix.co smotrettv.com telik.live oneliketv.net
           --timeout 12
           --extractor universal-playwright-extractor.js
+
+      - name: Diagnose protected CDN sources with browser fallback
+        if: github.ref == 'refs/heads/agent/fix-iptv-sources'
+        continue-on-error: true
+        run: >-
+          python scripts/source_smoke.py
+          --hosts smotru.tv telik.live oneliketv.net
+          --timeout 15
+          --extractor cdn-browser-extractor.js
