@@ -5,8 +5,8 @@
   "scripts": {
     "start": "python proxy_server.py",
     "start:prod": "python proxy_server.py",
-    "test": "node extractor/run-fixture-tests.js && node extractor/universal-playwright-extractor.js --selftest && node extractor/cinema-hls-extractor.js --selftest && node extractor/pro-sports-extractor.js --selftest && node --test tests/js/cdnsearch.test.js",
-    "test:extractors": "node extractor/run-fixture-tests.js"
+    "test": "node extractor/run-fixture-tests.js && node extractor/smotru-m3u-one-stealth.js --selftest && node extractor/smotrettv-m3u8-human.js --selftest && node extractor/universal-playwright-extractor.js --selftest && node extractor/cinema-hls-extractor.js --selftest && node extractor/pro-sports-extractor.js --selftest && node --test tests/js/cdnsearch.test.js",
+    "test:extractors": "node extractor/run-fixture-tests.js && node extractor/smotru-m3u-one-stealth.js --selftest && node extractor/smotrettv-m3u8-human.js --selftest"
   },
   "dependencies": {
     "axios": "^1.7.2",
