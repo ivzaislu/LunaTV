@@ -16,7 +16,6 @@
       "(?i)политика|privacy|конфиденц|реклама|контакты|about|условия|правила"
     ]
   },
-
   "smotru.tv": {
     "script": "cdnpotok.js",
     "timeout_sec": 10,
@@ -36,7 +35,6 @@
       "(?i)поиск|контакты|реклама|о проекте|новости|правила|политика"
     ]
   },
-
   "mediamaniya.ru": {
     "script": "smotru-m3u-one-stealth.js",
     "timeout_sec": 10,
@@ -52,7 +50,6 @@
       "^https?://mediamaniya\\.ru/tv/(main|news|sport|kino|music|razvlekatelnye|poznavatelnye|detskie)(?:[?#].*)?$"
     ]
   },
-
   "ip.tivix.co": {
     "script": "smotru-m3u-one-stealth.js",
     "timeout_sec": 10,
@@ -63,113 +60,113 @@
       "^https?://ip\\.tivix\\.co/(category|tags|search|page).*$"
     ]
   },
-
+  "live.tivix.co": {
+    "script": "smotru-m3u-one-stealth.js",
+    "timeout_sec": 12,
+    "url_allow_re": [
+      "^https?://live\\.tivix\\.co/\\d+-[a-z0-9-]+\\.html$"
+    ],
+    "url_deny_re": [
+      "^https?://live\\.tivix\\.co/(category|tags|search|page).*$"
+    ]
+  },
   "viks.tv": {
     "script": "universal-playwright-extractor.js",
     "timeout_sec": 10,
     "url_allow_re": [
       "^https?://(?:[a-z0-9-]+\\.)?viks\\.tv/(?!news|page|search|privacy|about|contacts?)(?:[a-z0-9-]+/)*[a-z0-9-]+(?:\\.html)?(?:[?#].*)?$"
     ],
-    "url_deny_re": [
-
-    ]
+    "url_deny_re": []
   },
-
   "live.viks.tv": {
     "script": "universal-playwright-extractor.js",
     "timeout_sec": 10,
     "url_allow_re": [
       "^https?://(?:[a-z0-9-]+\\.)?viks\\.tv/(?!news|page|search|privacy|about|contacts?)(?:[a-z0-9-]+/)*[a-z0-9-]+(?:\\.html)?(?:[?#].*)?$"
     ],
-    "url_deny_re": [
-
-    ]
+    "url_deny_re": []
   },
-
-
   "smotrettv.com": {
     "script": "smotrettv-m3u8-human.js",
-    "timeout_sec": 10,
+    "timeout_sec": 12,
     "url_allow_re": [
-      "^https?://smotrettv\\.com/[^/?#]+(?:\\.html)?(?:[?#].*)?$"
+      "^https?://smotrettv\\.com/(?:tv/)?(?:[^\\s?#/]+/)*[^\\s?#/]+(?:\\.html?)?(?:[?#].*)?$"
     ],
     "url_deny_re": [
       "\\.(jpg|jpeg|png|gif|webp|svg)(\\?.*)?$",
       "^https?://smotrettv\\.com/(about|privacy|policy|contacts?|terms|news|search)(?:/.*)?$"
     ]
   },
-
-"live.domatv.net": {
-  "script": "smotru-m3u-one-stealth.js",
-  "timeout_sec": 10,
-
-  "url_allow_re": [
-    "^http://live\\.domatv\\.net/(?:[a-z0-9_-]+/)*[a-z0-9_-]+\\.html(?:[?#].*)?$"
-  ],
-
-  "url_deny_re": [
-    "\\.(jpg|jpeg|png|gif|webp|svg)(\\?.*)?$",
-    "^http://live\\.domatv\\.net/(about|privacy|policy|contacts?|terms|news|search)(?:/.*)?$",
-
-    "^http://live\\.domatv\\.net/kontact\\.html$",
-    "^http://live\\.domatv\\.net/tv_teleprogramma_online\\.html$",
-    "^http://live\\.domatv\\.net/top_kanalov\\.html$",
-
-    "^http://live\\.domatv\\.net/mobilnye_tv$",
-    "^http://live\\.domatv\\.net/russkie$",
-    "^http://live\\.domatv\\.net/belorusskie_tv$",
-    "^http://live\\.domatv\\.net/kino_tv$",
-    "^http://live\\.domatv\\.net/muzyka$",
-    "^http://live\\.domatv\\.net/novosti_tv$",
-    "^http://live\\.domatv\\.net/razvlechenie_tv$",
-    "^http://live\\.domatv\\.net/sport$",
-    "^http://live\\.domatv\\.net/obrazovanie_tv$",
-    "^http://live\\.domatv\\.net/detskie$",
-    "^http://live\\.domatv\\.net/religija$",
-    "^http://live\\.domatv\\.net/hd_tv_kanaly$",
-    "^http://live\\.domatv\\.net/[a-z0-9_-]+/?$"
-  ]
-},
-
-"telik.live": {
-  "script": "cdnpotok.js",
-  "timeout_sec": 10,
-  
-  "url_allow_re": [
-    "^https?://(?:www\\.)?telik\\.live/(?:[^\\s?#/]+/)*[^\\s?#/]+(?:\\.html?)?(?:[?#].*)?$"
-  ],
-  "url_deny_re": [
-    "\\.(?:jpg|jpeg|png|gif|webp|svg)(?:\\?.*)?$",
-    "/(?:privacy|policy|terms|about|contacts?|feedback|ads|advert)/?",
-    "#",
-    "^mailto:",
-    "^javascript:"
-  ],
-  "anchor_text_deny_re": [
-    "политика|privacy|конфиденц|реклама|контакты|about|условия|правила"
-  ]
-},
-
-"oneliketv.net": {
-  "script": "cdnpotok.js",
-  "timeout_sec": 10,
-  
-  "url_allow_re": [
-    "^https?://(?:www\\.)?oneliketv\\.net/(?:[^\\s?#/]+/)*[^\\s?#/]+(?:\\.html?)?(?:[?#].*)?$"
-  ],
-  "url_deny_re": [
-    "\\.(?:jpg|jpeg|png|gif|webp|svg)(?:\\?.*)?$",
-    "/(?:privacy|policy|terms|about|contacts?|feedback|ads|advert)/?",
-    "#",
-    "^mailto:",
-    "^javascript:"
-  ],
-  "anchor_text_deny_re": [
-    "политика|privacy|конфиденц|реклама|контакты|about|условия|правила"
-  ]
-}
-
-
-
-
+  "smotrettv.net": {
+    "script": "smotrettv-m3u8-human.js",
+    "timeout_sec": 12,
+    "url_allow_re": [
+      "^https?://smotrettv\\.net/(?:tv/)?(?:[^\\s?#/]+/)*[^\\s?#/]+(?:\\.html?)?(?:[?#].*)?$"
+    ],
+    "url_deny_re": [
+      "\\.(jpg|jpeg|png|gif|webp|svg)(\\?.*)?$",
+      "^https?://smotrettv\\.net/(about|privacy|policy|contacts?|terms|news|search)(?:/.*)?$"
+    ]
+  },
+  "live.domatv.net": {
+    "script": "smotru-m3u-one-stealth.js",
+    "timeout_sec": 10,
+    "url_allow_re": [
+      "^http://live\\.domatv\\.net/(?:[a-z0-9_-]+/)*[a-z0-9_-]+\\.html(?:[?#].*)?$"
+    ],
+    "url_deny_re": [
+      "\\.(jpg|jpeg|png|gif|webp|svg)(\\?.*)?$",
+      "^http://live\\.domatv\\.net/(about|privacy|policy|contacts?|terms|news|search)(?:/.*)?$",
+      "^http://live\\.domatv\\.net/kontact\\.html$",
+      "^http://live\\.domatv\\.net/tv_teleprogramma_online\\.html$",
+      "^http://live\\.domatv\\.net/top_kanalov\\.html$",
+      "^http://live\\.domatv\\.net/mobilnye_tv$",
+      "^http://live\\.domatv\\.net/russkie$",
+      "^http://live\\.domatv\\.net/belorusskie_tv$",
+      "^http://live\\.domatv\\.net/kino_tv$",
+      "^http://live\\.domatv\\.net/muzyka$",
+      "^http://live\\.domatv\\.net/novosti_tv$",
+      "^http://live\\.domatv\\.net/razvlechenie_tv$",
+      "^http://live\\.domatv\\.net/sport$",
+      "^http://live\\.domatv\\.net/obrazovanie_tv$",
+      "^http://live\\.domatv\\.net/detskie$",
+      "^http://live\\.domatv\\.net/religija$",
+      "^http://live\\.domatv\\.net/hd_tv_kanaly$",
+      "^http://live\\.domatv\\.net/[a-z0-9_-]+/?$"
+    ]
+  },
+  "telik.live": {
+    "script": "cdnpotok.js",
+    "timeout_sec": 10,
+    "url_allow_re": [
+      "^https?://(?:www\\.)?telik\\.live/(?:[^\\s?#/]+/)*[^\\s?#/]+(?:\\.html?)?(?:[?#].*)?$"
+    ],
+    "url_deny_re": [
+      "\\.(?:jpg|jpeg|png|gif|webp|svg)(?:\\?.*)?$",
+      "/(?:privacy|policy|terms|about|contacts?|feedback|ads|advert)/?",
+      "#",
+      "^mailto:",
+      "^javascript:"
+    ],
+    "anchor_text_deny_re": [
+      "политика|privacy|конфиденц|реклама|контакты|about|условия|правила"
+    ]
+  },
+  "oneliketv.net": {
+    "script": "cdnpotok.js",
+    "timeout_sec": 10,
+    "url_allow_re": [
+      "^https?://(?:www\\.)?oneliketv\\.net/(?:[^\\s?#/]+/)*[^\\s?#/]+(?:\\.html?)?(?:[?#].*)?$"
+    ],
+    "url_deny_re": [
+      "\\.(?:jpg|jpeg|png|gif|webp|svg)(?:\\?.*)?$",
+      "/(?:privacy|policy|terms|about|contacts?|feedback|ads|advert)/?",
+      "#",
+      "^mailto:",
+      "^javascript:"
+    ],
+    "anchor_text_deny_re": [
+      "политика|privacy|конфиденц|реклама|контакты|about|условия|правила"
+    ]
+  }
 }
