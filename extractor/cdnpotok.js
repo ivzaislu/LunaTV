@@ -1,358 +1,206 @@
-// cdnpotok.js — channels.json lookup by referer URL, with robust matching
+#!/usr/bin/env node
 import axios from "axios";
-import fs from "fs/promises";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname  = path.dirname(__filename);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const CHANNELS_PATH = path.resolve(__dirname, "..", "config", "channels.json");
+const UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+  "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+const MAX_BUDGET_MS = 4200;
+const REQUEST_CAP_MS = 1800;
 
-// Конфиг ищем относительно файла скрипта:
-const CONFIG_DIR    = path.resolve(__dirname, "..", "config");
-const CHANNELS_PATH = path.join(CONFIG_DIR, "channels.json");
-
-// ---- settings ----
-const UA = "Mozilla/5.0";
-const DEBUG = process.env.DEBUG === "1";
-
-// ---- args ----
-function extractFirstUrl(s) {
-  if (!s) return null;
-  const m = String(s).match(/https?:\/\/[^\s"'<>)]+/i);
-  return m ? m[0] : null;
+function now() { return Date.now(); }
+function remaining(deadline) { return Math.max(0, deadline - now()); }
+function absolutize(value, base) {
+  try { return new URL(String(value || "").replace(/&amp;/g, "&"), base).toString(); }
+  catch { return null; }
 }
-const a1 = process.argv[2] || "";
-const a2 = process.argv[3] || "";
-const a3 = process.argv[4] || "";
-const u1 = extractFirstUrl(a1);
-const u2 = extractFirstUrl(a2);
-const qualityPref = (/(^best$)|^\d{3,4}$/.test(a3) ? a3 : /(best|\d{3,4})/.test(a2) ? a2 : "best").toLowerCase();
-
-if (!a1) {
-  console.error('Использование:\n  node cdnpotok.js "<channelKey | REFERER_URL>" [качество]\n  node cdnpotok.js "<CDN_URL>" "<REFERER_URL>" [качество]');
-  process.exit(1);
-}
-
-// ---- utils ----
-function originOf(u) { try { return new URL(u).origin; } catch { return ""; } }
-function absolutize(maybeUrl, base) { try { return new URL(maybeUrl, base).href; } catch { return maybeUrl; } }
-function looksLikeM3U8(u) { return /\.m3u8(\b|$)/i.test(u || ""); }
-function multiDecodeURIComponent(s, times = 5) {
-  let cur = (s || "").replace(/&amp;/g, "&");
-  for (let i = 0; i < times; i++) { try { const dec = decodeURIComponent(cur); if (dec === cur) break; cur = dec; } catch { break; } }
-  return cur;
-}
-function maybeBase64Decode(s) {
-  const t = (s || "").replace(/\s+/g, "");
-  if (!/^[A-Za-z0-9+/=]+$/.test(t) || t.length % 4 !== 0) return null;
-  try { return Buffer.from(t, "base64").toString("utf8"); } catch { return null; }
-}
-function tryParseJson(s) { try { return JSON.parse(s); } catch { return null; } }
-
-// ---- URL matching helpers ----
-function normalizeForMatch(u) {
+function normalizeForMatch(value) {
   try {
-    const x = new URL(u);
-    let host = x.hostname.toLowerCase();
-    if (host.startsWith("www.")) host = host.slice(4);
-    let p = x.pathname || "/";
-    if (p.length > 1 && p.endsWith("/")) p = p.slice(0, -1);
-    // игнорируем query и hash
-    return `${host}${p}`;
-  } catch { return (u || "").toLowerCase(); }
+    const u = new URL(value);
+    const host = u.hostname.toLowerCase().replace(/^www\./, "");
+    let pathname = u.pathname || "/";
+    if (pathname.length > 1) pathname = pathname.replace(/\/$/, "");
+    return `${host}${pathname}`;
+  } catch { return String(value || "").toLowerCase(); }
 }
-function samePage(a, b) { return normalizeForMatch(a) === normalizeForMatch(b); }
-function basenameKeyFromUrl(u) {
-  try {
-    const x = new URL(u);
-    const base = x.pathname.split("/").filter(Boolean).pop() || "";
-    const name = base.replace(/\.[a-z0-9]+$/i, ""); // убираем .html
-    if (!name) return null;
-    return `${name}-oneliketv`;
-  } catch { return null; }
-}
+function looksLikeM3U8(value) { return /\.m3u8(?:[?#]|$)/i.test(String(value || "")); }
 
-// ---- channels ----
 async function readChannels() {
-  await fs.mkdir(CONFIG_DIR, { recursive: true });
-  try {
-    const raw = await fs.readFile(CHANNELS_PATH, "utf8");
-    return raw.trim() ? JSON.parse(raw) : {};
-  } catch {
-    await fs.writeFile(CHANNELS_PATH, JSON.stringify({}, null, 2), "utf8");
-    return {};
-  }
+  try { return JSON.parse(await fs.readFile(CHANNELS_PATH, "utf8")); }
+  catch { return {}; }
 }
-async function findByRefererUrl(refererUrl) {
+
+async function resolveInput(input) {
   const channels = await readChannels();
-  // 1) прямой матч по entry.url
-  for (const [key, entry] of Object.entries(channels)) {
-    if (entry && entry.url && samePage(entry.url, refererUrl)) {
-      return { key, entry };
-    }
-  }
-  // 2) попытка по вычисленному ключу <basename>-oneliketv
-  const guessKey = basenameKeyFromUrl(refererUrl);
-  if (guessKey && channels[guessKey]) {
-    return { key: guessKey, entry: channels[guessKey] };
-  }
-  return null;
-}
-
-// ---- HTTP ----
-function commonHeaders(forUrl, referer) {
-  const h = {
-    Referer: referer,
-    Origin: originOf(referer),
-    "User-Agent": UA,
-    "Accept-Language": "ru,en;q=0.9",
-  };
-  return h;
-}
-
-async function fetchText(url, referer) {
-  const headers = {
-    ...commonHeaders(url, referer),
-    Accept: "application/vnd.apple.mpegurl,application/x-mpegURL,text/html;q=0.9,*/*;q=0.8",
-  };
-  if (DEBUG) console.error(`[GET]  REF=${headers.Referer} URL=${url}`);
-  const resp = await axios.get(url, {
-    headers,
-    timeout: 20000,
-    responseType: "text",
-    transformResponse: x => x,
-    maxRedirects: 5,
-    validateStatus: s => s >= 200 && s < 400,
-  });
-  if (DEBUG) console.error(`      -> ${resp.status}`);
-  return typeof resp.data === "string" ? resp.data : String(resp.data);
-}
-
-async function resolveFinalUrl(startUrl, referer, maxHops = 10) {
-  let current = startUrl;
-  for (let i = 0; i < maxHops; i++) {
-    const headers = { ...commonHeaders(current, referer), Accept: "*/*" };
-    if (DEBUG) console.error(`[HOP] REF=${headers.Referer} URL=${current}`);
-    const resp = await axios.get(current, {
-      headers,
-      maxRedirects: 0,
-      timeout: 20000,
-      validateStatus: s => s >= 200 && s < 400,
-    });
-    if (resp.status >= 300 && resp.status < 400) {
-      const loc = resp.headers.location;
-      if (DEBUG) console.error(`     -> ${resp.status} Location: ${loc || "(none)"}`);
-      if (!loc) return current;
-      current = absolutize(loc, current);
-      continue;
-    }
-    if (DEBUG) console.error(`     -> ${resp.status} (final)`);
-    return current; // 2xx
-  }
-  return current;
-}
-
-// ---- parsers ----
-function extractStreamUrlFromHtml(html, base) {
-  const patterns = [
-    /file\s*:\s*["']([^"']+)["']/i, /"file"\s*:\s*["']([^"']+)["']/i,
-    /src\s*:\s*["']([^"']+)["']/i,  /"src"\s*:\s*["']([^"']+)["']/i,
-    /url\s*:\s*["']([^"']+)["']/i,  /"url"\s*:\s*["']([^"']+)["']/i,
-  ];
-  for (const re of patterns) {
-    const m = html.match(re);
-    if (m && m[1]) return absolutize(multiDecodeURIComponent(m[1]), base);
-  }
-  const m3u8 = html.match(/https?:\/\/[^\s"'<>]+\.m3u8[^\s"'<>}]*/i);
-  if (m3u8) return absolutize(m3u8[0], base);
-  const mp4 = html.match(/https?:\/\/[^\s"'<>]+\.mp4[^\s"'<>}]*/i);
-  if (mp4) return absolutize(mp4[0], base);
-  const rel = html.match(/["'](\/[^"'<>]+\.(?:m3u8|mp4)[^"'<>}]*)["']/i);
-  if (rel) return absolutize(rel[1], base);
-  return null;
-}
-
-function extractFromJsonLike(obj, baseUrl) {
-  if (typeof obj === "string") {
-    const dec = multiDecodeURIComponent(obj);
-    const direct = (dec.match(/https?:\/\/[^\s"'<>]+?\.(?:m3u8|mp4)[^\s"'<>}]*/i) || [])[0];
-    if (direct) return absolutize(direct, baseUrl);
-    return null;
-  }
-  if (Array.isArray(obj)) {
-    for (const it of obj) { const r = extractFromJsonLike(it, baseUrl); if (r) return r; }
-    return null;
-  }
-  if (obj && typeof obj === "object") {
-    const keys = ["file","src","url","m3u8","video"];
-    for (const k of keys) {
-      if (obj[k]) {
-        const v = typeof obj[k] === "string" ? multiDecodeURIComponent(obj[k]) : obj[k];
-        if (typeof v === "string") {
-          const qlist = /[|]/.test(v) && /(m3u8|mp4)/i.test(v) ? pickFromQualityList(v, baseUrl) : null;
-          if (qlist) return qlist;
-          const direct = (v.match(/https?:\/\/[^\s"'<>]+?\.(?:m3u8|mp4)[^\s"'<>}]*/i) || [])[0];
-          if (direct) return absolutize(direct, baseUrl);
-          if (/^\/[^"'<>]+\.(?:m3u8|mp4)/i.test(v)) return absolutize(v, baseUrl);
-        } else if (v && typeof v === "object") {
-          const r = extractFromJsonLike(v, baseUrl); if (r) return r;
-        }
+  if (/^https?:\/\//i.test(input)) {
+    const wanted = normalizeForMatch(input);
+    for (const [key, entry] of Object.entries(channels)) {
+      if (!entry || typeof entry !== "object" || !entry.url) continue;
+      if (normalizeForMatch(entry.url) === wanted) {
+        return { key, referer: entry.url, target: entry.cdn || entry.url };
       }
     }
+    return { key: null, referer: input, target: input };
   }
-  return null;
+  const entry = channels[input];
+  if (!entry || typeof entry !== "object" || !entry.url) return null;
+  return { key: input, referer: entry.url, target: entry.cdn || entry.url };
 }
 
-function unwrapPlayerWrappers(url) {
-  let current = url;
-  for (let i = 0; i < 5; i++) {
-    let next = null;
+function decodeRepeated(value) {
+  let current = String(value || "").replace(/&amp;/g, "&");
+  for (let i = 0; i < 3; i++) {
     try {
-      const u = new URL(current, current);
-      const params = ["file","src","url","m3u8","video"];
-      for (const p of params) {
-        if (u.searchParams.has(p)) {
-          let v = multiDecodeURIComponent(u.searchParams.get(p) || "");
-          const b64 = maybeBase64Decode(v);
-          if (b64) {
-            const j = tryParseJson(b64);
-            if (j) { const f = extractFromJsonLike(j, current); if (f) { next = f; break; } }
-            const directB64 = (b64.match(/https?:\/\/[^\s"'<>]+?\.(?:m3u8|mp4)[^\s"'<>}]*/i)||[])[0];
-            if (directB64) { next = absolutize(directB64, current); break; }
-          }
-          const j2 = tryParseJson(v);
-          if (j2) { const f = extractFromJsonLike(j2, current); if (f) { next = f; break; } }
-          const direct = (v.match(/https?:\/\/[^\s"'<>]+?\.(?:m3u8|mp4)[^\s"'<>}]*/i)||[])[0];
-          if (direct) { next = absolutize(direct, current); break; }
-          if (/^\/[^"'<>]+\.(?:m3u8|mp4)/i.test(v)) { next = absolutize(v, current); break; }
-          if (/playerjs\.html/i.test(v) && /file=/.test(v)) { next = absolutize(v, current); break; }
-        }
-      }
-    } catch {}
-    if (!next) break;
-    current = next;
+      const next = decodeURIComponent(current);
+      if (next === current) break;
+      current = next;
+    } catch { break; }
   }
   return current;
 }
 
-function parseAttrs(line) {
-  const out = {};
-  for (const kv of line.split(",")) {
-    const [k, vRaw] = kv.split("=");
-    if (!k || vRaw === undefined) continue;
-    out[k.trim().toUpperCase()] = vRaw.replace(/^"|"$/g, "").trim();
+function extractCandidate(text, base) {
+  const body = String(text || "");
+  const direct = body.match(/https?:\/\/[^\s"'<>]+\.m3u8[^\s"'<>}]*/i);
+  if (direct) return absolutize(decodeRepeated(direct[0]), base);
+
+  const attrs = [
+    /(?:file|src|url|m3u8|video)\s*[:=]\s*["']([^"']+)["']/i,
+    /["'](?:file|src|url|m3u8|video)["']\s*:\s*["']([^"']+)["']/i,
+  ];
+  for (const re of attrs) {
+    const match = body.match(re);
+    if (!match?.[1]) continue;
+    const decoded = decodeRepeated(match[1]);
+    const absolute = absolutize(decoded, base);
+    if (absolute) return absolute;
   }
-  return out;
+
+  const rel = body.match(/["'](\/[^"'<>]+\.m3u8[^"'<>}]*)["']/i);
+  return rel ? absolutize(decodeRepeated(rel[1]), base) : null;
 }
 
-function pickFromQualityList(listStr, baseUrl) {
-  const parts = (listStr || "").split(/\s*,\s*/).map(x => x.trim()).filter(Boolean);
-  const items = parts.map(p => {
-    const [label, url] = p.includes("|") ? p.split("|") : [null, p];
-    const h = label && /\d{3,4}p/i.test(label) ? parseInt(label) : 0;
-    return { h, uri: absolutize(url, baseUrl) };
-  }).filter(x => x.uri);
-
-  if (!items.length) return null;
-  if (qualityPref !== "best") {
-    const q = Number(qualityPref);
-    const exact = items.find(i => i.h === q);
-    if (exact) return exact.uri;
-    const below = items.filter(i => i.h && i.h <= q).sort((a,b)=>b.h-a.h)[0];
-    if (below) return below.uri;
+function unwrapQuery(value, base) {
+  let current = absolutize(value, base) || value;
+  for (let i = 0; i < 3; i++) {
+    try {
+      const u = new URL(current, base);
+      let found = null;
+      for (const key of ["file", "src", "url", "m3u8", "video"]) {
+        const raw = u.searchParams.get(key);
+        if (!raw) continue;
+        found = absolutize(decodeRepeated(raw), current);
+        if (found) break;
+      }
+      if (!found || found === current) break;
+      current = found;
+    } catch { break; }
   }
-  const withH = items.filter(i => i.h);
-  if (withH.length) return withH.sort((a,b)=>b.h-a.h)[0].uri;
-  return items[items.length - 1].uri;
+  return current;
 }
 
-function pickVariantFromMaster(masterText, baseUrl) {
-  const lines = masterText.split(/\r?\n/);
-  const variants = [];
-  for (let i = 0; i < lines.length; i++) {
-    const ln = lines[i].trim();
-    if (ln.startsWith("#EXT-X-STREAM-INF:")) {
-      const attrs = parseAttrs(ln.slice("#EXT-X-STREAM-INF:".length));
-      const uri = (lines[i + 1] || "").trim();
-      if (!uri || uri.startsWith("#")) continue;
-      const abs = absolutize(uri, baseUrl);
-      const bw = Number(attrs["BANDWIDTH"] || 0);
-      let h = 0;
-      const res = attrs["RESOLUTION"];
-      if (res && res.includes("x")) h = Number(res.toLowerCase().split("x")[1]) || 0;
-      variants.push({ uri: abs, bandwidth: bw, height: h });
-    }
-  }
-  if (!variants.length) return null;
-
-  if (qualityPref !== "best") {
-    const q = Number(qualityPref);
-    const exact = variants.find(v => v.height === q);
-    if (exact) return exact.uri;
-    const below = variants.filter(v => v.height && v.height <= q).sort((a,b)=>b.height-a.height)[0];
-    if (below) return below.uri;
-  }
-  variants.sort((a,b)=>(b.bandwidth-a-bandwidth)||(b.height-a.height));
-  return variants[0].uri;
+async function getText(url, referer, deadline) {
+  const timeout = Math.min(REQUEST_CAP_MS, remaining(deadline));
+  if (timeout < 100) throw new Error("deadline exceeded");
+  const response = await axios.get(url, {
+    headers: {
+      "User-Agent": UA,
+      "Accept-Language": "ru-RU,ru;q=0.9,en;q=0.8",
+      "Referer": referer,
+      "Accept": "text/html,application/xhtml+xml,application/vnd.apple.mpegurl,application/x-mpegURL,*/*;q=0.8",
+      "Cache-Control": "no-cache",
+    },
+    timeout,
+    maxRedirects: 3,
+    responseType: "text",
+    transformResponse: (value) => value,
+    validateStatus: (status) => status >= 200 && status < 400,
+  });
+  return {
+    body: typeof response.data === "string" ? response.data : String(response.data || ""),
+    finalUrl: response.request?.res?.responseUrl || url,
+    contentType: String(response.headers?.["content-type"] || "").toLowerCase(),
+  };
 }
 
-// ---- main resolver ----
-async function resolvePlayableUrl(url, referer) {
-  url = unwrapPlayerWrappers(url);
+async function resolveFast(target, referer, deadline) {
+  let current = unwrapQuery(target, target);
+  if (looksLikeM3U8(current)) return current;
 
-  // CDN page HTML?
-  if (!looksLikeM3U8(url) && !/\.mp4(\?|$)/i.test(url) && !/playerjs\.html/i.test(url)) {
-    const html = await fetchText(url, referer);
-    const fromHtml = extractStreamUrlFromHtml(html, url);
-    if (fromHtml) url = unwrapPlayerWrappers(fromHtml);
+  const first = await getText(current, referer, deadline);
+  if (looksLikeM3U8(first.finalUrl) || first.contentType.includes("mpegurl") || first.body.trimStart().startsWith("#EXTM3U")) {
+    return first.finalUrl;
   }
 
-  if (!looksLikeM3U8(url)) {
-    return await resolveFinalUrl(url, referer);
-  }
+  let candidate = extractCandidate(first.body, first.finalUrl);
+  if (!candidate) return null;
+  candidate = unwrapQuery(candidate, first.finalUrl);
+  if (looksLikeM3U8(candidate)) return candidate;
 
-  const txt = await fetchText(url, referer);
-  if (/#EXT-X-STREAM-INF:/i.test(txt)) {
-    const variant = pickVariantFromMaster(txt, url);
-    return await resolveFinalUrl(variant || url, referer);
+  if (remaining(deadline) < 250) return null;
+  const second = await getText(candidate, referer, deadline);
+  if (looksLikeM3U8(second.finalUrl) || second.contentType.includes("mpegurl") || second.body.trimStart().startsWith("#EXTM3U")) {
+    return second.finalUrl;
   }
-  return await resolveFinalUrl(url, referer);
+  candidate = extractCandidate(second.body, second.finalUrl);
+  return candidate && looksLikeM3U8(candidate) ? candidate : null;
 }
 
-// ---- MAIN ----
-(async function main() {
+function selfTest() {
+  const html = `<script>new Playerjs({file:"https://edge.example/live/master.m3u8?token=1"})</script>`;
+  const found = extractCandidate(html, "https://example.test/player");
+  if (found !== "https://edge.example/live/master.m3u8?token=1") throw new Error("m3u8 parser failed");
+  const wrapped = unwrapQuery("https://example.test/player.html?file=https%3A%2F%2Fedge.example%2Flive.m3u8", "https://example.test/");
+  if (wrapped !== "https://edge.example/live.m3u8") throw new Error("wrapper parser failed");
+  if (MAX_BUDGET_MS >= 5000) throw new Error("budget must stay below 5s");
+  console.log("Self-test passed");
+}
+
+async function main() {
+  if (process.argv.includes("--selftest")) return selfTest();
+  const input = process.argv[2];
+  const explicitReferer = process.argv[3] && /^https?:\/\//i.test(process.argv[3]) ? process.argv[3] : null;
+  if (!input) {
+    console.error("Usage: node cdnpotok.js <channel-key|page-url|cdn-url> [referer-url]");
+    process.exitCode = 2;
+    return;
+  }
+
+  const started = now();
+  const deadline = started + MAX_BUDGET_MS;
+  let resolved;
+  if (explicitReferer && /^https?:\/\//i.test(input)) {
+    resolved = { key: null, target: input, referer: explicitReferer };
+  } else {
+    resolved = await resolveInput(input);
+  }
+  if (!resolved) {
+    console.error("channel not found");
+    process.exitCode = 2;
+    return;
+  }
+
   try {
-    let cdnUrl, refererUrl;
-
-    if (u1 && u2) {
-      // два URL: CDN + Referer
-      cdnUrl = u1; refererUrl = u2;
-    } else if (u1 && !u2) {
-      // один URL: считаем это REFERER → ищем канал по url
-      const found = await findByRefererUrl(u1);
-      if (!found) {
-        console.error(`Нет записи в ${CHANNELS_PATH} для url = ${u1}`);
-        process.exit(2);
-      }
-      refererUrl = found.entry.url;
-      cdnUrl = found.entry.cdn || found.entry.url;
-      if (DEBUG) console.error(`[FOUND] key=${found.key} cdn=${cdnUrl}`);
-    } else {
-      // ключ канала
-      const channels = await readChannels();
-      const entry = channels[a1];
-      if (!entry || !entry.url) {
-        console.error(`Канал "${a1}" не найден или без url в ${CHANNELS_PATH}`);
-        process.exit(2);
-      }
-      refererUrl = entry.url;
-      cdnUrl = entry.cdn || entry.url;
+    const result = await resolveFast(resolved.target, resolved.referer, deadline);
+    console.error(`[extractor] elapsed_ms=${now() - started}${resolved.key ? ` key=${resolved.key}` : ""}`);
+    if (!result) {
+      console.error("HLS not found by fast HTTP resolver");
+      process.exitCode = 2;
+      return;
     }
-
-    const finalUrl = await resolvePlayableUrl(cdnUrl, refererUrl);
-    console.log(finalUrl); // только финальная ссылка
-  } catch (e) {
-    console.error(e?.message || String(e));
-    process.exit(1);
+    console.log(result);
+  } catch (error) {
+    console.error(`[extractor] elapsed_ms=${now() - started}`);
+    console.error(error?.message || String(error));
+    process.exitCode = 1;
   }
-})();
+}
+
+main().catch((error) => {
+  console.error(error?.message || String(error));
+  process.exit(1);
+});
