@@ -80,6 +80,18 @@ jobs:
                   --extractor cdn-browser-extractor.js || exit 1
               " || smoke_status=1
 
+              echo "Running targeted probes for known-current channels"
+              docker run --rm "$IMAGE" bash -lc "
+                set -u
+                python scripts/source_probe_slugs.py \\
+                  setanta-sports-2-smotrettv \\
+                  setanta-qazaqstan-smotrettv \\
+                  sony-sci-fi-viks \\
+                  dom-kino-tivix \\
+                  russkii-roman-telik \\
+                  --timeout 20 || exit 1
+              " || smoke_status=1
+
               if [[ "$smoke_status" -ne 0 ]]; then
                 echo "One or more live source diagnostics failed"
               fi
