@@ -50,28 +50,49 @@ jobs:
             "
 
             if [[ "${GITHUB_REF:-}" == "refs/heads/agent/fix-iptv-sources" ]]; then
-              echo "Running fast production source smoke (extractor SLA <= 5s)"
+              echo "Running warm-browser live source diagnostics (SLA <= 5s)"
               smoke_status=0
 
               docker run --rm "$IMAGE" bash -lc "
                 set -u
-                python scripts/source_smoke.py \\
-                  --timeout 5 \\
-                  --samples-per-host 2 || exit 1
-              " || smoke_status=1
+                rm -f /tmp/lunatv-playwright-ws
+                node extractor/shared-browser-server.js >/tmp/lunatv-browser.log 2>&1 &
+                browser_pid=\$!
+                cleanup_browser() {
+                  kill \"\$browser_pid\" >/dev/null 2>&1 || true
+                  wait \"\$browser_pid\" >/dev/null 2>&1 || true
+                }
+                trap cleanup_browser EXIT
+                ready=0
+                for _ in \$(seq 1 50); do
+                  if [[ -s /tmp/lunatv-playwright-ws ]]; then ready=1; break; fi
+                  sleep 0.1
+                done
+                if [[ \"\$ready\" -ne 1 ]]; then
+                  echo \"Shared Chromium failed to become ready\"
+                  cat /tmp/lunatv-browser.log || true
+                  exit 1
+                fi
+                echo \"Shared Chromium ready\"
 
-              echo "Running fast targeted probes"
-              docker run --rm "$IMAGE" bash -lc "
-                set -u
+                echo \"Production-config smoke with warm browser\"
+                python scripts/source_smoke.py --timeout 5 --samples-per-host 2 || true
+
+                echo \"Universal extractor warm-browser probes\"
                 python scripts/source_probe_slugs.py \\
                   dom-kino-smotru \\
                   tv-1000-oneliketv \\
-                  setanta-qazaqstan-smotrettv \\
                   sony-sci-fi-viks \\
                   dom-kino-tivix \\
                   russkii-roman-telik \\
                   sts-domatv \\
                   nba-tv-mediamaniya \\
+                  --timeout 5 \\
+                  --extractor universal-playwright-extractor.js || exit 1
+
+                echo \"SmotretTV warm-browser probe\"
+                python scripts/source_probe_slugs.py \\
+                  setanta-qazaqstan-smotrettv \\
                   --timeout 5 || exit 1
               " || smoke_status=1
 
@@ -86,7 +107,7 @@ jobs:
               " || true
 
               if [[ "$smoke_status" -ne 0 ]]; then
-                echo "One or more sources failed the <=5s live SLA"
+                echo "One or more warm-browser live probes failed the <=5s SLA"
               fi
             fi
 
