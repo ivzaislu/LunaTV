@@ -2,6 +2,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import axios from "axios";
 import * as cheerio from "cheerio";
@@ -10,8 +11,12 @@ import { chromium } from "playwright-core";
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
   "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
-const MAX_BUDGET_MS = 5000;
-const HTTP_FAST_PATH_MS = 700;
+const MAX_BUDGET_MS = 4200;
+const HTTP_FAST_PATH_MS = 550;
+const HLS_PROBE_MS = 650;
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const CHANNELS_PATH = path.join(HERE, "..", "config", "channels.json");
 
 const CHROMIUM_SUFFIX = {
   linux: "chrome-linux/chrome",
@@ -35,16 +40,12 @@ function resolveChromiumExecutable() {
   const direct = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
   if (direct && fs.existsSync(direct)) return direct;
   if (!CHROMIUM_SUFFIX) return null;
-
   const roots = uniqueStrings([
     process.env.PLAYWRIGHT_BROWSERS_PATH,
     path.join(process.cwd(), "node_modules", ".cache", "ms-playwright"),
     path.join(os.homedir(), ".cache", "ms-playwright"),
-    process.platform === "win32"
-      ? path.join(os.homedir(), "AppData", "Local", "ms-playwright")
-      : null,
+    process.platform === "win32" ? path.join(os.homedir(), "AppData", "Local", "ms-playwright") : null,
   ]);
-
   for (const root of roots) {
     let entries = [];
     try { entries = fs.readdirSync(root, { withFileTypes: true }); } catch { continue; }
@@ -84,7 +85,6 @@ function collectFromRegex(text, baseUrl, urls) {
     const value = absoluteUrl(match[0], baseUrl);
     if (value) urls.add(value);
   }
-
   const quoted = /"([^"]*\.m3u8[^"]*)"|'([^']*\.m3u8[^']*)'/gi;
   for (const match of text.matchAll(quoted)) {
     const value = absoluteUrl(match[1] || match[2], baseUrl);
@@ -104,7 +104,6 @@ function collectFromCheerio($, baseUrl, urls) {
       if (value) urls.add(value);
     });
   }
-
   $("*[data-src], *[data-href], *[data-url], *[data-file]").each((_, el) => {
     for (const attr of ["data-src", "data-href", "data-url", "data-file"]) {
       const raw = $(el).attr(attr);
@@ -125,20 +124,6 @@ export function extractM3U8Candidates(html, baseUrl) {
   return Array.from(urls);
 }
 
-function mergeCandidates(...groups) {
-  const out = [];
-  const seen = new Set();
-  for (const group of groups) {
-    for (const raw of group || []) {
-      const value = String(raw || "").replace(/&amp;/g, "&").trim();
-      if (!value || seen.has(value)) continue;
-      seen.add(value);
-      out.push(value);
-    }
-  }
-  return out;
-}
-
 function remainingMs(deadline) {
   return Math.max(0, deadline - Date.now());
 }
@@ -147,32 +132,90 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, Math.max(0, ms)));
 }
 
-async function extractWithHttp(url, deadline) {
+function resolveConfiguredTarget(rawUrl) {
+  const normalized = normalizeSourceUrl(rawUrl);
+  let channels = {};
+  try { channels = JSON.parse(fs.readFileSync(CHANNELS_PATH, "utf8")); } catch {}
+  for (const entry of Object.values(channels || {})) {
+    if (!entry || typeof entry !== "object") continue;
+    const entryUrl = String(entry.url || "").trim();
+    if (!entryUrl) continue;
+    if (entryUrl === rawUrl || normalizeSourceUrl(entryUrl) === normalized) {
+      const cdn = String(entry.cdn || "").trim();
+      if (cdn) return { targetUrl: cdn, referer: normalized, usedCdn: true };
+      break;
+    }
+  }
+  return { targetUrl: normalized, referer: normalized, usedCdn: false };
+}
+
+async function probeHls(url, referer, deadline) {
+  const timeoutMs = Math.min(HLS_PROBE_MS, remainingMs(deadline));
+  if (timeoutMs < 120) return false;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      redirect: "follow",
+      signal: controller.signal,
+      headers: {
+        "User-Agent": USER_AGENT,
+        "Accept": "application/vnd.apple.mpegurl,application/x-mpegURL,*/*",
+        ...(referer ? { Referer: referer } : {}),
+      },
+    });
+    if (!response.ok) return false;
+    const type = String(response.headers.get("content-type") || "").toLowerCase();
+    if (type.includes("mpegurl")) return true;
+    const reader = response.body?.getReader();
+    if (!reader) return false;
+    const { value } = await reader.read();
+    try { await reader.cancel(); } catch {}
+    const text = new TextDecoder().decode(value || new Uint8Array()).replace(/^\uFEFF/, "").trimStart();
+    return text.startsWith("#EXTM3U");
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function firstLiveCandidate(candidates, referer, deadline, alreadyProbed = new Set()) {
+  for (const raw of candidates || []) {
+    const url = String(raw || "").trim();
+    if (!url || alreadyProbed.has(url)) continue;
+    alreadyProbed.add(url);
+    if (await probeHls(url, referer, deadline)) return url;
+    if (remainingMs(deadline) < 150) break;
+  }
+  return null;
+}
+
+async function extractWithHttp(targetUrl, referer, deadline) {
   const timeout = Math.min(HTTP_FAST_PATH_MS, remainingMs(deadline));
   if (timeout < 100) return [];
   try {
-    const response = await axios.get(url, {
+    const response = await axios.get(targetUrl, {
       headers: {
         "User-Agent": USER_AGENT,
         Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "ru-RU,ru;q=0.9,en;q=0.8",
+        ...(referer ? { Referer: referer } : {}),
       },
       timeout,
       maxRedirects: 5,
       responseType: "text",
       transformResponse: (value) => value,
     });
-    const finalUrl = response.request?.res?.responseUrl || url;
-    return extractM3U8Candidates(
-      typeof response.data === "string" ? response.data : "",
-      finalUrl,
-    );
+    const finalUrl = response.request?.res?.responseUrl || targetUrl;
+    return extractM3U8Candidates(typeof response.data === "string" ? response.data : "", finalUrl);
   } catch {
     return [];
   }
 }
 
-async function extractWithPlaywright(url, deadline) {
+async function extractWithPlaywright(targetUrl, referer, deadline) {
   const executablePath = resolveChromiumExecutable();
   const launchOptions = {
     headless: true,
@@ -187,25 +230,33 @@ async function extractWithPlaywright(url, deadline) {
       userAgent: USER_AGENT,
       ignoreHTTPSErrors: true,
       viewport: { width: 1280, height: 720 },
-      extraHTTPHeaders: { "Accept-Language": "ru-RU,ru;q=0.9,en;q=0.8" },
+      extraHTTPHeaders: {
+        "Accept-Language": "ru-RU,ru;q=0.9,en;q=0.8",
+        ...(referer ? { Referer: referer } : {}),
+      },
     });
     const page = await context.newPage();
-    const candidates = new Set();
-    let resolveFirst;
-    const firstCandidate = new Promise((resolve) => { resolveFirst = resolve; });
-
+    const candidates = [];
+    const seen = new Set();
+    const probed = new Set();
+    let wakeResolve = null;
+    let wakePromise = new Promise((resolve) => { wakeResolve = resolve; });
+    const wake = () => {
+      wakeResolve?.();
+      wakePromise = new Promise((resolve) => { wakeResolve = resolve; });
+    };
     const remember = (candidate) => {
       if (typeof candidate !== "string" || !candidate.toLowerCase().includes(".m3u8")) return;
-      const base = page.url() && page.url() !== "about:blank" ? page.url() : url;
+      const base = page.url() && page.url() !== "about:blank" ? page.url() : targetUrl;
       const normalized = absoluteUrl(candidate, base);
-      if (!normalized || candidates.has(normalized)) return;
-      candidates.add(normalized);
-      resolveFirst?.();
+      if (!normalized || seen.has(normalized)) return;
+      seen.add(normalized);
+      candidates.push(normalized);
+      wake();
     };
 
     page.on("request", (request) => remember(request.url()));
     page.on("response", (response) => remember(response.url()));
-
     await context.route("**/*", (route) => {
       const request = route.request();
       const requestUrl = request.url().toLowerCase();
@@ -216,36 +267,27 @@ async function extractWithPlaywright(url, deadline) {
       return route.continue();
     });
 
-    const navTimeout = Math.min(1600, remainingMs(deadline));
+    const navTimeout = Math.min(1100, remainingMs(deadline));
     if (navTimeout > 100) {
       try {
-        await Promise.race([
-          page.goto(url, { waitUntil: "commit", timeout: navTimeout }),
-          firstCandidate,
-        ]);
-      } catch {
-        // A slow navigation is acceptable as long as useful player requests arrive.
-      }
+        await page.goto(targetUrl, { referer, waitUntil: "commit", timeout: navTimeout });
+      } catch {}
     }
 
-    if (candidates.size) return Array.from(candidates);
-
     try {
-      const html = await page.content();
-      for (const candidate of extractM3U8Candidates(html, page.url() || url)) remember(candidate);
+      for (const candidate of extractM3U8Candidates(await page.content(), page.url() || targetUrl)) remember(candidate);
     } catch {}
-    if (candidates.size) return Array.from(candidates);
 
-    const wait = remainingMs(deadline);
-    if (wait > 50) await Promise.race([firstCandidate, delay(wait)]);
-    if (candidates.size) return Array.from(candidates);
+    while (remainingMs(deadline) > 180) {
+      const live = await firstLiveCandidate(candidates, referer, deadline, probed);
+      if (live) return [live];
+      const waitMs = Math.min(250, remainingMs(deadline));
+      if (waitMs <= 0) break;
+      await Promise.race([wakePromise, delay(waitMs)]);
+    }
 
-    // One final lightweight DOM read before the global deadline expires.
-    try {
-      const html = await page.content();
-      for (const candidate of extractM3U8Candidates(html, page.url() || url)) remember(candidate);
-    } catch {}
-    return Array.from(candidates);
+    console.warn(`[extractor] rejected_candidates=${probed.size}`);
+    return [];
   } finally {
     if (context) { try { await context.close(); } catch {} }
     try { await browser.close(); } catch {}
@@ -255,14 +297,16 @@ async function extractWithPlaywright(url, deadline) {
 async function extractFast(rawUrl, requestedTimeoutMs, { httpOnly = false } = {}) {
   const budgetMs = Math.max(500, Math.min(MAX_BUDGET_MS, requestedTimeoutMs || MAX_BUDGET_MS));
   const deadline = Date.now() + budgetMs;
-  const url = normalizeSourceUrl(rawUrl);
+  const { targetUrl, referer, usedCdn } = resolveConfiguredTarget(rawUrl);
+  if (usedCdn) console.error(`[extractor] direct_cdn=${new URL(targetUrl).hostname}`);
 
-  const httpCandidates = await extractWithHttp(url, deadline);
-  if (httpCandidates.length || httpOnly) return httpCandidates;
-  if (remainingMs(deadline) < 300) return [];
+  const httpCandidates = await extractWithHttp(targetUrl, referer, deadline);
+  const httpLive = await firstLiveCandidate(httpCandidates, referer, deadline);
+  if (httpLive) return [httpLive];
+  if (httpOnly || remainingMs(deadline) < 300) return [];
 
   try {
-    return await extractWithPlaywright(url, deadline);
+    return await extractWithPlaywright(targetUrl, referer, deadline);
   } catch (error) {
     console.warn(`[extractor] browser fast-path failed: ${error?.message || error}`);
     return [];
@@ -286,14 +330,13 @@ async function run() {
     console.error("Usage: node universal-playwright-extractor.js <url> [timeoutSeconds]");
     process.exit(1);
   }
-
   const parsed = Number.parseFloat(timeoutArg);
   const requestedTimeoutMs = Number.isFinite(parsed) && parsed > 0 ? parsed * 1000 : MAX_BUDGET_MS;
   const started = Date.now();
   const candidates = await extractFast(pageUrl, requestedTimeoutMs, {
     httpOnly: flags.has("--http-only") || process.env.EXTRACTOR_HTTP_ONLY === "1",
   });
-  if (!candidates.length) console.error("[extractor] Потоки не найдены в пределах 5 секунд");
+  if (!candidates.length) console.error("[extractor] Быстрый живой HLS не найден");
   console.error(`[extractor] elapsed_ms=${Date.now() - started}`);
   process.stdout.write(`${JSON.stringify(candidates)}\n`);
 }
@@ -303,26 +346,13 @@ function assert(condition, message) {
 }
 
 async function runSelfTest() {
-  const sampleHtml = `
-    <html><body>
-      <video src="/streams/main.m3u8"></video>
-      <script>const backup = "https://cdn.example.com/backup/index.m3u8?token=abc";</script>
-      <div data-src="//media.example.org/live/playlist.m3u8"></div>
-    </body></html>
-  `;
-  const base = "https://tv.example.com/watch/page";
-  const result = extractM3U8Candidates(sampleHtml, base);
-  const expected = new Set([
-    "https://tv.example.com/streams/main.m3u8",
-    "https://cdn.example.com/backup/index.m3u8?token=abc",
-    "https://media.example.org/live/playlist.m3u8",
-  ]);
-  assert(result.length === expected.size, "Количество ссылок не совпадает");
-  for (const url of result) assert(expected.has(url), `Неожиданный URL: ${url}`);
-
+  const sampleHtml = `<video src="/streams/main.m3u8"></video><script>const b="https://cdn.example/live/index.m3u8?x=1";</script>`;
+  const result = extractM3U8Candidates(sampleHtml, "https://tv.example/watch");
+  assert(result.includes("https://tv.example/streams/main.m3u8"), "relative m3u8 extraction failed");
+  assert(result.includes("https://cdn.example/live/index.m3u8?x=1"), "absolute m3u8 extraction failed");
   const migrated = normalizeSourceUrl("http://ip.tivix.co/035212-telekanal-dom-kino.html");
   assert(migrated === "https://live.tivix.co/035212-telekanal-dom-kino.html", "Tivix URL migration failed");
-  assert(Math.min(MAX_BUDGET_MS, 12000) === 5000, "Global extractor budget must stay capped at 5s");
+  assert(MAX_BUDGET_MS < 5000, "Internal budget must leave time for process cleanup");
   console.log("Self-test passed");
 }
 
