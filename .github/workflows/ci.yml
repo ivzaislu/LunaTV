@@ -1,0 +1,79 @@
+name: LunaTV CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+      - agent/fix-iptv-sources
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: self-hosted
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: LunaTV CI under global lock
+        shell: bash
+        run: |
+          echo "Waiting for global CI lock..."
+          flock -x /shared-lock/global.lock bash -lc '
+            set -Eeuo pipefail
+            echo "Global CI lock acquired: LunaTV"
+
+            cd "$GITHUB_WORKSPACE"
+            IMAGE="lunatv-ci:${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+
+            cleanup() {
+              docker image rm -f "$IMAGE" >/dev/null 2>&1 || true
+            }
+            trap cleanup EXIT
+
+            docker build -t "$IMAGE" .
+            docker run --rm "$IMAGE" bash -lc "
+              set -Eeuo pipefail
+              npm test
+              python -m unittest discover
+              python -m compileall update_playlist.py scaner.py proxy_server.py tests scripts
+              python test_m3u_playlists.py
+            "
+
+            if [[ "${GITHUB_REF:-}" == "refs/heads/agent/fix-iptv-sources" ]]; then
+              echo "Running live source diagnostics for repair branch"
+              smoke_status=0
+              docker run --rm "$IMAGE" bash -lc "
+                set -u
+                python scripts/source_smoke.py --timeout 20 || exit 1
+              " || smoke_status=1
+
+              docker run --rm "$IMAGE" bash -lc "
+                set -u
+                python scripts/source_smoke.py \\
+                  --hosts smotru.tv mediamaniya.ru smotrettv.com oneliketv.net live.domatv.net \\
+                  --timeout 20 \\
+                  --samples-per-host 3 || exit 1
+              " || smoke_status=1
+
+              docker run --rm "$IMAGE" bash -lc "
+                set -u
+                python scripts/source_smoke.py \\
+                  --hosts smotru.tv mediamaniya.ru smotrettv.com oneliketv.net \\
+                  --timeout 20 \\
+                  --samples-per-host 2 \\
+                  --extractor universal-playwright-extractor.js || exit 1
+              " || smoke_status=1
+
+              if [[ "$smoke_status" -ne 0 ]]; then
+                echo "One or more live source diagnostics failed"
+              fi
+            fi
+
+            echo "LunaTV CI finished; releasing global lock"
+          '
