@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   test:
-    runs-on: [self-hosted, lunatv-ci]
+    runs-on: self-hosted
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
