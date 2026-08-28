@@ -64,8 +64,9 @@ jobs:
                 }
                 trap cleanup_browser EXIT
                 ready=0
-                for _ in \$(seq 1 50); do
+                for _ in \$(seq 1 300); do
                   if [[ -s /tmp/lunatv-playwright-ws ]]; then ready=1; break; fi
+                  if ! kill -0 \"\$browser_pid\" >/dev/null 2>&1; then break; fi
                   sleep 0.1
                 done
                 if [[ \"\$ready\" -ne 1 ]]; then
