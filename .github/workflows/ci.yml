@@ -10,6 +10,10 @@ on:
       - main
       - agent/fix-iptv-sources
 
+concurrency:
+  group: lunatv-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -84,6 +88,7 @@ jobs:
               docker run --rm "$IMAGE" bash -lc "
                 set -u
                 python scripts/source_probe_slugs.py \\
+                  setanta-sports-1-smotrettv \\
                   setanta-sports-2-smotrettv \\
                   setanta-qazaqstan-smotrettv \\
                   sony-sci-fi-viks \\
