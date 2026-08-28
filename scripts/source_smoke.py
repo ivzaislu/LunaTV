@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
-"""Best-effort live smoke checks for configured IPTV sources.
+"""Fast live checks for configured LunaTV IPTV sources.
 
-Third-party sites can be temporarily blocked or unavailable, so this stays separate
-from unit tests. It can sample several configured channels per host, run the selected
-extractor, and verify that a returned HLS URL really serves an #EXTM3U playlist.
-
-A stream is considered compatible with LunaTV's current 302 redirect architecture
-only if it can be fetched without a source Referer. Referer-only streams are reported
-separately because the client will not inherit LunaTV's extraction headers.
+A source is useful only when its extractor returns an HLS candidate within five
+seconds and the resulting playlist can be fetched directly by LunaTV's 302 client.
 """
 from __future__ import annotations
 
@@ -17,6 +12,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 from collections import defaultdict
 from pathlib import Path
 from urllib.parse import urlparse
@@ -28,6 +24,7 @@ CONFIG_DIR = ROOT / "config"
 EXTRACTOR_DIR = ROOT / "extractor"
 CHANNELS_PATH = CONFIG_DIR / "channels.json"
 SITE_CONTROLLER_PATH = CONFIG_DIR / "site_controller.json"
+MAX_EXTRACTOR_SECONDS = 5.0
 
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -79,8 +76,7 @@ def pick_controller(controller: dict, host: str) -> dict:
         return cfg
     parts = host.split(".")
     if len(parts) >= 2:
-        apex = ".".join(parts[-2:])
-        cfg = controller.get(apex)
+        cfg = controller.get(".".join(parts[-2:]))
         if isinstance(cfg, dict):
             return cfg
     cfg = controller.get("default")
@@ -88,8 +84,7 @@ def pick_controller(controller: dict, host: str) -> dict:
 
 
 def clean_stream_url(value: str) -> str | None:
-    candidate = str(value or "").replace("&amp;", "&").strip()
-    candidate = candidate.rstrip(",;)}]")
+    candidate = str(value or "").replace("&amp;", "&").strip().rstrip(",;)}]")
     if not candidate or any(ch.isspace() for ch in candidate):
         return None
     try:
@@ -121,27 +116,29 @@ def run_extractor(page_url: str, script_name: str, timeout_sec: int) -> tuple[li
     if not script.is_file():
         return [], f"missing extractor: {script_name}"
 
+    timeout_sec = max(1.0, min(float(timeout_sec), MAX_EXTRACTOR_SECONDS))
     argv = [os.environ.get("NODE_BIN", "node"), str(script), page_url]
     if script_name != "cdnpotok.js":
-        argv.append(str(timeout_sec))
+        argv.append(f"{timeout_sec:g}")
 
-    # Several extractors intentionally try Playwright first and then a plain HTTP
-    # fallback. Both attempts may consume up to timeout_sec, so the supervising
-    # process must not kill the extractor after only timeout_sec + a few seconds.
-    process_timeout = max(timeout_sec + 8, timeout_sec * 2 + 12)
+    started = time.monotonic()
     try:
         proc = subprocess.run(
             argv,
             cwd=str(EXTRACTOR_DIR),
             capture_output=True,
             text=True,
-            timeout=process_timeout,
+            timeout=MAX_EXTRACTOR_SECONDS + 0.5,
             check=False,
         )
     except subprocess.TimeoutExpired:
-        return [], f"extractor timeout after {process_timeout}s"
+        return [], f"too slow: exceeded {MAX_EXTRACTOR_SECONDS:.1f}s"
     except OSError as exc:
         return [], f"extractor launch failed: {exc}"
+
+    elapsed = time.monotonic() - started
+    if elapsed > MAX_EXTRACTOR_SECONDS:
+        return [], f"too slow: {elapsed:.2f}s > {MAX_EXTRACTOR_SECONDS:.2f}s"
 
     combined = f"{proc.stdout}\n{proc.stderr}"
     streams: list[str] = []
@@ -166,17 +163,14 @@ def run_extractor(page_url: str, script_name: str, timeout_sec: int) -> tuple[li
         seen.add(candidate)
         cleaned.append(candidate)
     if cleaned:
-        return cleaned, "ok"
+        return cleaned, f"{elapsed:.2f}s"
 
     detail = (proc.stderr or proc.stdout or f"exit {proc.returncode}").strip().splitlines()
-    return [], (detail[-1][:240] if detail else f"exit {proc.returncode}")
+    suffix = detail[-1][:200] if detail else f"exit {proc.returncode}"
+    return [], f"{elapsed:.2f}s; {suffix}"
 
 
-def _probe_hls_once(
-    url: str,
-    timeout_sec: int,
-    referer: str | None = None,
-) -> tuple[bool, str]:
+def _probe_hls_once(url: str, timeout_sec: int, referer: str | None = None) -> tuple[bool, str]:
     headers = {
         "User-Agent": USER_AGENT,
         "Accept": "application/vnd.apple.mpegurl,application/x-mpegURL,*/*",
@@ -213,7 +207,6 @@ def probe_hls(url: str, referer: str, timeout_sec: int) -> tuple[bool, str, bool
     direct_ok, direct_detail = _probe_hls_once(url, timeout_sec)
     if direct_ok:
         return True, f"direct {direct_detail}", True
-
     referer_ok, referer_detail = _probe_hls_once(url, timeout_sec, referer=referer)
     if referer_ok:
         return True, f"referer-only {referer_detail}; direct={direct_detail}", False
@@ -236,25 +229,23 @@ def check_channel(
         or cfg.get("script")
         or "universal-playwright-extractor.js"
     )
-    configured_timeout = int(entry.get("timeout_sec") or cfg.get("timeout_sec") or diagnostic_timeout)
-    # For diagnostics, --timeout is a floor rather than a cap. The previous logic
-    # silently reduced `--timeout 20` back to controller values such as 10 or 12.
-    timeout_sec = max(1, configured_timeout, diagnostic_timeout)
+    configured_timeout = float(entry.get("timeout_sec") or cfg.get("timeout_sec") or diagnostic_timeout)
+    timeout_sec = max(1, min(configured_timeout, float(diagnostic_timeout), MAX_EXTRACTOR_SECONDS))
 
-    streams, detail = run_extractor(page_url, script_name, timeout_sec)
+    streams, extraction_detail = run_extractor(page_url, script_name, timeout_sec)
     if not streams:
-        print(f"FAIL {requested_host} [{slug}] via {script_name}: {detail}")
+        print(f"FAIL {requested_host} [{slug}] via {script_name}: {extraction_detail}")
         return False
 
     probe_detail = ""
     referer_only_seen = False
     for stream in streams[:5]:
-        ok, probe_detail, direct_ok = probe_hls(stream, page_url, timeout_sec)
+        ok, probe_detail, direct_ok = probe_hls(stream, page_url, int(max(1, timeout_sec)))
         if ok and direct_ok:
             stream_host = host_of(stream) or "unknown"
             print(
                 f"OK   {requested_host} [{slug}] via {script_name}: "
-                f"HLS host={stream_host}, {probe_detail}"
+                f"extract={extraction_detail}, HLS host={stream_host}, {probe_detail}"
             )
             return True
         if ok:
@@ -263,35 +254,27 @@ def check_channel(
     if referer_only_seen:
         print(
             f"WARN {requested_host} [{slug}] via {script_name}: "
-            f"HLS exists but needs Referer and is not 302-compatible; {probe_detail}"
+            f"extract={extraction_detail}, HLS needs Referer; {probe_detail}"
         )
     else:
         print(
             f"FAIL {requested_host} [{slug}] via {script_name}: "
-            f"extracted {len(streams)} candidate(s), last probe={probe_detail}"
+            f"extract={extraction_detail}, {len(streams)} candidate(s), last probe={probe_detail}"
         )
     return False
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Live smoke checks for LunaTV sources")
+    parser = argparse.ArgumentParser(description="Fast live smoke checks for LunaTV sources")
     parser.add_argument("--hosts", nargs="*", default=DEFAULT_HOSTS)
     parser.add_argument(
         "--timeout",
         type=int,
-        default=15,
-        help="Minimum per-attempt timeout for live diagnostics (default: 15s)",
+        default=5,
+        help="Per-extractor cap in seconds; values above 5 are clamped (default: 5)",
     )
-    parser.add_argument(
-        "--samples-per-host",
-        type=int,
-        default=1,
-        help="How many configured channels to test for each host (default: 1)",
-    )
-    parser.add_argument(
-        "--extractor",
-        help="Override configured extractor for diagnostics (for example universal-playwright-extractor.js)",
-    )
+    parser.add_argument("--samples-per-host", type=int, default=1)
+    parser.add_argument("--extractor", help="Override configured extractor")
     args = parser.parse_args(argv)
 
     channels = load_json(CHANNELS_PATH)
@@ -305,31 +288,20 @@ def main(argv: list[str] | None = None) -> int:
             print(f"SKIP {requested_host}: no configured channels")
             continue
 
-        sample_count = max(1, args.samples_per_host)
-        sampled = candidates[:sample_count]
+        sampled = candidates[: max(1, args.samples_per_host)]
         host_successes = 0
         for slug, entry in sampled:
-            if check_channel(
-                requested_host,
-                slug,
-                entry,
-                controller,
-                args.extractor,
-                args.timeout,
-            ):
+            if check_channel(requested_host, slug, entry, controller, args.extractor, args.timeout):
                 host_successes += 1
 
-        print(
-            f"SUMMARY {requested_host}: OK {host_successes}/{len(sampled)} "
-            f"sampled channel(s)"
-        )
+        print(f"SUMMARY {requested_host}: OK {host_successes}/{len(sampled)} sampled channel(s)")
         if host_successes == 0:
             failed_hosts += 1
 
     if failed_hosts:
-        print(f"\nHosts with no 302-compatible sampled channels: {failed_hosts}")
+        print(f"\nHosts with no fast 302-compatible sampled channels: {failed_hosts}")
         return 1
-    print("\nEvery requested host had at least one 302-compatible sampled channel")
+    print("\nEvery requested host had at least one fast 302-compatible sampled channel")
     return 0
 
 
