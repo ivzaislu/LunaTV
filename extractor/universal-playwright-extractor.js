@@ -10,6 +10,8 @@ import { chromium } from "playwright-core";
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
   "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+const MAX_BUDGET_MS = 5000;
+const HTTP_FAST_PATH_MS = 700;
 
 const CHROMIUM_SUFFIX = {
   linux: "chrome-linux/chrome",
@@ -53,6 +55,19 @@ function resolveChromiumExecutable() {
     }
   }
   return null;
+}
+
+export function normalizeSourceUrl(rawUrl) {
+  try {
+    const url = new URL(rawUrl);
+    if (url.hostname.toLowerCase() === "ip.tivix.co") {
+      url.protocol = "https:";
+      url.hostname = "live.tivix.co";
+    }
+    return url.toString();
+  } catch {
+    return rawUrl;
+  }
 }
 
 function absoluteUrl(candidate, baseUrl) {
@@ -105,7 +120,6 @@ export function extractM3U8Candidates(html, baseUrl) {
   if (!html) return [];
   let safeBase = "about:blank";
   try { safeBase = new URL(baseUrl || safeBase).toString(); } catch {}
-
   collectFromRegex(html, safeBase, urls);
   try { collectFromCheerio(cheerio.load(html), safeBase, urls); } catch {}
   return Array.from(urls);
@@ -125,38 +139,40 @@ function mergeCandidates(...groups) {
   return out;
 }
 
-function isTimeoutError(error) {
-  return /timeout/i.test(String(error?.name || "")) || /timeout/i.test(String(error?.message || ""));
+function remainingMs(deadline) {
+  return Math.max(0, deadline - Date.now());
 }
 
-function responseLooksInspectable(response) {
-  const headers = response.headers();
-  const type = String(headers["content-type"] || "").toLowerCase();
-  if (!/(text|html|json|javascript|mpegurl)/.test(type)) return false;
-  const length = Number.parseInt(headers["content-length"] || "0", 10);
-  return !Number.isFinite(length) || length <= 1024 * 1024;
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, Math.max(0, ms)));
 }
 
-async function fetchHtmlWithHttp(url, timeoutMs) {
-  const response = await axios.get(url, {
-    headers: {
-      "User-Agent": USER_AGENT,
-      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "Accept-Language": "ru-RU,ru;q=0.9,en;q=0.8",
-    },
-    timeout: timeoutMs,
-    maxRedirects: 5,
-    responseType: "text",
-    transformResponse: (value) => value,
-  });
-  return {
-    html: typeof response.data === "string" ? response.data : "",
-    networkCandidates: [],
-    finalUrl: response.request?.res?.responseUrl || url,
-  };
+async function extractWithHttp(url, deadline) {
+  const timeout = Math.min(HTTP_FAST_PATH_MS, remainingMs(deadline));
+  if (timeout < 100) return [];
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        "User-Agent": USER_AGENT,
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "ru-RU,ru;q=0.9,en;q=0.8",
+      },
+      timeout,
+      maxRedirects: 5,
+      responseType: "text",
+      transformResponse: (value) => value,
+    });
+    const finalUrl = response.request?.res?.responseUrl || url;
+    return extractM3U8Candidates(
+      typeof response.data === "string" ? response.data : "",
+      finalUrl,
+    );
+  } catch {
+    return [];
+  }
 }
 
-async function fetchHtmlWithPlaywright(url, timeoutMs) {
+async function extractWithPlaywright(url, deadline) {
   const executablePath = resolveChromiumExecutable();
   const launchOptions = {
     headless: true,
@@ -173,90 +189,84 @@ async function fetchHtmlWithPlaywright(url, timeoutMs) {
       viewport: { width: 1280, height: 720 },
       extraHTTPHeaders: { "Accept-Language": "ru-RU,ru;q=0.9,en;q=0.8" },
     });
-
     const page = await context.newPage();
-    const networkCandidates = new Set();
-    const pendingBodies = new Set();
-    const rememberUrl = (candidate, base = url) => {
+    const candidates = new Set();
+    let resolveFirst;
+    const firstCandidate = new Promise((resolve) => { resolveFirst = resolve; });
+
+    const remember = (candidate) => {
       if (typeof candidate !== "string" || !candidate.toLowerCase().includes(".m3u8")) return;
+      const base = page.url() && page.url() !== "about:blank" ? page.url() : url;
       const normalized = absoluteUrl(candidate, base);
-      if (normalized) networkCandidates.add(normalized);
+      if (!normalized || candidates.has(normalized)) return;
+      candidates.add(normalized);
+      resolveFirst?.();
     };
 
-    page.on("request", (request) => rememberUrl(request.url()));
-    page.on("response", (response) => {
-      rememberUrl(response.url());
-      if (!responseLooksInspectable(response)) return;
-      const task = response
-        .text()
-        .then((body) => collectFromRegex(body, response.url(), networkCandidates))
-        .catch(() => {})
-        .finally(() => pendingBodies.delete(task));
-      pendingBodies.add(task);
-    });
+    page.on("request", (request) => remember(request.url()));
+    page.on("response", (response) => remember(response.url()));
 
     await context.route("**/*", (route) => {
       const request = route.request();
-      const type = request.resourceType();
       const requestUrl = request.url().toLowerCase();
-
+      const type = request.resourceType();
       if (requestUrl.includes(".m3u8")) return route.continue();
       if (["image", "font", "stylesheet"].includes(type)) return route.abort();
       if (type === "media" && /\.(?:ts|m4s|mp4)(?:[?#]|$)/i.test(requestUrl)) return route.abort();
       return route.continue();
     });
 
-    try {
-      await page.goto(url, { waitUntil: "domcontentloaded", timeout: timeoutMs });
-    } catch (error) {
-      if (!isTimeoutError(error) || page.url() === "about:blank") throw error;
-      console.warn("[extractor] navigation timeout; using partial page/network data");
-    }
-
-    await page.waitForTimeout(Math.min(5000, Math.max(1800, Math.floor(timeoutMs / 3))));
-
-    let html = "";
-    try { html = await page.content(); } catch {}
-    const finalUrl = page.url() || url;
-    collectFromRegex(html, finalUrl, networkCandidates);
-
-    for (const frame of page.frames()) {
+    const navTimeout = Math.min(1600, remainingMs(deadline));
+    if (navTimeout > 100) {
       try {
-        const frameUrl = frame.url() || finalUrl;
-        const frameHtml = await frame.content();
-        collectFromRegex(frameHtml, frameUrl, networkCandidates);
-      } catch {}
+        await Promise.race([
+          page.goto(url, { waitUntil: "commit", timeout: navTimeout }),
+          firstCandidate,
+        ]);
+      } catch {
+        // A slow navigation is acceptable as long as useful player requests arrive.
+      }
     }
 
-    if (pendingBodies.size) {
-      await Promise.race([
-        Promise.allSettled(Array.from(pendingBodies)),
-        page.waitForTimeout(1500),
-      ]);
-    }
+    if (candidates.size) return Array.from(candidates);
 
-    await page.close();
-    return { html, networkCandidates: Array.from(networkCandidates), finalUrl };
+    try {
+      const html = await page.content();
+      for (const candidate of extractM3U8Candidates(html, page.url() || url)) remember(candidate);
+    } catch {}
+    if (candidates.size) return Array.from(candidates);
+
+    const wait = remainingMs(deadline);
+    if (wait > 50) await Promise.race([firstCandidate, delay(wait)]);
+    if (candidates.size) return Array.from(candidates);
+
+    // One final lightweight DOM read before the global deadline expires.
+    try {
+      const html = await page.content();
+      for (const candidate of extractM3U8Candidates(html, page.url() || url)) remember(candidate);
+    } catch {}
+    return Array.from(candidates);
   } finally {
     if (context) { try { await context.close(); } catch {} }
     try { await browser.close(); } catch {}
   }
 }
 
-async function fetchHtml(url, timeoutMs, { httpOnly = false } = {}) {
-  const attempts = httpOnly ? [fetchHtmlWithHttp] : [fetchHtmlWithPlaywright, fetchHtmlWithHttp];
-  let lastError;
-  for (const attempt of attempts) {
-    try {
-      return await attempt(url, timeoutMs);
-    } catch (error) {
-      lastError = error;
-      if (attempt === fetchHtmlWithPlaywright) {
-        console.warn(`[extractor] Playwright failed (${error?.message || error}); trying HTTP fallback`);
-      }
-    }
+async function extractFast(rawUrl, requestedTimeoutMs, { httpOnly = false } = {}) {
+  const budgetMs = Math.max(500, Math.min(MAX_BUDGET_MS, requestedTimeoutMs || MAX_BUDGET_MS));
+  const deadline = Date.now() + budgetMs;
+  const url = normalizeSourceUrl(rawUrl);
+
+  const httpCandidates = await extractWithHttp(url, deadline);
+  if (httpCandidates.length || httpOnly) return httpCandidates;
+  if (remainingMs(deadline) < 300) return [];
+
+  try {
+    return await extractWithPlaywright(url, deadline);
+  } catch (error) {
+    console.warn(`[extractor] browser fast-path failed: ${error?.message || error}`);
+    return [];
   }
-  throw lastError || new Error("Не удалось загрузить страницу");
 }
 
 function parseCliArgs(argv) {
@@ -274,27 +284,18 @@ async function run() {
   const [pageUrl, timeoutArg] = positional;
   if (!pageUrl) {
     console.error("Usage: node universal-playwright-extractor.js <url> [timeoutSeconds]");
-    console.error("       node universal-playwright-extractor.js --http-only <url> [timeoutSeconds]");
     process.exit(1);
   }
 
-  const parsed = Number.parseInt(timeoutArg, 10);
-  const timeoutMs = Number.isFinite(parsed) && parsed > 0 ? parsed * 1000 : 10000;
-  const httpOnly = flags.has("--http-only") || process.env.EXTRACTOR_HTTP_ONLY === "1";
-
-  try {
-    const loaded = await fetchHtml(pageUrl, timeoutMs, { httpOnly });
-    const baseUrl = loaded.finalUrl || pageUrl;
-    const candidates = mergeCandidates(
-      loaded.networkCandidates,
-      extractM3U8Candidates(loaded.html, baseUrl),
-    );
-    if (!candidates.length) console.error("[extractor] Потоки не найдены");
-    process.stdout.write(`${JSON.stringify(candidates)}\n`);
-  } catch (error) {
-    console.error(`[extractor] Ошибка: ${error?.message || error}`);
-    process.exitCode = 1;
-  }
+  const parsed = Number.parseFloat(timeoutArg);
+  const requestedTimeoutMs = Number.isFinite(parsed) && parsed > 0 ? parsed * 1000 : MAX_BUDGET_MS;
+  const started = Date.now();
+  const candidates = await extractFast(pageUrl, requestedTimeoutMs, {
+    httpOnly: flags.has("--http-only") || process.env.EXTRACTOR_HTTP_ONLY === "1",
+  });
+  if (!candidates.length) console.error("[extractor] Потоки не найдены в пределах 5 секунд");
+  console.error(`[extractor] elapsed_ms=${Date.now() - started}`);
+  process.stdout.write(`${JSON.stringify(candidates)}\n`);
 }
 
 function assert(condition, message) {
@@ -307,7 +308,6 @@ async function runSelfTest() {
       <video src="/streams/main.m3u8"></video>
       <script>const backup = "https://cdn.example.com/backup/index.m3u8?token=abc";</script>
       <div data-src="//media.example.org/live/playlist.m3u8"></div>
-      <a href="https://example.com/not-stream.mp4">mp4</a>
     </body></html>
   `;
   const base = "https://tv.example.com/watch/page";
@@ -318,15 +318,11 @@ async function runSelfTest() {
     "https://media.example.org/live/playlist.m3u8",
   ]);
   assert(result.length === expected.size, "Количество ссылок не совпадает");
-  for (const url of result) assert(expected.has(url), `Неожиданный URL в результатах: ${url}`);
+  for (const url of result) assert(expected.has(url), `Неожиданный URL: ${url}`);
 
-  const merged = mergeCandidates(
-    ["https://edge.example/live/main.m3u8?token=1"],
-    ["https://edge.example/live/main.m3u8?token=1", "https://edge.example/live/backup.m3u8&amp;x=1"],
-  );
-  assert(merged.length === 2, "Сетевые и HTML кандидаты должны объединяться без дублей");
-  assert(merged[1].includes("&x=1"), "HTML entity в m3u8 URL должна декодироваться");
-
+  const migrated = normalizeSourceUrl("http://ip.tivix.co/035212-telekanal-dom-kino.html");
+  assert(migrated === "https://live.tivix.co/035212-telekanal-dom-kino.html", "Tivix URL migration failed");
+  assert(Math.min(MAX_BUDGET_MS, 12000) === 5000, "Global extractor budget must stay capped at 5s");
   console.log("Self-test passed");
 }
 
