@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 import axios from "axios";
 import * as cheerio from "cheerio";
-import { chromium } from "playwright-core";
+import { acquireChromium, releaseChromium } from "./browser-runtime.js";
 
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
@@ -223,7 +223,7 @@ async function extractWithPlaywright(targetUrl, referer, deadline) {
   };
   if (executablePath) launchOptions.executablePath = executablePath;
 
-  const browser = await chromium.launch(launchOptions);
+  const { browser, shared } = await acquireChromium(launchOptions);
   let context;
   try {
     context = await browser.newContext({
@@ -290,7 +290,7 @@ async function extractWithPlaywright(targetUrl, referer, deadline) {
     return [];
   } finally {
     if (context) { try { await context.close(); } catch {} }
-    try { await browser.close(); } catch {}
+    await releaseChromium(browser, shared);
   }
 }
 
