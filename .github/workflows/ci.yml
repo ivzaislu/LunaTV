@@ -48,6 +48,7 @@ jobs:
             if [[ "${GITHUB_REF:-}" == "refs/heads/agent/fix-iptv-sources" ]]; then
               echo "Running live source diagnostics for repair branch"
               smoke_status=0
+
               docker run --rm "$IMAGE" bash -lc "
                 set -u
                 python scripts/source_smoke.py --timeout 20 || exit 1
@@ -68,6 +69,15 @@ jobs:
                   --timeout 20 \\
                   --samples-per-host 2 \\
                   --extractor universal-playwright-extractor.js || exit 1
+              " || smoke_status=1
+
+              docker run --rm "$IMAGE" bash -lc "
+                set -u
+                python scripts/source_smoke.py \\
+                  --hosts smotru.tv mediamaniya.ru oneliketv.net live.domatv.net \\
+                  --timeout 20 \\
+                  --samples-per-host 2 \\
+                  --extractor cdn-browser-extractor.js || exit 1
               " || smoke_status=1
 
               if [[ "$smoke_status" -ne 0 ]]; then
