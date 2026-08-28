@@ -1,205 +1,205 @@
 #EXTM3U
 #EXTINF:-1 tvg-name="Travel+Adventure" group-title="OnlineTV",Travel+Adventure
-http://127.0.0.1:5000/stream/travel-adventure-xittv
+http://127.0.0.1:6060/stream/travel-adventure-xittv
 
 #EXTINF:-1 tvg-name="Travel Channel" group-title="OnlineTV",Travel Channel
-http://127.0.0.1:5000/stream/travel-channel-xittv
+http://127.0.0.1:6060/stream/travel-channel-xittv
 
 #EXTINF:-1 tvg-name="History" group-title="OnlineTV",History
-http://127.0.0.1:5000/stream/history-xittv
+http://127.0.0.1:6060/stream/history-xittv
 
 #EXTINF:-1 tvg-name="Наука 2.0" group-title="OnlineTV",Наука 2.0
-http://127.0.0.1:5000/stream/nauka-2-0-xittv
+http://127.0.0.1:6060/stream/nauka-2-0-xittv
 
 #EXTINF:-1 tvg-name="Т24" group-title="OnlineTV",Т24
-http://127.0.0.1:5000/stream/t24-xittv
+http://127.0.0.1:6060/stream/t24-xittv
 
 #EXTINF:-1 tvg-name="Оружие" group-title="OnlineTV",Оружие
-http://127.0.0.1:5000/stream/oruzhie-xittv
+http://127.0.0.1:6060/stream/oruzhie-xittv
 
 #EXTINF:-1 tvg-name="Моя Планета" group-title="OnlineTV",Моя Планета
-http://127.0.0.1:5000/stream/moia-planeta-xittv
+http://127.0.0.1:6060/stream/moia-planeta-xittv
 
 #EXTINF:-1 tvg-name="Живая Планета" group-title="OnlineTV",Живая Планета
-http://127.0.0.1:5000/stream/zhivaia-planeta-xittv
+http://127.0.0.1:6060/stream/zhivaia-planeta-xittv
 
 #EXTINF:-1 tvg-name="Доктор" group-title="OnlineTV",Доктор
-http://127.0.0.1:5000/stream/doktor-xittv
+http://127.0.0.1:6060/stream/doktor-xittv
 
 #EXTINF:-1 tvg-name="Охотник И Рыболов" group-title="OnlineTV",Охотник И Рыболов
-http://127.0.0.1:5000/stream/okhotnik-i-rybolov-xittv
+http://127.0.0.1:6060/stream/okhotnik-i-rybolov-xittv
 
 #EXTINF:-1 tvg-name="Авто Плюс" group-title="OnlineTV",Авто Плюс
-http://127.0.0.1:5000/stream/avto-plius-xittv
+http://127.0.0.1:6060/stream/avto-plius-xittv
 
 #EXTINF:-1 tvg-name="Моя Стихия" group-title="OnlineTV",Моя Стихия
-http://127.0.0.1:5000/stream/moia-stikhiia-xittv
+http://127.0.0.1:6060/stream/moia-stikhiia-xittv
 
 #EXTINF:-1 tvg-name="Бобер" group-title="OnlineTV",Бобер
-http://127.0.0.1:5000/stream/bobior-xittv
+http://127.0.0.1:6060/stream/bobior-xittv
 
 #EXTINF:-1 tvg-name="Мама" group-title="OnlineTV",Мама
-http://127.0.0.1:5000/stream/mama-xittv
+http://127.0.0.1:6060/stream/mama-xittv
 
 #EXTINF:-1 tvg-name="Загородная Жизнь" group-title="OnlineTV",Загородная Жизнь
-http://127.0.0.1:5000/stream/zagorodnaia-zhizn-xittv
+http://127.0.0.1:6060/stream/zagorodnaia-zhizn-xittv
 
 #EXTINF:-1 tvg-name="Кухня Тв" group-title="OnlineTV",Кухня Тв
-http://127.0.0.1:5000/stream/kukhnia-tv-xittv
+http://127.0.0.1:6060/stream/kukhnia-tv-xittv
 
 #EXTINF:-1 tvg-name="Galaxy Tv" group-title="OnlineTV",Galaxy Tv
-http://127.0.0.1:5000/stream/galaxy-tv-xittv
+http://127.0.0.1:6060/stream/galaxy-tv-xittv
 
 #EXTINF:-1 tvg-name="История" group-title="OnlineTV",История
-http://127.0.0.1:5000/stream/istoriia-xittv
+http://127.0.0.1:6060/stream/istoriia-xittv
 
 #EXTINF:-1 tvg-name="9 Канал Израиль" group-title="OnlineTV",9 Канал Израиль
-http://127.0.0.1:5000/stream/9-kanal-izrail-xittv
+http://127.0.0.1:6060/stream/9-kanal-izrail-xittv
 
 #EXTINF:-1 tvg-name="Тнт4" group-title="OnlineTV",Тнт4
-http://127.0.0.1:5000/stream/tnt4-xittv
+http://127.0.0.1:6060/stream/tnt4-xittv
 
 #EXTINF:-1 tvg-name="Сарафан" group-title="OnlineTV",Сарафан
-http://127.0.0.1:5000/stream/sarafan-xittv
+http://127.0.0.1:6060/stream/sarafan-xittv
 
 #EXTINF:-1 tvg-name="Дом Кино" group-title="OnlineTV",Дом Кино
-http://127.0.0.1:5000/stream/dom-kino-xittv
+http://127.0.0.1:6060/stream/dom-kino-xittv
 
 #EXTINF:-1 tvg-name="Кино Тв" group-title="OnlineTV",Кино Тв
-http://127.0.0.1:5000/stream/kino-tv-xittv
+http://127.0.0.1:6060/stream/kino-tv-xittv
 
 #EXTINF:-1 tvg-name="Cinema" group-title="OnlineTV",Cinema
-http://127.0.0.1:5000/stream/cinema-xittv
+http://127.0.0.1:6060/stream/cinema-xittv
 
 #EXTINF:-1 tvg-name="Романтичное HD" group-title="OnlineTV",Романтичное HD
-http://127.0.0.1:5000/stream/romantichnoe-hd-xittv
+http://127.0.0.1:6060/stream/romantichnoe-hd-xittv
 
 #EXTINF:-1 tvg-name="Страшное HD" group-title="OnlineTV",Страшное HD
-http://127.0.0.1:5000/stream/strashnoe-hd-xittv
+http://127.0.0.1:6060/stream/strashnoe-hd-xittv
 
 #EXTINF:-1 tvg-name="Премиальное HD" group-title="OnlineTV",Премиальное HD
-http://127.0.0.1:5000/stream/premial-noe-hd-xittv
+http://127.0.0.1:6060/stream/premial-noe-hd-xittv
 
 #EXTINF:-1 tvg-name="Хит HD" group-title="OnlineTV",Хит HD
-http://127.0.0.1:5000/stream/khit-hd-xittv
+http://127.0.0.1:6060/stream/khit-hd-xittv
 
 #EXTINF:-1 tvg-name="Мосфильм «Золотая Коллекция»" group-title="OnlineTV",Мосфильм «Золотая Коллекция»
-http://127.0.0.1:5000/stream/mosfil-m-zolotaia-xittv
+http://127.0.0.1:6060/stream/mosfil-m-zolotaia-xittv
 
 #EXTINF:-1 tvg-name="Победа" group-title="OnlineTV",Победа
-http://127.0.0.1:5000/stream/pobeda-xittv
+http://127.0.0.1:6060/stream/pobeda-xittv
 
 #EXTINF:-1 tvg-name="Киносат" group-title="OnlineTV",Киносат
-http://127.0.0.1:5000/stream/kinosat-xittv
+http://127.0.0.1:6060/stream/kinosat-xittv
 
 #EXTINF:-1 tvg-name="Кинопоказ" group-title="OnlineTV",Кинопоказ
-http://127.0.0.1:5000/stream/kinopokaz-xittv
+http://127.0.0.1:6060/stream/kinopokaz-xittv
 
 #EXTINF:-1 tvg-name="Звезда" group-title="OnlineTV",Звезда
-http://127.0.0.1:5000/stream/zvezda-xittv
+http://127.0.0.1:6060/stream/zvezda-xittv
 
 #EXTINF:-1 tvg-name="Еврокино" group-title="OnlineTV",Еврокино
-http://127.0.0.1:5000/stream/evrokino-xittv
+http://127.0.0.1:6060/stream/evrokino-xittv
 
 #EXTINF:-1 tvg-name="Нст" group-title="OnlineTV",Нст
-http://127.0.0.1:5000/stream/nst-xittv
+http://127.0.0.1:6060/stream/nst-xittv
 
 #EXTINF:-1 tvg-name="Иллюзион+" group-title="OnlineTV",Иллюзион+
-http://127.0.0.1:5000/stream/illiuzion-xittv
+http://127.0.0.1:6060/stream/illiuzion-xittv
 
 #EXTINF:-1 tvg-name="Русский Иллюзион" group-title="OnlineTV",Русский Иллюзион
-http://127.0.0.1:5000/stream/russkii-illiuzion-xittv
+http://127.0.0.1:6060/stream/russkii-illiuzion-xittv
 
 #EXTINF:-1 tvg-name="Tv Xxi" group-title="OnlineTV",Tv Xxi
-http://127.0.0.1:5000/stream/tv-xxi-tv-21-xittv
+http://127.0.0.1:6060/stream/tv-xxi-tv-21-xittv
 
 #EXTINF:-1 tvg-name="Русский Роман" group-title="OnlineTV",Русский Роман
-http://127.0.0.1:5000/stream/russkii-roman-xittv
+http://127.0.0.1:6060/stream/russkii-roman-xittv
 
 #EXTINF:-1 tvg-name="Русский Бестселлер" group-title="OnlineTV",Русский Бестселлер
-http://127.0.0.1:5000/stream/russkii-bestseller-xittv
+http://127.0.0.1:6060/stream/russkii-bestseller-xittv
 
 #EXTINF:-1 tvg-name="Русский Детектив" group-title="OnlineTV",Русский Детектив
-http://127.0.0.1:5000/stream/russkii-detektiv-xittv
+http://127.0.0.1:6060/stream/russkii-detektiv-xittv
 
 #EXTINF:-1 tvg-name="Шокирующее Hd" group-title="OnlineTV",Шокирующее Hd
-http://127.0.0.1:5000/stream/shokiruiushchee-hd-xittv
+http://127.0.0.1:6060/stream/shokiruiushchee-hd-xittv
 
 #EXTINF:-1 tvg-name="Комедийное HD" group-title="OnlineTV",Комедийное HD
-http://127.0.0.1:5000/stream/komediinoe-hd-xittv
+http://127.0.0.1:6060/stream/komediinoe-hd-xittv
 
 #EXTINF:-1 tvg-name="Наше крутое HD" group-title="OnlineTV",Наше крутое HD
-http://127.0.0.1:5000/stream/nashe-xittv
+http://127.0.0.1:6060/stream/nashe-xittv
 
 #EXTINF:-1 tvg-name="Душевное" group-title="OnlineTV",Душевное
-http://127.0.0.1:5000/stream/dushevnoe-xittv
+http://127.0.0.1:6060/stream/dushevnoe-xittv
 
 #EXTINF:-1 tvg-name="Остросюжетное HD" group-title="OnlineTV",Остросюжетное HD
-http://127.0.0.1:5000/stream/ostrosiuzhetnoe-kino-xittv
+http://127.0.0.1:6060/stream/ostrosiuzhetnoe-kino-xittv
 
 #EXTINF:-1 tvg-name="Bollywood" group-title="OnlineTV",Bollywood
-http://127.0.0.1:5000/stream/bollywood-xittv
+http://127.0.0.1:6060/stream/bollywood-xittv
 
 #EXTINF:-1 tvg-name="Дом Кино Премиум" group-title="OnlineTV",Дом Кино Премиум
-http://127.0.0.1:5000/stream/dom-kino-premium-xittv
+http://127.0.0.1:6060/stream/dom-kino-premium-xittv
 
 #EXTINF:-1 tvg-name="Солнце" group-title="OnlineTV",Солнце
-http://127.0.0.1:5000/stream/solntse-xittv
+http://127.0.0.1:6060/stream/solntse-xittv
 
 #EXTINF:-1 tvg-name="Nickelodeon" group-title="OnlineTV",Nickelodeon
-http://127.0.0.1:5000/stream/nickelodeon-xittv
+http://127.0.0.1:6060/stream/nickelodeon-xittv
 
 #EXTINF:-1 tvg-name="Уникум" group-title="OnlineTV",Уникум
-http://127.0.0.1:5000/stream/unikum-xittv
+http://127.0.0.1:6060/stream/unikum-xittv
 
 #EXTINF:-1 tvg-name="Карусель" group-title="OnlineTV",Карусель
-http://127.0.0.1:5000/stream/karusel-xittv
+http://127.0.0.1:6060/stream/karusel-xittv
 
 #EXTINF:-1 tvg-name="Радость Моя" group-title="OnlineTV",Радость Моя
-http://127.0.0.1:5000/stream/radost-moia-xittv
+http://127.0.0.1:6060/stream/radost-moia-xittv
 
 #EXTINF:-1 tvg-name="Gulli girl" group-title="OnlineTV",Gulli girl
-http://127.0.0.1:5000/stream/gulli-xittv
+http://127.0.0.1:6060/stream/gulli-xittv
 
 #EXTINF:-1 tvg-name="Ani" group-title="OnlineTV",Ani
-http://127.0.0.1:5000/stream/ani-xittv
+http://127.0.0.1:6060/stream/ani-xittv
 
 #EXTINF:-1 tvg-name="Tiji" group-title="OnlineTV",Tiji
-http://127.0.0.1:5000/stream/tiji-xittv
+http://127.0.0.1:6060/stream/tiji-xittv
 
 #EXTINF:-1 tvg-name="Мульт" group-title="OnlineTV",Мульт
-http://127.0.0.1:5000/stream/mul-t-xittv
+http://127.0.0.1:6060/stream/mul-t-xittv
 
 #EXTINF:-1 tvg-name="Nick Jr" group-title="OnlineTV",Nick Jr
-http://127.0.0.1:5000/stream/nick-jr-xittv
+http://127.0.0.1:6060/stream/nick-jr-xittv
 
 #EXTINF:-1 tvg-name="1Hd" group-title="OnlineTV",1Hd
-http://127.0.0.1:5000/stream/1hd-xittv
+http://127.0.0.1:6060/stream/1hd-xittv
 
 #EXTINF:-1 tvg-name="Тнт Music" group-title="OnlineTV",Тнт Music
-http://127.0.0.1:5000/stream/tnt-music-xittv
+http://127.0.0.1:6060/stream/tnt-music-xittv
 
 #EXTINF:-1 tvg-name="Bridge Tv" group-title="OnlineTV",Bridge Tv
-http://127.0.0.1:5000/stream/bridge-tv-xittv
+http://127.0.0.1:6060/stream/bridge-tv-xittv
 
 #EXTINF:-1 tvg-name="Mtv 00S" group-title="OnlineTV",Mtv 00S
-http://127.0.0.1:5000/stream/mtv-00s-xittv
+http://127.0.0.1:6060/stream/mtv-00s-xittv
 
 #EXTINF:-1 tvg-name="Mtv 80S" group-title="OnlineTV",Mtv 80S
-http://127.0.0.1:5000/stream/mtv-80s-xittv
+http://127.0.0.1:6060/stream/mtv-80s-xittv
 
 #EXTINF:-1 tvg-name="Муз Тв" group-title="OnlineTV",Муз Тв
-http://127.0.0.1:5000/stream/muz-tv-xittv
+http://127.0.0.1:6060/stream/muz-tv-xittv
 
 #EXTINF:-1 tvg-name="Шансон-TB" group-title="OnlineTV",Шансон-TB
-http://127.0.0.1:5000/stream/shanson-tv-xittv
+http://127.0.0.1:6060/stream/shanson-tv-xittv
 
 #EXTINF:-1 tvg-name="Ru Tv" group-title="OnlineTV",Ru Tv
-http://127.0.0.1:5000/stream/ru-tv-xittv
+http://127.0.0.1:6060/stream/ru-tv-xittv
 
 #EXTINF:-1 tvg-name="Music Box Russia" group-title="OnlineTV",Music Box Russia
-http://127.0.0.1:5000/stream/russian-music-box-xittv
+http://127.0.0.1:6060/stream/russian-music-box-xittv
 
 #EXTINF:-1 tvg-name="MTV Hits" group-title="OnlineTV",MTV Hits
-http://127.0.0.1:5000/stream/mtv-hits-xittv
+http://127.0.0.1:6060/stream/mtv-hits-xittv
 
