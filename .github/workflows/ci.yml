@@ -1,0 +1,48 @@
+name: LunaTV CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: self-hosted
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: LunaTV CI under global lock
+        shell: bash
+        run: |
+          echo "Waiting for global CI lock..."
+          flock -x /shared-lock/global.lock bash -lc '
+            set -Eeuo pipefail
+            echo "Global CI lock acquired: LunaTV"
+
+            cd "$GITHUB_WORKSPACE"
+            IMAGE="lunatv-ci:${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+
+            cleanup() {
+              docker image rm -f "$IMAGE" >/dev/null 2>&1 || true
+            }
+            trap cleanup EXIT
+
+            docker build -t "$IMAGE" .
+            docker run --rm "$IMAGE" bash -lc "
+              set -Eeuo pipefail
+              npm test
+              python -m unittest discover
+              python -m compileall update_playlist.py scaner.py
+              python test_m3u_playlists.py
+            "
+
+            echo "LunaTV CI finished; releasing global lock"
+          '
