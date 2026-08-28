@@ -100,6 +100,39 @@ jobs:
                 exit \"\$live_fail\"
               " || smoke_status=1
 
+              echo "Running persistent-worker live benchmark"
+              docker run --rm "$IMAGE" bash -lc "
+                set -u
+                node extractor/universal-worker.js >/tmp/lunatv-worker.log 2>&1 &
+                worker_pid=\$!
+                cleanup_worker() {
+                  kill \"\$worker_pid\" >/dev/null 2>&1 || true
+                  wait \"\$worker_pid\" >/dev/null 2>&1 || true
+                }
+                trap cleanup_worker EXIT
+                ready=0
+                for _ in \$(seq 1 300); do
+                  if (echo > /dev/tcp/127.0.0.1/6071) >/dev/null 2>&1; then ready=1; break; fi
+                  if ! kill -0 \"\$worker_pid\" >/dev/null 2>&1; then break; fi
+                  sleep 0.1
+                done
+                if [[ \"\$ready\" -ne 1 ]]; then
+                  echo \"Persistent extractor worker failed to become ready\"
+                  cat /tmp/lunatv-worker.log || true
+                  exit 1
+                fi
+                echo \"Persistent extractor worker ready\"
+                python scripts/worker_live_probe.py \\
+                  dom-kino-smotru \\
+                  tv-1000-oneliketv \\
+                  sony-sci-fi-viks \\
+                  dom-kino-tivix \\
+                  russkii-roman-telik \\
+                  sts-domatv \\
+                  nba-tv-mediamaniya \\
+                  --timeout 5 || exit 1
+              " || smoke_status=1
+
               echo "Running live CDN header-profile diagnostics"
               docker run --rm "$IMAGE" bash -lc "
                 set -u
@@ -111,7 +144,7 @@ jobs:
               " || true
 
               if [[ "$smoke_status" -ne 0 ]]; then
-                echo "One or more warm-browser live probes failed the <=5s SLA"
+                echo "One or more live probes failed the <=5s SLA"
               fi
             fi
 
