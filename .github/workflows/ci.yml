@@ -46,7 +46,7 @@ jobs:
               npm test
               python -m unittest discover
               python -m compileall update_playlist.py scaner.py proxy_server.py tests scripts
-              python test_m3u_playlists.py
+              python -m unittest tests.test_m3u_integrity
             "
 
             if [[ "${GITHUB_REF:-}" == "refs/heads/agent/fix-iptv-sources" ]]; then
