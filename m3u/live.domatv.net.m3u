@@ -1,169 +1,169 @@
 #EXTM3U
 #EXTINF:-1 tvg-name="Стс" group-title="OnlineTV",Стс
-http://127.0.0.1:5000/stream/sts-domatv
+http://127.0.0.1:6060/stream/sts-domatv
 
 #EXTINF:-1 tvg-name="Дом Кино Премиум HD" group-title="OnlineTV",Дом Кино Премиум HD
-http://127.0.0.1:5000/stream/dom-kino-premium-domatv
+http://127.0.0.1:6060/stream/dom-kino-premium-domatv
 
 #EXTINF:-1 tvg-name="Русская Комедия" group-title="OnlineTV",Русская Комедия
-http://127.0.0.1:5000/stream/russkaia-komediia-domatv
+http://127.0.0.1:6060/stream/russkaia-komediia-domatv
 
 #EXTINF:-1 tvg-name="Кино ТВ" group-title="OnlineTV",Кино ТВ
-http://127.0.0.1:5000/stream/kino-tv-domatv
+http://127.0.0.1:6060/stream/kino-tv-domatv
 
 #EXTINF:-1 tvg-name="Шокирующее HD" group-title="OnlineTV",Шокирующее HD
-http://127.0.0.1:5000/stream/shokiruiushchee-hd-domatv
+http://127.0.0.1:6060/stream/shokiruiushchee-hd-domatv
 
 #EXTINF:-1 tvg-name="Дорама" group-title="OnlineTV",Дорама
-http://127.0.0.1:5000/stream/dorama-domatv
+http://127.0.0.1:6060/stream/dorama-domatv
 
 #EXTINF:-1 tvg-name="Vip Comedy" group-title="OnlineTV",Vip Comedy
-http://127.0.0.1:5000/stream/vip-comedy-domatv
+http://127.0.0.1:6060/stream/vip-comedy-domatv
 
 #EXTINF:-1 tvg-name="Vip Megahit" group-title="OnlineTV",Vip Megahit
-http://127.0.0.1:5000/stream/vip-megahit-domatv
+http://127.0.0.1:6060/stream/vip-megahit-domatv
 
 #EXTINF:-1 tvg-name="Sony Sci-Fi" group-title="OnlineTV",Sony Sci-Fi
-http://127.0.0.1:5000/stream/sony-sci-fi-domatv
+http://127.0.0.1:6060/stream/sony-sci-fi-domatv
 
 #EXTINF:-1 tvg-name="Остросюжетное HD" group-title="OnlineTV",Остросюжетное HD
-http://127.0.0.1:5000/stream/ostrosiuzhetnoe-hd-domatv
+http://127.0.0.1:6060/stream/ostrosiuzhetnoe-hd-domatv
 
 #EXTINF:-1 tvg-name="Домашний" group-title="OnlineTV",Домашний
-http://127.0.0.1:5000/stream/domashnii-domatv
+http://127.0.0.1:6060/stream/domashnii-domatv
 
 #EXTINF:-1 tvg-name="Дом Кино" group-title="OnlineTV",Дом Кино
-http://127.0.0.1:5000/stream/dom-kino-domatv
+http://127.0.0.1:6060/stream/dom-kino-domatv
 
 #EXTINF:-1 tvg-name="Звезда" group-title="OnlineTV",Звезда
-http://127.0.0.1:5000/stream/zvezda-domatv
+http://127.0.0.1:6060/stream/zvezda-domatv
 
 #EXTINF:-1 tvg-name="Пятый Канал" group-title="OnlineTV",Пятый Канал
-http://127.0.0.1:5000/stream/piatyi-kanal-domatv
+http://127.0.0.1:6060/stream/piatyi-kanal-domatv
 
 #EXTINF:-1 tvg-name="Романтичное HD" group-title="OnlineTV",Романтичное HD
-http://127.0.0.1:5000/stream/romantichnoe-hd-domatv
+http://127.0.0.1:6060/stream/romantichnoe-hd-domatv
 
 #EXTINF:-1 tvg-name="Душевное" group-title="OnlineTV",Душевное
-http://127.0.0.1:5000/stream/dushevnoe-domatv
+http://127.0.0.1:6060/stream/dushevnoe-domatv
 
 #EXTINF:-1 tvg-name="Hollywood" group-title="OnlineTV",Hollywood
-http://127.0.0.1:5000/stream/hollywood-domatv
+http://127.0.0.1:6060/stream/hollywood-domatv
 
 #EXTINF:-1 tvg-name="Нтв Хит" group-title="OnlineTV",Нтв Хит
-http://127.0.0.1:5000/stream/ntv-khit-domatv
+http://127.0.0.1:6060/stream/ntv-khit-domatv
 
 #EXTINF:-1 tvg-name="Нтв Сериал" group-title="OnlineTV",Нтв Сериал
-http://127.0.0.1:5000/stream/ntv-serial-domatv
+http://127.0.0.1:6060/stream/ntv-serial-domatv
 
 #EXTINF:-1 tvg-name="Vip Premiere" group-title="OnlineTV",Vip Premiere
-http://127.0.0.1:5000/stream/vip-premiere-domatv
+http://127.0.0.1:6060/stream/vip-premiere-domatv
 
 #EXTINF:-1 tvg-name="Еврокино" group-title="OnlineTV",Еврокино
-http://127.0.0.1:5000/stream/evrokino-domatv
+http://127.0.0.1:6060/stream/evrokino-domatv
 
 #EXTINF:-1 tvg-name="Bollywood" group-title="OnlineTV",Bollywood
-http://127.0.0.1:5000/stream/bollywood-domatv
+http://127.0.0.1:6060/stream/bollywood-domatv
 
 #EXTINF:-1 tvg-name="9 Канал Израиль" group-title="OnlineTV",9 Канал Израиль
-http://127.0.0.1:5000/stream/9-kanal-izrail-domatv
+http://127.0.0.1:6060/stream/9-kanal-izrail-domatv
 
 #EXTINF:-1 tvg-name="Наше крутое HD" group-title="OnlineTV",Наше крутое HD
-http://127.0.0.1:5000/stream/nash-detektiv-domatv
+http://127.0.0.1:6060/stream/nash-detektiv-domatv
 
 #EXTINF:-1 tvg-name="Amedia 2" group-title="OnlineTV",Amedia 2
-http://127.0.0.1:5000/stream/a2-domatv
+http://127.0.0.1:6060/stream/a2-domatv
 
 #EXTINF:-1 tvg-name="Amedia 1" group-title="OnlineTV",Amedia 1
-http://127.0.0.1:5000/stream/a1-domatv
+http://127.0.0.1:6060/stream/a1-domatv
 
 #EXTINF:-1 tvg-name="Любимое Кино" group-title="OnlineTV",Любимое Кино
-http://127.0.0.1:5000/stream/liubimoe-kino-domatv
+http://127.0.0.1:6060/stream/liubimoe-kino-domatv
 
 #EXTINF:-1 tvg-name="Иллюзион+" group-title="OnlineTV",Иллюзион+
-http://127.0.0.1:5000/stream/illiuzion-domatv
+http://127.0.0.1:6060/stream/illiuzion-domatv
 
 #EXTINF:-1 tvg-name="Русский Иллюзион" group-title="OnlineTV",Русский Иллюзион
-http://127.0.0.1:5000/stream/russkii-illiuzion-domatv
+http://127.0.0.1:6060/stream/russkii-illiuzion-domatv
 
 #EXTINF:-1 tvg-name="Мир" group-title="OnlineTV",Мир
-http://127.0.0.1:5000/stream/mir-domatv
+http://127.0.0.1:6060/stream/mir-domatv
 
 #EXTINF:-1 tvg-name="Мультимузыка" group-title="OnlineTV",Мультимузыка
-http://127.0.0.1:5000/stream/mul-timuzyka-domatv
+http://127.0.0.1:6060/stream/mul-timuzyka-domatv
 
 #EXTINF:-1 tvg-name="Муз Тв" group-title="OnlineTV",Муз Тв
-http://127.0.0.1:5000/stream/muz-tv-domatv
+http://127.0.0.1:6060/stream/muz-tv-domatv
 
 #EXTINF:-1 tvg-name="Vh1 Classic" group-title="OnlineTV",Vh1 Classic
-http://127.0.0.1:5000/stream/vh1-classic-domatv
+http://127.0.0.1:6060/stream/vh1-classic-domatv
 
 #EXTINF:-1 tvg-name="Vh1 Europe" group-title="OnlineTV",Vh1 Europe
-http://127.0.0.1:5000/stream/vh1-europe-domatv
+http://127.0.0.1:6060/stream/vh1-europe-domatv
 
 #EXTINF:-1 tvg-name="Bridge Tv" group-title="OnlineTV",Bridge Tv
-http://127.0.0.1:5000/stream/bridge-tv-domatv
+http://127.0.0.1:6060/stream/bridge-tv-domatv
 
 #EXTINF:-1 tvg-name="MTV Hits" group-title="OnlineTV",MTV Hits
-http://127.0.0.1:5000/stream/mtv-hits-domatv
+http://127.0.0.1:6060/stream/mtv-hits-domatv
 
 #EXTINF:-1 tvg-name="ТНТ Music" group-title="OnlineTV",ТНТ Music
-http://127.0.0.1:5000/stream/tnt-music-domatv
+http://127.0.0.1:6060/stream/tnt-music-domatv
 
 #EXTINF:-1 tvg-name="MCM Top" group-title="OnlineTV",MCM Top
-http://127.0.0.1:5000/stream/msm-tor-domatv
+http://127.0.0.1:6060/stream/msm-tor-domatv
 
 #EXTINF:-1 tvg-name="Ru Tv" group-title="OnlineTV",Ru Tv
-http://127.0.0.1:5000/stream/ru-tv-domatv
+http://127.0.0.1:6060/stream/ru-tv-domatv
 
 #EXTINF:-1 tvg-name="Шансон-TB" group-title="OnlineTV",Шансон-TB
-http://127.0.0.1:5000/stream/shanson-tv-domatv
+http://127.0.0.1:6060/stream/shanson-tv-domatv
 
 #EXTINF:-1 tvg-name="Тнт4" group-title="OnlineTV",Тнт4
-http://127.0.0.1:5000/stream/tnt4-domatv
+http://127.0.0.1:6060/stream/tnt4-domatv
 
 #EXTINF:-1 tvg-name="Рен ТВ" group-title="OnlineTV",Рен ТВ
-http://127.0.0.1:5000/stream/ren-tv-domatv
+http://127.0.0.1:6060/stream/ren-tv-domatv
 
 #EXTINF:-1 tvg-name="Тнт" group-title="OnlineTV",Тнт
-http://127.0.0.1:5000/stream/tnt-domatv
+http://127.0.0.1:6060/stream/tnt-domatv
 
 #EXTINF:-1 tvg-name="Че" group-title="OnlineTV",Че
-http://127.0.0.1:5000/stream/che-tv-domatv
+http://127.0.0.1:6060/stream/che-tv-domatv
 
 #EXTINF:-1 tvg-name="2x2" group-title="OnlineTV",2x2
-http://127.0.0.1:5000/stream/2x2-domatv
+http://127.0.0.1:6060/stream/2x2-domatv
 
 #EXTINF:-1 tvg-name="Союзмультфильм" group-title="OnlineTV",Союзмультфильм
-http://127.0.0.1:5000/stream/soiuzmul-tfil-m-domatv
+http://127.0.0.1:6060/stream/soiuzmul-tfil-m-domatv
 
 #EXTINF:-1 tvg-name="В Гостях У Сказки" group-title="OnlineTV",В Гостях У Сказки
-http://127.0.0.1:5000/stream/v-gostiakh-u-skazki-domatv
+http://127.0.0.1:6060/stream/v-gostiakh-u-skazki-domatv
 
 #EXTINF:-1 tvg-name="Tiji" group-title="OnlineTV",Tiji
-http://127.0.0.1:5000/stream/tiji-domatv
+http://127.0.0.1:6060/stream/tiji-domatv
 
 #EXTINF:-1 tvg-name="Nick Jr" group-title="OnlineTV",Nick Jr
-http://127.0.0.1:5000/stream/nick-jr-domatv
+http://127.0.0.1:6060/stream/nick-jr-domatv
 
 #EXTINF:-1 tvg-name="Nickelodeon" group-title="OnlineTV",Nickelodeon
-http://127.0.0.1:5000/stream/nickelodeon-domatv
+http://127.0.0.1:6060/stream/nickelodeon-domatv
 
 #EXTINF:-1 tvg-name="Disney" group-title="OnlineTV",Disney
-http://127.0.0.1:5000/stream/disney-domatv
+http://127.0.0.1:6060/stream/disney-domatv
 
 #EXTINF:-1 tvg-name="Gulli Girl" group-title="OnlineTV",Gulli Girl
-http://127.0.0.1:5000/stream/gulli-girl-domatv
+http://127.0.0.1:6060/stream/gulli-girl-domatv
 
 #EXTINF:-1 tvg-name="Ералаш" group-title="OnlineTV",Ералаш
-http://127.0.0.1:5000/stream/eralash-domatv
+http://127.0.0.1:6060/stream/eralash-domatv
 
 #EXTINF:-1 tvg-name="Ani" group-title="OnlineTV",Ani
-http://127.0.0.1:5000/stream/ani-domatv
+http://127.0.0.1:6060/stream/ani-domatv
 
 #EXTINF:-1 tvg-name="Мульт" group-title="OnlineTV",Мульт
-http://127.0.0.1:5000/stream/mul-t-domatv
+http://127.0.0.1:6060/stream/mul-t-domatv
 
 #EXTINF:-1 tvg-name="Карусель" group-title="OnlineTV",Карусель
-http://127.0.0.1:5000/stream/karusel-domatv
+http://127.0.0.1:6060/stream/karusel-domatv
 
