@@ -1,7 +1,7 @@
 {
   "default": {
     "script": "smotru-m3u-one-stealth.js",
-    "timeout_sec": 10,
+    "timeout_sec": 5,
     "url_allow_re": [
       "^https?://[^/]+/[^?#]+$"
     ],
@@ -17,8 +17,8 @@
     ]
   },
   "smotru.tv": {
-    "script": "cdnpotok.js",
-    "timeout_sec": 10,
+    "script": "universal-playwright-extractor.js",
+    "timeout_sec": 5,
     "url_allow_re": [
       "^https?://smotru\\.tv/[^/?#]+\\.html$"
     ],
@@ -37,7 +37,7 @@
   },
   "mediamaniya.ru": {
     "script": "smotru-m3u-one-stealth.js",
-    "timeout_sec": 10,
+    "timeout_sec": 5,
     "url_allow_re": [
       "^https?://mediamaniya\\.ru/tv/[^/?#]+/?$"
     ],
@@ -52,7 +52,7 @@
   },
   "ip.tivix.co": {
     "script": "universal-playwright-extractor.js",
-    "timeout_sec": 12,
+    "timeout_sec": 5,
     "url_allow_re": [
       "^https?://ip\\.tivix\\.co/\\d+-[a-z0-9-]+\\.html$"
     ],
@@ -62,7 +62,7 @@
   },
   "live.tivix.co": {
     "script": "universal-playwright-extractor.js",
-    "timeout_sec": 12,
+    "timeout_sec": 5,
     "url_allow_re": [
       "^https?://live\\.tivix\\.co/\\d+-[a-z0-9-]+\\.html$"
     ],
@@ -72,7 +72,7 @@
   },
   "viks.tv": {
     "script": "universal-playwright-extractor.js",
-    "timeout_sec": 10,
+    "timeout_sec": 5,
     "url_allow_re": [
       "^https?://(?:[a-z0-9-]+\\.)?viks\\.tv/(?!news|page|search|privacy|about|contacts?)(?:[a-z0-9-]+/)*[a-z0-9-]+(?:\\.html)?(?:[?#].*)?$"
     ],
@@ -80,7 +80,7 @@
   },
   "live.viks.tv": {
     "script": "universal-playwright-extractor.js",
-    "timeout_sec": 10,
+    "timeout_sec": 5,
     "url_allow_re": [
       "^https?://(?:[a-z0-9-]+\\.)?viks\\.tv/(?!news|page|search|privacy|about|contacts?)(?:[a-z0-9-]+/)*[a-z0-9-]+(?:\\.html)?(?:[?#].*)?$"
     ],
@@ -88,7 +88,7 @@
   },
   "smotrettv.com": {
     "script": "smotrettv-m3u8-human.js",
-    "timeout_sec": 12,
+    "timeout_sec": 5,
     "url_allow_re": [
       "^https?://smotrettv\\.com/(?:tv/)?(?:[^\\s?#/]+/)*[^\\s?#/]+(?:\\.html?)?(?:[?#].*)?$"
     ],
@@ -99,7 +99,7 @@
   },
   "smotrettv.net": {
     "script": "smotrettv-m3u8-human.js",
-    "timeout_sec": 12,
+    "timeout_sec": 5,
     "url_allow_re": [
       "^https?://smotrettv\\.net/(?:tv/)?(?:[^\\s?#/]+/)*[^\\s?#/]+(?:\\.html?)?(?:[?#].*)?$"
     ],
@@ -110,7 +110,7 @@
   },
   "live.domatv.net": {
     "script": "smotru-m3u-one-stealth.js",
-    "timeout_sec": 10,
+    "timeout_sec": 5,
     "url_allow_re": [
       "^http://live\\.domatv\\.net/(?:[a-z0-9_-]+/)*[a-z0-9_-]+\\.html(?:[?#].*)?$"
     ],
@@ -137,7 +137,7 @@
   },
   "telik.live": {
     "script": "universal-playwright-extractor.js",
-    "timeout_sec": 12,
+    "timeout_sec": 5,
     "url_allow_re": [
       "^https?://(?:www\\.)?telik\\.live/(?:[^\\s?#/]+/)*[^\\s?#/]+(?:\\.html?)?(?:[?#].*)?$"
     ],
@@ -153,8 +153,8 @@
     ]
   },
   "oneliketv.net": {
-    "script": "cdnpotok.js",
-    "timeout_sec": 10,
+    "script": "universal-playwright-extractor.js",
+    "timeout_sec": 5,
     "url_allow_re": [
       "^https?://(?:www\\.)?oneliketv\\.net/(?:[^\\s?#/]+/)*[^\\s?#/]+(?:\\.html?)?(?:[?#].*)?$"
     ],
