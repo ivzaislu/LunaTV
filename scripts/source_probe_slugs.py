@@ -17,7 +17,7 @@ from source_smoke import (
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Probe exact LunaTV channel slugs")
     parser.add_argument("slugs", nargs="+", help="Configured slugs from config/channels.json")
-    parser.add_argument("--timeout", type=int, default=20)
+    parser.add_argument("--timeout", type=int, default=5, help="Extractor SLA cap in seconds (default: 5)")
     parser.add_argument("--extractor", help="Override configured extractor for diagnostics")
     args = parser.parse_args(argv)
 
@@ -45,14 +45,7 @@ def main(argv: list[str] | None = None) -> int:
             failures += 1
             continue
 
-        if not check_channel(
-            host,
-            slug,
-            entry,
-            controller,
-            args.extractor,
-            max(1, args.timeout),
-        ):
+        if not check_channel(host, slug, entry, controller, args.extractor, max(1, args.timeout)):
             failures += 1
 
     if failures:
