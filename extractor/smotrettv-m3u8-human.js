@@ -19,6 +19,12 @@ export function normalizeSmotretTvUrl(rawUrl) {
       url.protocol = 'https:';
       url.hostname = 'smotrettv.net';
     }
+    if (
+      url.hostname.toLowerCase() === 'smotrettv.net' &&
+      url.pathname === '/tv/sport/144-setanta-sports-1.html'
+    ) {
+      url.pathname = '/tv/sport/1210-setanta-sports-1.html';
+    }
     return url.toString();
   } catch {
     return rawUrl;
@@ -239,6 +245,10 @@ function selfTest() {
   const migrated = normalizeSmotretTvUrl('http://smotrettv.com/tv/sport/143-setanta-qazaqstan.html');
   if (migrated !== 'https://smotrettv.net/tv/sport/143-setanta-qazaqstan.html') {
     throw new Error(`SmotretTV migration mismatch: ${migrated}`);
+  }
+  const setanta1 = normalizeSmotretTvUrl('https://smotrettv.com/tv/sport/144-setanta-sports-1.html');
+  if (setanta1 !== 'https://smotrettv.net/tv/sport/1210-setanta-sports-1.html') {
+    throw new Error(`Setanta Sports 1 migration mismatch: ${setanta1}`);
   }
   const untouched = normalizeSmotretTvUrl('https://telik.live/demo.html');
   if (untouched !== 'https://telik.live/demo.html') {
