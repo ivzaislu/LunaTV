@@ -2,14 +2,14 @@
 // Fast SmotretTV extractor. Overall extraction budget is capped at 5 seconds.
 
 import { URL } from 'node:url';
-import { chromium } from 'playwright-core';
+import { acquireChromium, releaseChromium } from './browser-runtime.js';
 
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
   '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 const ACCEPT_LANG = 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7';
-const MAX_BUDGET_MS = 5000;
-const HTTP_FAST_PATH_MS = 800;
+const MAX_BUDGET_MS = 4200;
+const HTTP_FAST_PATH_MS = 650;
 
 function htmlDecodeAmp(s) { return String(s || '').replace(/&amp;/g, '&'); }
 
@@ -91,8 +91,7 @@ function delay(ms) {
 }
 
 async function httpCandidate(candidate, referer, deadline) {
-  const remaining = remainingMs(deadline);
-  const timeoutMs = Math.min(HTTP_FAST_PATH_MS, remaining);
+  const timeoutMs = Math.min(HTTP_FAST_PATH_MS, remainingMs(deadline));
   if (timeoutMs < 100) return null;
 
   const controller = new AbortController();
@@ -130,7 +129,7 @@ async function httpCandidate(candidate, referer, deadline) {
 
 async function browserCandidate(candidate, referer, deadline) {
   if (remainingMs(deadline) < 250) return null;
-  const browser = await chromium.launch({
+  const { browser, shared } = await acquireChromium({
     headless: true,
     args: ['--no-sandbox', '--disable-dev-shm-usage', '--autoplay-policy=no-user-gesture-required'],
   });
@@ -165,7 +164,7 @@ async function browserCandidate(candidate, referer, deadline) {
       return route.continue();
     });
 
-    const navTimeout = Math.min(1400, remainingMs(deadline));
+    const navTimeout = Math.min(1200, remainingMs(deadline));
     if (navTimeout > 100) {
       try {
         await Promise.race([
@@ -186,7 +185,7 @@ async function browserCandidate(candidate, referer, deadline) {
     return first;
   } finally {
     if (context) { try { await context.close(); } catch {} }
-    try { await browser.close(); } catch {}
+    await releaseChromium(browser, shared);
   }
 }
 
@@ -250,6 +249,9 @@ function selfTest() {
   const sample = findM3U8InText('file:"https://cdn.example/live/index.m3u8?token=1"', 'https://example.com/');
   if (sample !== 'https://cdn.example/live/index.m3u8?token=1') {
     throw new Error('M3U8 text extraction failed');
+  }
+  if (MAX_BUDGET_MS >= 5000) {
+    throw new Error('Internal SmotretTV budget must leave cleanup headroom');
   }
   console.log('Self-test passed');
 }
