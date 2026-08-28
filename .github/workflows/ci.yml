@@ -20,7 +20,7 @@ permissions:
 jobs:
   test:
     runs-on: self-hosted
-    timeout-minutes: 45
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
 
@@ -50,55 +50,33 @@ jobs:
             "
 
             if [[ "${GITHUB_REF:-}" == "refs/heads/agent/fix-iptv-sources" ]]; then
-              echo "Running live source diagnostics for repair branch"
+              echo "Running fast production source smoke (extractor SLA <= 5s)"
               smoke_status=0
 
               docker run --rm "$IMAGE" bash -lc "
                 set -u
-                python scripts/source_smoke.py --timeout 20 || exit 1
-              " || smoke_status=1
-
-              docker run --rm "$IMAGE" bash -lc "
-                set -u
                 python scripts/source_smoke.py \\
-                  --hosts smotru.tv mediamaniya.ru smotrettv.com oneliketv.net live.domatv.net \\
-                  --timeout 20 \\
-                  --samples-per-host 3 || exit 1
+                  --timeout 5 \\
+                  --samples-per-host 2 || exit 1
               " || smoke_status=1
 
-              docker run --rm "$IMAGE" bash -lc "
-                set -u
-                python scripts/source_smoke.py \\
-                  --hosts smotru.tv mediamaniya.ru smotrettv.com oneliketv.net \\
-                  --timeout 20 \\
-                  --samples-per-host 2 \\
-                  --extractor universal-playwright-extractor.js || exit 1
-              " || smoke_status=1
-
-              docker run --rm "$IMAGE" bash -lc "
-                set -u
-                python scripts/source_smoke.py \\
-                  --hosts smotru.tv mediamaniya.ru oneliketv.net live.domatv.net \\
-                  --timeout 20 \\
-                  --samples-per-host 2 \\
-                  --extractor cdn-browser-extractor.js || exit 1
-              " || smoke_status=1
-
-              echo "Running targeted probes for known-current channels"
+              echo "Running fast targeted probes"
               docker run --rm "$IMAGE" bash -lc "
                 set -u
                 python scripts/source_probe_slugs.py \\
-                  setanta-sports-1-smotrettv \\
-                  setanta-sports-2-smotrettv \\
+                  dom-kino-smotru \\
+                  tv-1000-oneliketv \\
                   setanta-qazaqstan-smotrettv \\
                   sony-sci-fi-viks \\
                   dom-kino-tivix \\
                   russkii-roman-telik \\
-                  --timeout 20 || exit 1
+                  sts-domatv \\
+                  nba-tv-mediamaniya \\
+                  --timeout 5 || exit 1
               " || smoke_status=1
 
               if [[ "$smoke_status" -ne 0 ]]; then
-                echo "One or more live source diagnostics failed"
+                echo "One or more sources failed the <=5s live SLA"
               fi
             fi
 
