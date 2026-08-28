@@ -75,6 +75,16 @@ jobs:
                   --timeout 5 || exit 1
               " || smoke_status=1
 
+              echo "Running live CDN header-profile diagnostics"
+              docker run --rm "$IMAGE" bash -lc "
+                set -u
+                python scripts/cdn_live_diag.py \\
+                  dom-kino-smotru \\
+                  tv-1000-oneliketv \\
+                  russkii-roman-telik \\
+                  --timeout 1.5
+              " || true
+
               if [[ "$smoke_status" -ne 0 ]]; then
                 echo "One or more sources failed the <=5s live SLA"
               fi
