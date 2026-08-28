@@ -11,9 +11,9 @@ import { acquireChromium, releaseChromium } from "./browser-runtime.js";
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
   "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
-const MAX_BUDGET_MS = 4200;
-const HTTP_FAST_PATH_MS = 550;
-const HLS_PROBE_MS = 650;
+const MAX_BUDGET_MS = 3300;
+const HTTP_FAST_PATH_MS = 450;
+const HLS_PROBE_MS = 450;
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const CHANNELS_PATH = path.join(HERE, "..", "config", "channels.json");
@@ -133,25 +133,25 @@ function delay(ms) {
 }
 
 function resolveConfiguredTarget(rawUrl) {
-  const normalized = normalizeSourceUrl(rawUrl);
+  const pageUrl = normalizeSourceUrl(rawUrl);
+  let cdnUrl = "";
   let channels = {};
   try { channels = JSON.parse(fs.readFileSync(CHANNELS_PATH, "utf8")); } catch {}
   for (const entry of Object.values(channels || {})) {
     if (!entry || typeof entry !== "object") continue;
     const entryUrl = String(entry.url || "").trim();
     if (!entryUrl) continue;
-    if (entryUrl === rawUrl || normalizeSourceUrl(entryUrl) === normalized) {
-      const cdn = String(entry.cdn || "").trim();
-      if (cdn) return { targetUrl: cdn, referer: normalized, usedCdn: true };
+    if (entryUrl === rawUrl || normalizeSourceUrl(entryUrl) === pageUrl) {
+      cdnUrl = String(entry.cdn || "").trim();
       break;
     }
   }
-  return { targetUrl: normalized, referer: normalized, usedCdn: false };
+  return { pageUrl, cdnUrl, referer: pageUrl };
 }
 
 async function probeHls(url, referer, deadline) {
   const timeoutMs = Math.min(HLS_PROBE_MS, remainingMs(deadline));
-  if (timeoutMs < 120) return false;
+  if (timeoutMs < 100) return false;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -161,7 +161,7 @@ async function probeHls(url, referer, deadline) {
       signal: controller.signal,
       headers: {
         "User-Agent": USER_AGENT,
-        "Accept": "application/vnd.apple.mpegurl,application/x-mpegURL,*/*",
+        Accept: "application/vnd.apple.mpegurl,application/x-mpegURL,*/*",
         ...(referer ? { Referer: referer } : {}),
       },
     });
@@ -187,12 +187,13 @@ async function firstLiveCandidate(candidates, referer, deadline, alreadyProbed =
     if (!url || alreadyProbed.has(url)) continue;
     alreadyProbed.add(url);
     if (await probeHls(url, referer, deadline)) return url;
-    if (remainingMs(deadline) < 150) break;
+    if (remainingMs(deadline) < 120) break;
   }
   return null;
 }
 
 async function extractWithHttp(targetUrl, referer, deadline) {
+  if (!targetUrl) return [];
   const timeout = Math.min(HTTP_FAST_PATH_MS, remainingMs(deadline));
   if (timeout < 100) return [];
   try {
@@ -204,7 +205,7 @@ async function extractWithHttp(targetUrl, referer, deadline) {
         ...(referer ? { Referer: referer } : {}),
       },
       timeout,
-      maxRedirects: 5,
+      maxRedirects: 4,
       responseType: "text",
       transformResponse: (value) => value,
     });
@@ -215,7 +216,7 @@ async function extractWithHttp(targetUrl, referer, deadline) {
   }
 }
 
-async function extractWithPlaywright(targetUrl, referer, deadline) {
+async function extractWithPlaywright(pageUrl, referer, deadline) {
   const executablePath = resolveChromiumExecutable();
   const launchOptions = {
     headless: true,
@@ -223,22 +224,24 @@ async function extractWithPlaywright(targetUrl, referer, deadline) {
   };
   if (executablePath) launchOptions.executablePath = executablePath;
 
+  const stageStarted = Date.now();
   const { browser, shared } = await acquireChromium(launchOptions);
+  const connectedAt = Date.now();
   let context;
   try {
     context = await browser.newContext({
       userAgent: USER_AGENT,
       ignoreHTTPSErrors: true,
       viewport: { width: 1280, height: 720 },
-      extraHTTPHeaders: {
-        "Accept-Language": "ru-RU,ru;q=0.9,en;q=0.8",
-        ...(referer ? { Referer: referer } : {}),
-      },
+      extraHTTPHeaders: { "Accept-Language": "ru-RU,ru;q=0.9,en;q=0.8" },
     });
     const page = await context.newPage();
     const candidates = [];
     const seen = new Set();
     const probed = new Set();
+    let liveResponse = null;
+    let resolveLiveResponse;
+    const liveResponsePromise = new Promise((resolve) => { resolveLiveResponse = resolve; });
     let wakeResolve = null;
     let wakePromise = new Promise((resolve) => { wakeResolve = resolve; });
     const wake = () => {
@@ -247,7 +250,7 @@ async function extractWithPlaywright(targetUrl, referer, deadline) {
     };
     const remember = (candidate) => {
       if (typeof candidate !== "string" || !candidate.toLowerCase().includes(".m3u8")) return;
-      const base = page.url() && page.url() !== "about:blank" ? page.url() : targetUrl;
+      const base = page.url() && page.url() !== "about:blank" ? page.url() : pageUrl;
       const normalized = absoluteUrl(candidate, base);
       if (!normalized || seen.has(normalized)) return;
       seen.add(normalized);
@@ -256,7 +259,19 @@ async function extractWithPlaywright(targetUrl, referer, deadline) {
     };
 
     page.on("request", (request) => remember(request.url()));
-    page.on("response", (response) => remember(response.url()));
+    page.on("response", (response) => {
+      const url = response.url();
+      remember(url);
+      if (
+        !liveResponse &&
+        url.toLowerCase().includes(".m3u8") &&
+        response.status() >= 200 && response.status() < 400
+      ) {
+        liveResponse = absoluteUrl(url, page.url() || pageUrl) || url;
+        resolveLiveResponse?.(liveResponse);
+      }
+    });
+
     await context.route("**/*", (route) => {
       const request = route.request();
       const requestUrl = request.url().toLowerCase();
@@ -267,26 +282,40 @@ async function extractWithPlaywright(targetUrl, referer, deadline) {
       return route.continue();
     });
 
-    const navTimeout = Math.min(1100, remainingMs(deadline));
+    const navTimeout = Math.min(850, remainingMs(deadline));
     if (navTimeout > 100) {
       try {
-        await page.goto(targetUrl, { referer, waitUntil: "commit", timeout: navTimeout });
+        await Promise.race([
+          page.goto(pageUrl, { waitUntil: "commit", timeout: navTimeout }),
+          liveResponsePromise,
+        ]);
       } catch {}
+    }
+    if (liveResponse) {
+      console.error(`[extractor] shared=${shared} connect_ms=${connectedAt - stageStarted} first_live_ms=${Date.now() - stageStarted}`);
+      return [liveResponse];
     }
 
     try {
-      for (const candidate of extractM3U8Candidates(await page.content(), page.url() || targetUrl)) remember(candidate);
+      for (const candidate of extractM3U8Candidates(await page.content(), page.url() || pageUrl)) remember(candidate);
     } catch {}
 
-    while (remainingMs(deadline) > 180) {
+    while (remainingMs(deadline) > 120) {
+      if (liveResponse) {
+        console.error(`[extractor] shared=${shared} connect_ms=${connectedAt - stageStarted} first_live_ms=${Date.now() - stageStarted}`);
+        return [liveResponse];
+      }
       const live = await firstLiveCandidate(candidates, referer, deadline, probed);
-      if (live) return [live];
-      const waitMs = Math.min(250, remainingMs(deadline));
+      if (live) {
+        console.error(`[extractor] shared=${shared} connect_ms=${connectedAt - stageStarted} probed_live_ms=${Date.now() - stageStarted}`);
+        return [live];
+      }
+      const waitMs = Math.min(120, remainingMs(deadline));
       if (waitMs <= 0) break;
-      await Promise.race([wakePromise, delay(waitMs)]);
+      await Promise.race([liveResponsePromise, wakePromise, delay(waitMs)]);
     }
 
-    console.warn(`[extractor] rejected_candidates=${probed.size}`);
+    console.warn(`[extractor] shared=${shared} connect_ms=${connectedAt - stageStarted} rejected_candidates=${probed.size}`);
     return [];
   } finally {
     if (context) { try { await context.close(); } catch {} }
@@ -297,16 +326,22 @@ async function extractWithPlaywright(targetUrl, referer, deadline) {
 async function extractFast(rawUrl, requestedTimeoutMs, { httpOnly = false } = {}) {
   const budgetMs = Math.max(500, Math.min(MAX_BUDGET_MS, requestedTimeoutMs || MAX_BUDGET_MS));
   const deadline = Date.now() + budgetMs;
-  const { targetUrl, referer, usedCdn } = resolveConfiguredTarget(rawUrl);
-  if (usedCdn) console.error(`[extractor] direct_cdn=${new URL(targetUrl).hostname}`);
+  const { pageUrl, cdnUrl, referer } = resolveConfiguredTarget(rawUrl);
 
-  const httpCandidates = await extractWithHttp(targetUrl, referer, deadline);
-  const httpLive = await firstLiveCandidate(httpCandidates, referer, deadline);
-  if (httpLive) return [httpLive];
-  if (httpOnly || remainingMs(deadline) < 300) return [];
+  if (cdnUrl) {
+    console.error(`[extractor] http_cdn=${new URL(cdnUrl).hostname}`);
+    const cdnCandidates = await extractWithHttp(cdnUrl, referer, deadline);
+    const cdnLive = await firstLiveCandidate(cdnCandidates, referer, deadline);
+    if (cdnLive) return [cdnLive];
+  }
+
+  const pageCandidates = await extractWithHttp(pageUrl, referer, deadline);
+  const pageLive = await firstLiveCandidate(pageCandidates, referer, deadline);
+  if (pageLive) return [pageLive];
+  if (httpOnly || remainingMs(deadline) < 250) return [];
 
   try {
-    return await extractWithPlaywright(targetUrl, referer, deadline);
+    return await extractWithPlaywright(pageUrl, referer, deadline);
   } catch (error) {
     console.warn(`[extractor] browser fast-path failed: ${error?.message || error}`);
     return [];
@@ -352,7 +387,7 @@ async function runSelfTest() {
   assert(result.includes("https://cdn.example/live/index.m3u8?x=1"), "absolute m3u8 extraction failed");
   const migrated = normalizeSourceUrl("http://ip.tivix.co/035212-telekanal-dom-kino.html");
   assert(migrated === "https://live.tivix.co/035212-telekanal-dom-kino.html", "Tivix URL migration failed");
-  assert(MAX_BUDGET_MS < 5000, "Internal budget must leave time for process cleanup");
+  assert(MAX_BUDGET_MS < 4000, "Internal budget must stay well below the 5s SLA");
   console.log("Self-test passed");
 }
 
