@@ -7,10 +7,14 @@ on:
       - agent/fix-iptv-sources
   pull_request:
 
+concurrency:
+  group: lunatv-tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    runs-on: self-hosted
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -23,6 +27,14 @@ jobs:
         with:
           node-version: "20"
           cache: npm
+
+      - name: Verify self-hosted runner tools
+        run: |
+          set -euo pipefail
+          command -v flock
+          command -v python
+          command -v node
+          command -v npm
 
       - name: Install Python dependencies
         run: pip install -r requirements.txt
@@ -39,40 +51,43 @@ jobs:
       - name: Python syntax check
         run: python -m compileall update_playlist.py scaner.py proxy_server.py tests scripts
 
-      - name: Install Chromium for source smoke tests
-        if: github.ref == 'refs/heads/agent/fix-iptv-sources'
-        run: npx --yes playwright@1.55.0 install chromium
-
-      - name: Live source smoke tests
+      - name: Locked live source diagnostics
         if: github.ref == 'refs/heads/agent/fix-iptv-sources'
         continue-on-error: true
-        run: python scripts/source_smoke.py --timeout 15
+        shell: bash
+        run: |
+          set -euo pipefail
+          LOCK_FILE="${LUNATV_SMOKE_LOCK:-/tmp/lunatv-live-smoke.lock}"
+          echo "Waiting for live-source lock: ${LOCK_FILE}"
+          flock -w 900 "${LOCK_FILE}" bash -euo pipefail <<'LOCKED'
+            echo "Acquired live-source lock"
 
-      - name: Sample multiple channels on unresolved sources
-        if: github.ref == 'refs/heads/agent/fix-iptv-sources'
-        continue-on-error: true
-        run: >-
-          python scripts/source_smoke.py
-          --hosts smotru.tv mediamaniya.ru smotrettv.com oneliketv.net live.domatv.net
-          --timeout 12
-          --samples-per-host 3
+            npx --yes playwright@1.55.0 install chromium
 
-      - name: Diagnose failed sources with universal extractor
-        if: github.ref == 'refs/heads/agent/fix-iptv-sources'
-        continue-on-error: true
-        run: >-
-          python scripts/source_smoke.py
-          --hosts smotru.tv mediamaniya.ru smotrettv.com oneliketv.net
-          --timeout 12
-          --samples-per-host 2
-          --extractor universal-playwright-extractor.js
+            overall=0
 
-      - name: Diagnose protected CDN sources with browser fallback
-        if: github.ref == 'refs/heads/agent/fix-iptv-sources'
-        continue-on-error: true
-        run: >-
-          python scripts/source_smoke.py
-          --hosts smotru.tv oneliketv.net
-          --timeout 15
-          --samples-per-host 2
-          --extractor cdn-browser-extractor.js
+            echo "== configured sources =="
+            python scripts/source_smoke.py --timeout 15 || overall=1
+
+            echo "== unresolved sources, 3 samples each =="
+            python scripts/source_smoke.py \
+              --hosts smotru.tv mediamaniya.ru smotrettv.com oneliketv.net live.domatv.net \
+              --timeout 12 \
+              --samples-per-host 3 || overall=1
+
+            echo "== universal extractor diagnostics =="
+            python scripts/source_smoke.py \
+              --hosts smotru.tv mediamaniya.ru smotrettv.com oneliketv.net \
+              --timeout 12 \
+              --samples-per-host 2 \
+              --extractor universal-playwright-extractor.js || overall=1
+
+            echo "== protected CDN browser fallback diagnostics =="
+            python scripts/source_smoke.py \
+              --hosts smotru.tv oneliketv.net \
+              --timeout 15 \
+              --samples-per-host 2 \
+              --extractor cdn-browser-extractor.js || overall=1
+
+            exit "${overall}"
+          LOCKED
