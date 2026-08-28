@@ -79,6 +79,7 @@ jobs:
                 echo \"Production-config smoke with warm browser\"
                 python scripts/source_smoke.py --timeout 5 --samples-per-host 2 || true
 
+                live_fail=0
                 echo \"Universal extractor warm-browser probes\"
                 python scripts/source_probe_slugs.py \\
                   dom-kino-smotru \\
@@ -89,12 +90,14 @@ jobs:
                   sts-domatv \\
                   nba-tv-mediamaniya \\
                   --timeout 5 \\
-                  --extractor universal-playwright-extractor.js || exit 1
+                  --extractor universal-playwright-extractor.js || live_fail=1
 
                 echo \"SmotretTV warm-browser probe\"
                 python scripts/source_probe_slugs.py \\
                   setanta-qazaqstan-smotrettv \\
-                  --timeout 5 || exit 1
+                  --timeout 5 || live_fail=1
+
+                exit \"\$live_fail\"
               " || smoke_status=1
 
               echo "Running live CDN header-profile diagnostics"
