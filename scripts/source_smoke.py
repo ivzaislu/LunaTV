@@ -87,16 +87,32 @@ def pick_controller(controller: dict, host: str) -> dict:
     return cfg if isinstance(cfg, dict) else {}
 
 
+def clean_stream_url(value: str) -> str | None:
+    candidate = str(value or "").replace("&amp;", "&").strip()
+    candidate = candidate.rstrip(",;)}]")
+    if not candidate or any(ch.isspace() for ch in candidate):
+        return None
+    try:
+        parsed = urlparse(candidate)
+    except ValueError:
+        return None
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        return None
+    if ".m3u8" not in candidate.lower():
+        return None
+    return candidate
+
+
 def extract_urls(text: str) -> list[str]:
     found = re.findall(r"https?://[^\s<>\"'\)\]]+", text or "")
     out: list[str] = []
     seen: set[str] = set()
     for value in found:
-        value = value.rstrip(",;}")
-        if ".m3u8" not in value.lower() or value in seen:
+        candidate = clean_stream_url(value)
+        if not candidate or candidate in seen:
             continue
-        seen.add(value)
-        out.append(value.replace("&amp;", "&"))
+        seen.add(candidate)
+        out.append(candidate)
     return out
 
 
@@ -109,17 +125,21 @@ def run_extractor(page_url: str, script_name: str, timeout_sec: int) -> tuple[li
     if script_name != "cdnpotok.js":
         argv.append(str(timeout_sec))
 
+    # Several extractors intentionally try Playwright first and then a plain HTTP
+    # fallback. Both attempts may consume up to timeout_sec, so the supervising
+    # process must not kill the extractor after only timeout_sec + a few seconds.
+    process_timeout = max(timeout_sec + 8, timeout_sec * 2 + 12)
     try:
         proc = subprocess.run(
             argv,
             cwd=str(EXTRACTOR_DIR),
             capture_output=True,
             text=True,
-            timeout=timeout_sec + 8,
+            timeout=process_timeout,
             check=False,
         )
     except subprocess.TimeoutExpired:
-        return [], "extractor timeout"
+        return [], f"extractor timeout after {process_timeout}s"
     except OSError as exc:
         return [], f"extractor launch failed: {exc}"
 
@@ -128,17 +148,26 @@ def run_extractor(page_url: str, script_name: str, timeout_sec: int) -> tuple[li
     try:
         payload = json.loads(proc.stdout.strip())
         if isinstance(payload, list):
-            streams.extend(str(item) for item in payload if ".m3u8" in str(item).lower())
+            streams.extend(str(item) for item in payload)
         elif isinstance(payload, dict):
             values = payload.get("streams") or payload.get("links") or []
             if isinstance(values, list):
-                streams.extend(str(item) for item in values if ".m3u8" in str(item).lower())
+                streams.extend(str(item) for item in values)
     except Exception:
         pass
     streams.extend(extract_urls(combined))
-    streams = list(dict.fromkeys(streams))
-    if streams:
-        return streams, "ok"
+
+    cleaned: list[str] = []
+    seen: set[str] = set()
+    for raw in streams:
+        candidate = clean_stream_url(raw)
+        if not candidate or candidate in seen:
+            continue
+        seen.add(candidate)
+        cleaned.append(candidate)
+    if cleaned:
+        return cleaned, "ok"
+
     detail = (proc.stderr or proc.stdout or f"exit {proc.returncode}").strip().splitlines()
     return [], (detail[-1][:240] if detail else f"exit {proc.returncode}")
 
@@ -197,7 +226,7 @@ def check_channel(
     entry: dict,
     controller: dict,
     extractor_override: str | None,
-    max_timeout: int,
+    diagnostic_timeout: int,
 ) -> bool:
     page_url = str(entry.get("url") or "")
     cfg = pick_controller(controller, requested_host)
@@ -207,8 +236,10 @@ def check_channel(
         or cfg.get("script")
         or "universal-playwright-extractor.js"
     )
-    timeout_sec = int(entry.get("timeout_sec") or cfg.get("timeout_sec") or max_timeout)
-    timeout_sec = max(1, min(timeout_sec, max_timeout))
+    configured_timeout = int(entry.get("timeout_sec") or cfg.get("timeout_sec") or diagnostic_timeout)
+    # For diagnostics, --timeout is a floor rather than a cap. The previous logic
+    # silently reduced `--timeout 20` back to controller values such as 10 or 12.
+    timeout_sec = max(1, configured_timeout, diagnostic_timeout)
 
     streams, detail = run_extractor(page_url, script_name, timeout_sec)
     if not streams:
@@ -217,7 +248,7 @@ def check_channel(
 
     probe_detail = ""
     referer_only_seen = False
-    for stream in streams[:3]:
+    for stream in streams[:5]:
         ok, probe_detail, direct_ok = probe_hls(stream, page_url, timeout_sec)
         if ok and direct_ok:
             stream_host = host_of(stream) or "unknown"
@@ -245,7 +276,12 @@ def check_channel(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Live smoke checks for LunaTV sources")
     parser.add_argument("--hosts", nargs="*", default=DEFAULT_HOSTS)
-    parser.add_argument("--timeout", type=int, default=15)
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=15,
+        help="Minimum per-attempt timeout for live diagnostics (default: 15s)",
+    )
     parser.add_argument(
         "--samples-per-host",
         type=int,
