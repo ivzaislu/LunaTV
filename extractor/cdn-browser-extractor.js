@@ -53,8 +53,8 @@ function absoluteUrl(candidate, baseUrl) {
   }
 }
 
-function collectFromText(text, baseUrl, out) {
-  if (!text) return;
+export function collectFromText(text, baseUrl, out = new Set()) {
+  if (!text) return out;
   const direct = text.match(/https?:\/\/[^\s"'<>]+\.m3u8[^\s"'<>}]*/gi) || [];
   for (const value of direct) {
     const normalized = absoluteUrl(value, baseUrl);
@@ -66,6 +66,21 @@ function collectFromText(text, baseUrl, out) {
     const normalized = absoluteUrl(value, baseUrl);
     if (normalized) out.add(normalized);
   }
+  return out;
+}
+
+function isNavigationTimeout(error) {
+  const name = String(error?.name || "");
+  const message = String(error?.message || "");
+  return name.includes("Timeout") || /timeout/i.test(message);
+}
+
+function shouldInspectResponse(response) {
+  const headers = response.headers();
+  const type = String(headers["content-type"] || "").toLowerCase();
+  if (!/(json|javascript|text|html|mpegurl)/.test(type)) return false;
+  const length = Number.parseInt(headers["content-length"] || "0", 10);
+  return !Number.isFinite(length) || length <= 1024 * 1024;
 }
 
 async function runBrowser(cdnUrl, refererUrl, timeoutMs) {
@@ -79,30 +94,36 @@ async function runBrowser(cdnUrl, refererUrl, timeoutMs) {
   });
 
   const streams = new Set();
+  const pendingBodies = new Set();
   let context;
   try {
-    const origin = (() => {
-      try { return new URL(refererUrl).origin; } catch { return ""; }
-    })();
     context = await browser.newContext({
       userAgent: USER_AGENT,
       ignoreHTTPSErrors: true,
       viewport: { width: 1280, height: 720 },
       extraHTTPHeaders: {
-        Referer: refererUrl,
-        ...(origin ? { Origin: origin } : {}),
         "Accept-Language": "ru-RU,ru;q=0.9,en;q=0.8",
       },
     });
 
     const page = await context.newPage();
-    const remember = (raw) => {
+    const remember = (raw, base = cdnUrl) => {
       if (typeof raw !== "string" || !raw.toLowerCase().includes(".m3u8")) return;
-      const url = absoluteUrl(raw, cdnUrl);
+      const url = absoluteUrl(raw, base);
       if (url) streams.add(url);
     };
+
     page.on("request", (request) => remember(request.url()));
-    page.on("response", (response) => remember(response.url()));
+    page.on("response", (response) => {
+      remember(response.url());
+      if (!shouldInspectResponse(response)) return;
+      const task = response
+        .text()
+        .then((body) => collectFromText(body, response.url(), streams))
+        .catch(() => {})
+        .finally(() => pendingBodies.delete(task));
+      pendingBodies.add(task);
+    });
 
     await context.route("**/*", (route) => {
       const request = route.request();
@@ -111,15 +132,30 @@ async function runBrowser(cdnUrl, refererUrl, timeoutMs) {
         route.continue();
         return;
       }
-      if (["image", "font", "stylesheet", "media"].includes(request.resourceType())) {
+      if (["image", "font", "stylesheet"].includes(request.resourceType())) {
+        route.abort();
+        return;
+      }
+      if (request.resourceType() === "media" && /\.(?:ts|m4s|mp4)(?:[?#]|$)/i.test(requestUrl)) {
         route.abort();
         return;
       }
       route.continue();
     });
 
-    await page.goto(cdnUrl, { waitUntil: "domcontentloaded", timeout: timeoutMs });
-    await page.waitForTimeout(Math.min(3500, Math.max(1500, Math.floor(timeoutMs / 4))));
+    try {
+      await page.goto(cdnUrl, {
+        referer: refererUrl,
+        waitUntil: "domcontentloaded",
+        timeout: timeoutMs,
+      });
+    } catch (error) {
+      if (!isNavigationTimeout(error) || page.url() === "about:blank") throw error;
+      // Protected/slow players may never reach DOMContentLoaded. Keep the partial
+      // document and network events gathered so far instead of discarding them.
+    }
+
+    await page.waitForTimeout(Math.min(5000, Math.max(2000, Math.floor(timeoutMs / 3))));
 
     collectFromText(await page.content(), page.url(), streams);
     for (const frame of page.frames()) {
@@ -128,6 +164,13 @@ async function runBrowser(cdnUrl, refererUrl, timeoutMs) {
       } catch {
         // Cross-origin/detached frames can disappear while the player initializes.
       }
+    }
+
+    if (pendingBodies.size) {
+      await Promise.race([
+        Promise.allSettled(Array.from(pendingBodies)),
+        page.waitForTimeout(1500),
+      ]);
     }
 
     await page.close();
@@ -176,6 +219,14 @@ async function selfTest() {
   const found = await resolveChannel("https://www.example.test/tv/demo.html#x", channels);
   if (!found || found.slug !== "demo") {
     throw new Error("Channel URL matching failed");
+  }
+
+  const streams = collectFromText(
+    '<script>const hls="https://edge.example/live/index.m3u8?token=abc"</script>',
+    "https://cdn.example.test/player.php",
+  );
+  if (!streams.has("https://edge.example/live/index.m3u8?token=abc")) {
+    throw new Error("HLS extraction from response text failed");
   }
   console.log("Self-test passed");
 }
